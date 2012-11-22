@@ -1,0 +1,16 @@
+.metadata
+.classpath
+.project
+.settings
+
+*.class
+*.jar
+bin
+build
+
+*.tar
+*.gz
+*.tgz
+*.zip
+*.bz2
+
