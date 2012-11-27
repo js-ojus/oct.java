@@ -3,27 +3,22 @@ package com.ojuslabs.oct.common;
 /**
  * BondStereo lists possible stereo states of a bond.
  */
-public class BondStereo
+public enum BondStereo
 {
-    public static final byte NONE      = 0;
-    public static final byte ANY       = 1;
-    public static final byte E         = 2;
-    public static final byte Z         = 3;
-    public static final byte CIS       = 4;
-    public static final byte TRANS     = 5;
-    static final byte        _SENTINEL = 6;
+    NONE(0),
+    ANY(1),
+    E(2),
+    Z(3),
+    CIS(4),
+    TRANS(5);
 
-    /**
-     * @param bs
-     *            Integer representing a stereo configuration for a bond.
-     * @return True if the given integer represents a valid stereo
-     *         configuration; false otherwise.
-     */
-    public static boolean isValid(byte bs) {
-        if ((bs < 0) || (bs >= _SENTINEL)) {
-            return false;
-        }
+    private final int _stereo;
 
-        return true;
+    BondStereo(int s) {
+        _stereo = s;
+    }
+
+    public int value() {
+        return _stereo;
     }
 }

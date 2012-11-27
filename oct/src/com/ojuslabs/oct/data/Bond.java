@@ -21,8 +21,8 @@ class Bond
 
     final Atom      _a1;
     final Atom      _a2;
-    byte            _order; // Order of this bond.
-    byte            _stereo; // Stereo configuration of this bond.
+    BondOrder       _order; // Order of this bond.
+    BondStereo      _stereo; // Stereo configuration of this bond.
 
     boolean         _isAro; // Is this bond aromatic?
     ArrayList<Ring> _rings; // The rings in which this bond
@@ -73,23 +73,42 @@ class Bond
      * @return Bond order of this bond. See {@link BondOrder} for possible bond
      *         orders.
      */
-    public byte order() {
+    public BondOrder order() {
         return _order;
     }
 
     /**
+     * Sets the new order for this bond. It also adjusts the valence of the
+     * member atoms appropriately. Should that result in an invalid state, an
+     * {@link IllegalStateException} is thrown.
+     * 
      * @param o
      *            The new bond order to set. See {@link BondOrder} for possible
      *            bond orders.
      */
-    public void setOrder(byte o) {
-        // TODO(js): Adjust the valences of the member atoms appropriately.
-
-        if (!BondOrder.isValid(o)) {
-            throw new IllegalArgumentException(String.format(
-                    "Given integer does not represent a valid bond order: %d",
-                    o));
+    public void setOrder(BondOrder o) {
+        if (o == _order) {
+            return;
         }
+
+        int delta = o.value() - _order.value();
+        int res = _a1.numberOfBonds() + delta;
+        if (res > _a1.valence()) {
+            throw new IllegalStateException(
+                    String.format(
+                            "Illegal state for atom: %d->%d. Number of bonds: %d, new bond order: %d",
+                            _a1.molecule(), _a1.id(), _a1.numberOfBonds(),
+                            o.value()));
+        }
+        res = _a2.numberOfBonds() + delta;
+        if (res > _a2.valence()) {
+            throw new IllegalStateException(
+                    String.format(
+                            "Illegal state for atom: %d->%d. Number of bonds: %d, new bond order: %d",
+                            _a2.molecule(), _a2.id(), _a2.numberOfBonds(),
+                            o.value()));
+        }
+
         _order = o;
     }
 
@@ -179,7 +198,7 @@ class Bond
      * @return The stereo configuration of this bond. See {@link BondStereo} for
      *         possible stereo configurations.
      */
-    public byte stereo() {
+    public BondStereo stereo() {
         return _stereo;
     }
 
@@ -188,12 +207,7 @@ class Bond
      *            The stereo configuration of this bond. See {@link BondStereo}
      *            for possible stereo configurations.
      */
-    public void setStereo(byte s) {
-        if (!BondStereo.isValid(s)) {
-            throw new IllegalArgumentException(String.format(
-                    "Invalid stereo configuration given: %d", s));
-        }
-
+    public void setStereo(BondStereo s) {
         _stereo = s;
     }
 

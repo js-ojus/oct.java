@@ -7,7 +7,7 @@ import static com.ojuslabs.oct.common.Constants.LIST_SIZE_S;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.ojuslabs.oct.common.BondOrder;
+import com.ojuslabs.oct.common.Chirality;
 import com.ojuslabs.oct.common.Element;
 import com.ojuslabs.oct.exception.NotFoundException;
 import com.ojuslabs.oct.exception.UniquenessException;
@@ -29,7 +29,7 @@ class Atom
     short           _id;          // A unique ID within its molecule.
     short           _cid;         // A unique canonicalised ID.
 
-    byte            _chirality;   // Chirality type.
+    Chirality       _chirality;   // Chirality type.
     byte            _numH;        // Number of attached H atoms.
     byte            _charge;      // Residual charge on the atom.
 
@@ -188,13 +188,13 @@ class Atom
         double c = 0.0;
         for (Bond b : _bonds) {
             switch (b.order()) {
-            case BondOrder.SINGLE:
+            case SINGLE:
                 c += 1;
                 break;
-            case BondOrder.DOUBLE:
+            case DOUBLE:
                 c += 2;
                 break;
-            case BondOrder.TRIPLE:
+            case TRIPLE:
                 c += 3;
                 break;
             default: // Must be NONE.
@@ -308,7 +308,18 @@ class Atom
     }
 
     /**
+     * @return The current valence configuration of this atom.
+     */
+    public byte valence() {
+        return _valence;
+    }
+
+    /**
      * Adds the given bond to this atom.
+     * 
+     * Should the addition of this bond increase the number of bonds of this
+     * atom beyond its current valence configuration, an
+     * {@link IllegalStateException} exception is thrown.
      * 
      * @param b
      *            The bond to add to this atom. <b>N.B.</b> The current atom
@@ -317,9 +328,17 @@ class Atom
      *            Accordingly, this method is package-internal.
      */
     void addBond(Bond b) {
-        if (!_bonds.contains(b)) {
-            _bonds.add(b);
+        if (_bonds.contains(b)) {
+            return;
         }
+        if (b.order().value() + numberOfBonds() > _valence) {
+            throw new IllegalStateException(
+                    String.format(
+                            "Too many bonds; atom: %d, valence: %d, current number of bonds: %d, order of the new bond: %d",
+                            _id, _valence, numberOfBonds(), b.order()));
+        }
+
+        _bonds.add(b);
     }
 
     /**

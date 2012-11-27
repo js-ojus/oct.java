@@ -99,8 +99,8 @@ public class Ring
     /**
      * Adds the given atom to this ring. The given atom is ignored if it is
      * already a member of this ring. It checks to see that a bond exists
-     * between the most-recently-added atom and the current atom. An exception
-     * is thrown otherwise.
+     * between the most-recently-added atom and the current atom. An
+     * {@link IllegalStateException} is thrown otherwise.
      * 
      * <b>N.B.</b> It is an error to attempt adding atoms to a <i>completed</i>
      * ring. It results in an exception getting thrown.
@@ -124,7 +124,7 @@ public class Ring
             Atom prev = _atoms.getLast();
             Bond b = _m.bondBetween(prev, a);
             if (null == b) {
-                throw new IllegalArgumentException(
+                throw new IllegalStateException(
                         String.format(
                                 "There is no bond between previous atom %d and current atom %d",
                                 prev.id(), a.id()));
@@ -136,7 +136,9 @@ public class Ring
     }
 
     /**
-     * Completes the link between the last atom and the first. Completion also
+     * Completes the link between the last atom and the first. If the size of
+     * the ring is less than 3, or if there is no bond connecting the first atom
+     * and the last, an {@link IllegalStateException} is thrown. Completion also
      * effectively freezes the ring.
      * 
      * @throws NotFoundException
@@ -156,7 +158,7 @@ public class Ring
 
         Atom a1 = _atoms.getFirst();
         Atom a2 = _atoms.getLast();
-        Bond b = _m.bondBetween(a1, a2);
+        Bond b = _m._bondBetween(a1, a2);
         if (null == b) {
             throw new IllegalStateException(String.format(
                     "No bond between the first and the last atoms: %d, %d",

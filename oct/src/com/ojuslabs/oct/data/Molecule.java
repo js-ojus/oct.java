@@ -137,14 +137,11 @@ class Molecule
     // This part is reusable internally within this package without incurring
     // the overhead of the membership checks.
     Bond _bondBetween(Atom a1, Atom a2) {
-        int hash = 0;
         if (0 == _bonds.size()) {
             return null;
         }
-        else {
-            hash = _bonds.get(0).hash(a1, a2);
-        }
 
+        int hash = _bonds.get(0).hash(a1, a2);
         for (Bond b : _bonds) {
             if (b.hashCode() == hash) {
                 return b;
@@ -265,7 +262,8 @@ class Molecule
      *            The other atom to be bonded.
      * @throws NotFoundException
      */
-    public void addBond(Atom a1, Atom a2, int order) throws NotFoundException {
+    public void addBond(Atom a1, Atom a2, BondOrder order)
+            throws NotFoundException {
         if ((this != a1.molecule()) || (this != a2.molecule())) {
             throw new NotFoundException(
                     String.format(
@@ -280,7 +278,7 @@ class Molecule
         }
 
         Bond b = new Bond(++_peakBId, a1, a2);
-        b.setOrder((byte) order);
+        b.setOrder(order);
         _bonds.add(b);
 
         // Set neighbours appropriately.
