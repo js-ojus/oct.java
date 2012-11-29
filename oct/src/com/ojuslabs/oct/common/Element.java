@@ -2,7 +2,7 @@ package com.ojuslabs.oct.common;
 
 /**
  * Element holds the essential chemical information of a given natural element.
- * The precision of the information given herein is is <b>not</b> expected (or
+ * The precision of the information given herein is <b>not</b> expected (or
  * required) to be scientifically fully accurate.
  */
 public class Element

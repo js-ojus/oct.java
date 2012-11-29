@@ -8,7 +8,7 @@ import com.ojuslabs.oct.exception.NotFoundException;
  * PeriodicTable represents the chemical periodic table. It defines the
  * necessary constants for chemical elements, their atomic numbers, atomic
  * weights, isotopes and symbol string representations. It provides a set of
- * convenience (static) methods to access and utilise the said data.
+ * convenience methods to access and utilise the said data.
  */
 public class PeriodicTable
 {
@@ -17,7 +17,7 @@ public class PeriodicTable
     static int           _NUM_ELEMENTS = 327;
 
     static PeriodicTable _instance     = null; // Singleton assurance.
-    
+
     public static PeriodicTable instance() {
         if (null != _instance) {
             return _instance;
@@ -41,7 +41,7 @@ public class PeriodicTable
      * <b>N.B.</b> The relative order of the elements in this list is of
      * significance. Do not change that.
      */
-    private void init() {
+    void init() {
         // First the list of elements.
         ImmutableList.Builder<Element> lbuilder = ImmutableList.builder();
         lbuilder.add(new Element(0, "NONE", 0.0, -1));
