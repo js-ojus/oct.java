@@ -1,7 +1,7 @@
 package com.ojuslabs.oct.xlate.mdl;
 
-import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 
 /**
  * SdfFile represents an MDL-format SDF file with molecule data. It can be used
@@ -11,7 +11,6 @@ public class SdfFile implements Iterable<String>
 {
     final String  _path;
     final boolean _outMode;
-    File          _file;
 
     /**
      * @param path
@@ -22,7 +21,6 @@ public class SdfFile implements Iterable<String>
     public SdfFile(String path, boolean write) {
         _path = path;
         _outMode = write;
-        _file = new File(_path);
     }
 
     /**
@@ -40,7 +38,7 @@ public class SdfFile implements Iterable<String>
      */
     public SdfIterator iterator() {
         try {
-            return new SdfIterator(_file);
+            return new SdfIterator(new FileReader(_path));
         }
         catch (FileNotFoundException e) {
             e.printStackTrace();

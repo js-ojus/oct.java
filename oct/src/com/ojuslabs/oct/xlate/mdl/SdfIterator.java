@@ -1,10 +1,10 @@
 package com.ojuslabs.oct.xlate.mdl;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -12,22 +12,18 @@ import com.ojuslabs.oct.common.Constants;
 
 public class SdfIterator implements Iterator<String>
 {
-    static final String _MOL_DELIM = "$$$$";
+    static final String  _MOL_DELIM = "$$$$";
 
-    final File          _file;
-    BufferedReader      _reader;
-    int                 _count;
-    String              _text;
+    final BufferedReader _reader;
+    int                  _count;
+    String               _text;
 
     /**
      * @param istream
      *            An input stream from the underlying SdfFile.
-     * @throws FileNotFoundException
      */
-    SdfIterator(File file) throws FileNotFoundException {
-        _file = file;
-        _reader = new BufferedReader(new FileReader(_file),
-                Constants.IO_BUFFER_SIZE);
+    SdfIterator(Reader reader) {
+        _reader = new BufferedReader(reader, Constants.IO_BUFFER_SIZE);
     }
 
     /**
@@ -49,8 +45,7 @@ public class SdfIterator implements Iterator<String>
                 String s = _reader.readLine();
                 if (null == s) { // We are expecting more data, but have reached
                                  // the end of the stream.
-                    _reader.close();
-                    return false;
+                    throw new IOException();
                 }
 
                 builder.append(s);
@@ -58,12 +53,13 @@ public class SdfIterator implements Iterator<String>
                     _text = builder.toString();
                 }
             }
-            catch (IOException e) {
+            catch (IOException e1) {
                 try {
                     _reader.close();
                 }
-                catch (IOException e1) {
+                catch (IOException e2) {
                     e1.printStackTrace();
+                    e2.printStackTrace();
                 }
                 return false;
             }
@@ -83,9 +79,107 @@ public class SdfIterator implements Iterator<String>
             throw new NoSuchElementException();
         }
 
+        _count++;
         String res = _text;
         _text = null;
         return res;
+    }
+
+    /**
+     * Skips the requested number of molecules in the stream. It is advisable to
+     * compare the answered actual number of molecules skipped to that
+     * requested.
+     * 
+     * @param n
+     *            The number of molecules to skip making available to
+     *            {@link SdfIterator#next()}.
+     * @return The actual number of molecules successfully skipped.
+     */
+    public int skip(int n) {
+        int i = 0;
+
+        while (i < n) {
+            try {
+                String s = _reader.readLine();
+                if (null == s) { // We are expecting more data, but have reached
+                                 // the end of the stream.
+                    throw new IOException();
+                }
+
+                if (s.startsWith(_MOL_DELIM)) {
+                    _count++;
+                    i++;
+                }
+            }
+            catch (IOException e1) {
+                try {
+                    _reader.close();
+                }
+                catch (IOException e2) {
+                    e1.printStackTrace();
+                    e2.printStackTrace();
+                }
+            }
+        }
+
+        return i;
+    }
+
+    /**
+     * Answers the number of the next available molecule. <b>N.B.</b> This
+     * number is affected by all of {@link SdfIterator#next()},
+     * {@link SdfIterator#skip(int)} and {@link SdfIterator#copyTo(Writer, int)}
+     * , each advancing the iterator.
+     * 
+     * @return The sequence number of the next molecule in the stream.
+     */
+    public int numberOfNextMolecule() {
+        return _count + 1;
+    }
+
+    /**
+     * Bulk copies the requested number of molecules to the given writer
+     * instance. The writer is <i>not</i> closed by this method. It is advisable
+     * to compare the answered actual number of molecules copied to that
+     * requested.
+     * 
+     * @param w
+     *            The writer to which the molecules are written.
+     * @param n
+     *            The number of molecules to copy.
+     * @return The actual number of molecules copied.
+     */
+    public int copyTo(Writer w, int n) {
+        BufferedWriter writer = new BufferedWriter(w, Constants.IO_BUFFER_SIZE);
+
+        int i = 0;
+
+        while (i < n) {
+            try {
+                String s = _reader.readLine();
+                if (null == s) { // We are expecting more data, but have reached
+                                 // the end of the stream.
+                    throw new IOException();
+                }
+
+                writer.write(s);
+                if (s.startsWith(_MOL_DELIM)) {
+                    _count++;
+                    i++;
+                }
+            }
+            catch (IOException e1) {
+                try {
+                    _reader.close();
+                }
+                catch (IOException e2) {
+                    e1.printStackTrace();
+                    e2.printStackTrace();
+                }
+            }
+        }
+
+        return i;
     }
 
     /*
