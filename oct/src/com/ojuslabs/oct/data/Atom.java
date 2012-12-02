@@ -9,8 +9,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.ojuslabs.oct.common.Chirality;
 import com.ojuslabs.oct.common.Element;
+import com.ojuslabs.oct.common.PeriodicTable;
+import com.ojuslabs.oct.common.Radical;
 import com.ojuslabs.oct.exception.NotFoundException;
 import com.ojuslabs.oct.exception.UniquenessException;
+import com.ojuslabs.oct.util.Point3D;
 
 /**
  * Atom represents a chemical atom. It has various physical and chemical
@@ -19,9 +22,9 @@ import com.ojuslabs.oct.exception.UniquenessException;
  * 
  * An atom is usually bound to a molecule, but may be free intermittently.
  */
-class Atom
+public class Atom
 {
-    final Element   _element;     // This atom's element type.
+    Element         _element;     // This atom's element type.
 
     Molecule        _m;           // Containing molecule, if the atom is
                                    // bound to one.
@@ -29,9 +32,12 @@ class Atom
     short           _id;          // A unique ID within its molecule.
     short           _cid;         // A unique canonicalised ID.
 
+    public Point3D  coordinates;
+
     Chirality       _chirality;   // Chirality type.
     byte            _numH;        // Number of attached H atoms.
     byte            _charge;      // Residual charge on the atom.
+    Radical         _radical;
 
     ArrayList<Bond> _bonds;       // Bonds this atom is a member of.
     byte            _valence;     // Current valence of this atom.
@@ -66,6 +72,28 @@ class Atom
         _inHetAroRing = false;
         _isBridgeHead = false;
         _isSpiro = false;
+    }
+
+    /**
+     * @return The element type of this atom.
+     */
+    public Element element() {
+        return _element;
+    }
+
+    /**
+     * Sets the isotope value of this atom. <b>N.B.</b> This method actually
+     * alters the element type of this atom. Use with extreme caution.
+     * 
+     * @param n
+     *            The mass difference with respect to that of the naturally most
+     *            abundant variety.
+     * @throws NotFoundException
+     */
+    public void setIsotope(int n) throws NotFoundException {
+        _element = PeriodicTable.instance().element(
+                String.format("%s_%d", _element.symbol,
+                        Math.round(_element.weight) + n));
     }
 
     /**
@@ -138,6 +166,51 @@ class Atom
         _cid = id;
     }
 
+    /**
+     * @return The current residual charge on this atom.
+     */
+    public int charge() {
+        return _charge;
+    }
+
+    /**
+     * @param chg
+     *            The new residual charge on this atom.
+     */
+    public void setCharge(int chg) {
+        _charge = (byte) chg;
+    }
+
+    /**
+     * @return The radical configuration of this atom.
+     */
+    public Radical radical() {
+        return _radical;
+    }
+
+    /**
+     * @param r
+     *            The new radical configuration of this atom.
+     */
+    public void setRadical(Radical r) {
+        _radical = r;
+    }
+
+    /**
+     * @return The current valence configuration of this atom.
+     */
+    public byte valence() {
+        return _valence;
+    }
+
+    /**
+     * @param v
+     *            The new valence configuration of this atom.
+     */
+    public void setValence(int v) {
+        _valence = (byte) v;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -151,7 +224,8 @@ class Atom
 
     /**
      * Note that two atoms are considered equal only if their IDs are the same
-     * AND they reside in the same molecule.
+     * AND they reside in the same molecule. Effectively, a free (unbound) atom
+     * <b>cannot</b> be compared.
      * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
@@ -169,13 +243,6 @@ class Atom
     }
 
     // TODO(js): Implement a meaningful `hashCode'.
-
-    /**
-     * @return The element type of this atom.
-     */
-    public Element element() {
-        return _element;
-    }
 
     /**
      * @return Number of distinct neighbours of this atom.
@@ -210,6 +277,31 @@ class Atom
     public List<Bond> bonds() {
         ImmutableList<Bond> l = ImmutableList.copyOf(_bonds);
         return l;
+    }
+
+    /**
+     * Answers the bond between this atom and the given other atom, if one
+     * exists.
+     * 
+     * @param other
+     *            The other atom potentially bound to this atom.
+     * @return The requested bond between this atom and the other atom.
+     * @throws NotFoundException
+     */
+    public Bond bondTo(Atom other) throws NotFoundException {
+        if ((other.molecule() != _m) || (null == _m.atom(other.id()))) {
+            throw new NotFoundException(String.format(
+                    "Given atom does not belong this molecule: %d->%d", other
+                            .molecule().id(), other.id()));
+        }
+
+        for (Bond b : _bonds) {
+            if (other == b.otherAtom(_id)) {
+                return b;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -305,13 +397,6 @@ class Atom
         }
 
         return false;
-    }
-
-    /**
-     * @return The current valence configuration of this atom.
-     */
-    public byte valence() {
-        return _valence;
     }
 
     /**

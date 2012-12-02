@@ -15,7 +15,7 @@ import com.ojuslabs.oct.exception.UniquenessException;
  * Bond represents a chemical bond. This flavour is strictly between two atoms,
  * and does <b>not</b> cater to multi-bond requirements.
  */
-class Bond
+public class Bond
 {
     final short     _id;    // Unique ID of this bond in its molecule.
 

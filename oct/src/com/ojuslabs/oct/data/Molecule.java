@@ -2,29 +2,41 @@ package com.ojuslabs.oct.data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.ojuslabs.oct.common.Constants.LIST_SIZE_L;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.ojuslabs.oct.common.BondOrder;
 import com.ojuslabs.oct.exception.NotFoundException;
 
-class Molecule
+public class Molecule
 {
-    final long          _id;        // A unique ID. This does not change
-                                     // during the lifetime of the molecule.
+    final long                 _id;        // A unique ID. This does not change
+                                            // during the lifetime of the
+                                            // molecule.
 
-    ArrayList<Atom>     _atoms;     // List of this molecule's atoms.
-    ArrayList<Bond>     _bonds;     // List of this molecule's bonds.
-    ArrayList<Ring>     _rings;     // List of this molecule's rings.
+    ArrayList<Atom>            _atoms;     // List of this molecule's atoms.
+    ArrayList<Bond>            _bonds;     // List of this molecule's bonds.
+    ArrayList<Ring>            _rings;     // List of this molecule's rings.
 
-    short               _peakAId;   // Keeps track of running IDs of atoms.
-    short               _peakBId;   // Keeps track of running IDs of bonds.
-    short               _peakRId;   // Keeps track of running IDs of rings.
+    short                      _peakAId;   // Keeps track of running IDs of
+                                            // atoms.
+    short                      _peakBId;   // Keeps track of running IDs of
+                                            // bonds.
+    short                      _peakRId;   // Keeps track of running IDs of
+                                            // rings.
+
+    public String              vendorId;
+    public String              vendorName;
+
+    public Map<String, String> tags;       // Stores input data items as well
+                                            // as run-time attributes.
 
     // A running serial unique identifier for molecules.
-    private static long _molId = 0L;
+    private static long        _molId = 0L;
 
     /**
      * Factory method for creating molecules with unique IDs.
@@ -44,6 +56,8 @@ class Molecule
         _atoms = Lists.newArrayListWithCapacity(LIST_SIZE_L);
         _bonds = Lists.newArrayListWithCapacity(LIST_SIZE_L);
         _rings = Lists.newArrayListWithCapacity(LIST_SIZE_L);
+
+        tags = Maps.newHashMap();
     }
 
     /**
@@ -143,7 +157,8 @@ class Molecule
 
         int hash = _bonds.get(0).hash(a1, a2);
         for (Bond b : _bonds) {
-            if (b.hashCode() == hash) {
+            if (b._hash == hash) { // TODO(js): Change this only in conjuction
+                                   // with Bond#hashCode().
                 return b;
             }
         }
@@ -262,7 +277,7 @@ class Molecule
      *            The other atom to be bonded.
      * @throws NotFoundException
      */
-    public void addBond(Atom a1, Atom a2, BondOrder order)
+    public Bond addBond(Atom a1, Atom a2, BondOrder order)
             throws NotFoundException {
         if ((this != a1.molecule()) || (this != a2.molecule())) {
             throw new NotFoundException(
@@ -273,8 +288,9 @@ class Molecule
         }
 
         // Is this bond already present?
-        if (null != this.bondBetween(a1, a2)) {
-            return;
+        Bond _b = this.bondBetween(a1, a2);
+        if (null != _b) {
+            return _b;
         }
 
         Bond b = new Bond(++_peakBId, a1, a2);
@@ -284,6 +300,8 @@ class Molecule
         // Set neighbours appropriately.
         a1.addBond(b);
         a2.addBond(b);
+
+        return b;
     }
 
     /**

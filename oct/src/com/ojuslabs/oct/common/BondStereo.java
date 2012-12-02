@@ -6,11 +6,14 @@ package com.ojuslabs.oct.common;
 public enum BondStereo
 {
     NONE(0),
-    ANY(1),
-    E(2),
-    Z(3),
-    CIS(4),
-    TRANS(5);
+    UP(1),
+    DOWN(2),
+    UP_OR_DOWN(3),
+    E(4),
+    Z(5),
+    CIS(6),
+    TRANS(7),
+    UNSPECIFIED(8);
 
     private final int _stereo;
 

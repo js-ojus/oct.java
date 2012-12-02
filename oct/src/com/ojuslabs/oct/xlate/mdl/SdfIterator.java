@@ -6,17 +6,21 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.ojuslabs.oct.common.Constants;
 
-public class SdfIterator implements Iterator<String>
+public class SdfIterator implements Iterator<List<String>>
 {
-    static final String  _MOL_DELIM = "$$$$";
+    static final String  MOL_DELIM = "$$$$";
 
     final BufferedReader _reader;
+    final List<String>   _text;
+    boolean              _haveMolInHand;
     int                  _count;
-    String               _text;
 
     /**
      * @param istream
@@ -24,6 +28,7 @@ public class SdfIterator implements Iterator<String>
      */
     SdfIterator(Reader reader) {
         _reader = new BufferedReader(reader, Constants.IO_BUFFER_SIZE);
+        _text = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_L);
     }
 
     /**
@@ -37,9 +42,8 @@ public class SdfIterator implements Iterator<String>
      */
     @Override
     public boolean hasNext() {
-        if (null != _text) return true;
+        if (_haveMolInHand) return true;
 
-        StringBuilder builder = new StringBuilder(Constants.STRING_BUFFER_SIZE);
         do {
             try {
                 String s = _reader.readLine();
@@ -48,9 +52,9 @@ public class SdfIterator implements Iterator<String>
                     throw new IOException();
                 }
 
-                builder.append(s);
-                if (s.startsWith(_MOL_DELIM)) {
-                    _text = builder.toString();
+                _text.add(s);
+                if (s.startsWith(MOL_DELIM)) {
+                    _haveMolInHand = true;
                 }
             }
             catch (IOException e1) {
@@ -63,7 +67,7 @@ public class SdfIterator implements Iterator<String>
                 }
                 return false;
             }
-        } while (null == _text);
+        } while (!_haveMolInHand);
 
         return true;
     }
@@ -74,14 +78,15 @@ public class SdfIterator implements Iterator<String>
      * @see java.util.Iterator#next()
      */
     @Override
-    public String next() {
-        if ((null == _text) && !hasNext()) {
+    public List<String> next() {
+        if (!(_haveMolInHand || hasNext())) {
             throw new NoSuchElementException();
         }
 
+        List<String> res = ImmutableList.copyOf(_text);
+        _text.clear();
+        _haveMolInHand = false;
         _count++;
-        String res = _text;
-        _text = null;
         return res;
     }
 
@@ -106,7 +111,7 @@ public class SdfIterator implements Iterator<String>
                     throw new IOException();
                 }
 
-                if (s.startsWith(_MOL_DELIM)) {
+                if (s.startsWith(MOL_DELIM)) {
                     _count++;
                     i++;
                 }
@@ -163,7 +168,7 @@ public class SdfIterator implements Iterator<String>
                 }
 
                 writer.write(s);
-                if (s.startsWith(_MOL_DELIM)) {
+                if (s.startsWith(MOL_DELIM)) {
                     _count++;
                     i++;
                 }

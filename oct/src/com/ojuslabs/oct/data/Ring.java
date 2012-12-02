@@ -203,8 +203,8 @@ public class Ring
      */
     @Override
     public String toString() {
-        Joiner j = Joiner.on(", ");
-        return String.format("Ring %d: [%s]", _id, j.join(_atoms));
+        return String
+                .format("Ring %d: [%s]", _id, Joiner.on(", ").join(_atoms));
     }
 
     public Bond bond(short id) {
