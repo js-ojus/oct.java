@@ -2,13 +2,13 @@ package com.ojuslabs.oct.data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.ojuslabs.oct.common.BondOrder;
 import com.ojuslabs.oct.common.BondStereo;
 import com.ojuslabs.oct.common.Constants;
-import com.ojuslabs.oct.exception.NotFoundException;
 import com.ojuslabs.oct.exception.UniquenessException;
 
 /**
@@ -118,9 +118,8 @@ public class Bond
      * @param id
      *            ID of the atom whose pairing atom is requested.
      * @return The other atom participating in this bond.
-     * @throws NotFoundException
      */
-    public Atom otherAtom(short id) throws NotFoundException {
+    public Atom otherAtom(short id) {
         if (_a1.id() == id) {
             return _a2;
         }
@@ -128,7 +127,7 @@ public class Bond
             return _a1;
         }
         else {
-            throw new NotFoundException(String.format(
+            throw new NoSuchElementException(String.format(
                     "Atoms in this bond: %d, %d; given ID: %d", _a1.id(),
                     _a2.id(), id));
         }

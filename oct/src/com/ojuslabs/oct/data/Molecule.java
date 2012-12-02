@@ -3,6 +3,7 @@ package com.ojuslabs.oct.data;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import static com.ojuslabs.oct.common.Constants.LIST_SIZE_L;
 
@@ -10,7 +11,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.ojuslabs.oct.common.BondOrder;
-import com.ojuslabs.oct.exception.NotFoundException;
 
 public class Molecule
 {
@@ -134,11 +134,10 @@ public class Molecule
      *            The other atom in the bond.
      * @return The bond between the two given atoms, if one such exists;
      *         <code>null</code> otherwise.
-     * @throws NotFoundException
      */
-    public Bond bondBetween(Atom a1, Atom a2) throws NotFoundException {
+    public Bond bondBetween(Atom a1, Atom a2) {
         if ((this != a1.molecule()) || (this != a2.molecule())) {
-            throw new NotFoundException(
+            throw new NoSuchElementException(
                     String.format(
                             "At least one of the given atoms does not belong to this molecule: %d, atoms: %d->%d, %d->%d",
                             _id, a1.molecule().id(), a1.id(), a2.molecule()
@@ -255,9 +254,8 @@ public class Molecule
      * 
      * @param a
      *            The atom to be added to this molecule.
-     * @throws NotFoundException
      */
-    public void addAtom(Atom a) throws NotFoundException {
+    public void addAtom(Atom a) {
         if ((null == a) || (this == a.molecule())) {
             return;
         }
@@ -275,12 +273,10 @@ public class Molecule
      *            One of the atoms to be bonded.
      * @param a2
      *            The other atom to be bonded.
-     * @throws NotFoundException
      */
-    public Bond addBond(Atom a1, Atom a2, BondOrder order)
-            throws NotFoundException {
+    public Bond addBond(Atom a1, Atom a2, BondOrder order) {
         if ((this != a1.molecule()) || (this != a2.molecule())) {
-            throw new NotFoundException(
+            throw new NoSuchElementException(
                     String.format(
                             "One of the atoms in the given bond does not exist in this molecule; atoms: %d->%d, %d->%d",
                             a1.molecule().id(), a1.id(), a2.molecule().id(),
@@ -310,12 +306,11 @@ public class Molecule
      * 
      * @param b
      *            The bond to be broken.
-     * @throws NotFoundException
      */
-    public void breakBond(Bond b) throws NotFoundException {
+    public void breakBond(Bond b) {
         int idx = _bonds.indexOf(b);
         if (-1 == idx) {
-            throw new NotFoundException(
+            throw new NoSuchElementException(
                     String.format(
                             "Given bond is not in this molecule. Molecule: %d, bond: %d",
                             _id, b.id()));
@@ -362,12 +357,11 @@ public class Molecule
      * 
      * @param a
      *            The atom to remove from this molecule.
-     * @throws NotFoundException
      */
-    public void removeAtom(Atom a) throws NotFoundException {
+    public void removeAtom(Atom a) {
         int idx = _atoms.indexOf(a);
         if (-1 == idx) {
-            throw new NotFoundException(
+            throw new NoSuchElementException(
                     String.format(
                             "Given atom is not in this molecule. Molecule: %d, atom: %d",
                             _id, a.id()));

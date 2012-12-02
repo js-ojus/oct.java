@@ -1,8 +1,9 @@
 package com.ojuslabs.oct.common;
 
+import java.util.NoSuchElementException;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.ojuslabs.oct.exception.NotFoundException;
 
 /**
  * PeriodicTable represents the chemical periodic table. It defines the
@@ -385,12 +386,11 @@ public class PeriodicTable
      * @param sym
      *            Element's symbol.
      * @return Requested element.
-     * @throws NotFoundException
      */
-    public Element element(String sym) throws NotFoundException {
+    public Element element(String sym) {
         Element el = _symbolMap.get(sym);
         if (null == el) {
-            throw new NotFoundException("Invalid symbol given: " + sym);
+            throw new NoSuchElementException("Invalid symbol given: " + sym);
         }
         return el;
     }
@@ -399,11 +399,10 @@ public class PeriodicTable
      * @param num
      *            Atomic number.
      * @return Requested element.
-     * @throws NotFoundException
      */
-    public Element element(int num) throws NotFoundException {
+    public Element element(int num) {
         if ((num < 1) || (num >= _NUM_ELEMENTS)) {
-            throw new NotFoundException(String.format(
+            throw new NoSuchElementException(String.format(
                     "Invalid atomic number given: %s", num));
         }
         return _elements.get(num);
@@ -415,9 +414,8 @@ public class PeriodicTable
      * @param iso
      *            Isotope mass; must be the nearest integer.
      * @return Requested element isotope.
-     * @throws NotFoundException
      */
-    public Element isotope(String sym, int iso) throws NotFoundException {
+    public Element isotope(String sym, int iso) {
         return element(String.format("%s_%d", sym, iso));
     }
 
@@ -427,9 +425,8 @@ public class PeriodicTable
      * @param iso
      *            Isotope mass; must be the nearest integer.
      * @return Requested element.
-     * @throws NotFoundException
      */
-    public Element isotope(int num, int iso) throws NotFoundException {
+    public Element isotope(int num, int iso) {
         String sym = element(num).symbol;
         return element(String.format("%s_%d", sym, iso));
     }

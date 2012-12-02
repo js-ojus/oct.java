@@ -2,6 +2,7 @@ package com.ojuslabs.oct.data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static com.ojuslabs.oct.common.Constants.LIST_SIZE_S;
 
@@ -11,7 +12,6 @@ import com.ojuslabs.oct.common.Chirality;
 import com.ojuslabs.oct.common.Element;
 import com.ojuslabs.oct.common.PeriodicTable;
 import com.ojuslabs.oct.common.Radical;
-import com.ojuslabs.oct.exception.NotFoundException;
 import com.ojuslabs.oct.exception.UniquenessException;
 import com.ojuslabs.oct.util.Point3D;
 
@@ -88,9 +88,8 @@ public class Atom
      * @param n
      *            The mass difference with respect to that of the naturally most
      *            abundant variety.
-     * @throws NotFoundException
      */
-    public void setIsotope(int n) throws NotFoundException {
+    public void setIsotope(int n) {
         _element = PeriodicTable.instance().element(
                 String.format("%s_%d", _element.symbol,
                         Math.round(_element.weight) + n));
@@ -113,9 +112,8 @@ public class Atom
      *            pass <code>null</code>.
      * @param reset
      *            If true, resets the state of the atom; else, leaves it as is.
-     * @throws NotFoundException
      */
-    public void setMolecule(Molecule m, boolean reset) throws NotFoundException {
+    public void setMolecule(Molecule m, boolean reset) {
         if (_m == m) return;
 
         if (null != _m) {
@@ -286,11 +284,10 @@ public class Atom
      * @param other
      *            The other atom potentially bound to this atom.
      * @return The requested bond between this atom and the other atom.
-     * @throws NotFoundException
      */
-    public Bond bondTo(Atom other) throws NotFoundException {
+    public Bond bondTo(Atom other) {
         if ((other.molecule() != _m) || (null == _m.atom(other.id()))) {
-            throw new NotFoundException(String.format(
+            throw new NoSuchElementException(String.format(
                     "Given atom does not belong this molecule: %d->%d", other
                             .molecule().id(), other.id()));
         }

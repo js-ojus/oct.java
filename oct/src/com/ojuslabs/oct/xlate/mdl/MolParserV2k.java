@@ -11,7 +11,6 @@ import com.ojuslabs.oct.common.Radical;
 import com.ojuslabs.oct.data.Atom;
 import com.ojuslabs.oct.data.Bond;
 import com.ojuslabs.oct.data.Molecule;
-import com.ojuslabs.oct.exception.NotFoundException;
 import com.ojuslabs.oct.util.Point3D;
 
 public class MolParserV2k implements MolParser
@@ -182,9 +181,8 @@ public class MolParserV2k implements MolParser
      *            List of lines of input molecule's text.
      * @param m
      *            The molecule object being constructed.
-     * @throws NotFoundException
      */
-    void parseCtab(List<String> l, Molecule m) throws NotFoundException {
+    void parseCtab(List<String> l, Molecule m) {
         _sectionStart = _currentLine;
 
         String s = l.get(_currentLine);
@@ -223,9 +221,8 @@ public class MolParserV2k implements MolParser
      *            Line containing the atom specification.
      * @param m
      *            The current molecule.
-     * @throws NotFoundException
      */
-    private void parseAtom(String s, Molecule m) throws NotFoundException {
+    private void parseAtom(String s, Molecule m) {
         // We need the element type to be able to create an atom.
         String sym = s.substring(31, 34).trim();
         String iso = s.substring(34, 36).trim();
@@ -282,9 +279,8 @@ public class MolParserV2k implements MolParser
      *            Line containing the bond specification.
      * @param m
      *            The current molecule.
-     * @throws NotFoundException
      */
-    void parseBond(String s, Molecule m) throws NotFoundException {
+    void parseBond(String s, Molecule m) {
         Atom a1 = m.atom((short) Integer.parseInt(s.substring(0, 3)));
         Atom a2 = m.atom((short) Integer.parseInt(s.substring(3, 6)));
         BondOrder bo = BondOrder.ofValue(Integer.parseInt(s.substring(6, 9)));
@@ -326,9 +322,8 @@ public class MolParserV2k implements MolParser
      *            List of lines of input molecule's text.
      * @param m
      *            The molecule object being constructed.
-     * @throws NotFoundException
      */
-    void parseProps(List<String> l, Molecule m) throws NotFoundException {
+    void parseProps(List<String> l, Molecule m) {
         _sectionStart = ++_currentLine;
 
         loop:
@@ -366,10 +361,8 @@ public class MolParserV2k implements MolParser
      * @param prefix
      *            We currently handle <code>M  CHG</code>, <code>M  ISO</code>,
      *            <code>M  RAD</code> and <code>M  END</code>.
-     * @throws NotFoundException
      */
-    void _parseProp(String s, Molecule m, String prefix)
-            throws NotFoundException {
+    void _parseProp(String s, Molecule m, String prefix) {
         int n = Integer.parseInt(s.substring(6, 9));
 
         int offset = 10;

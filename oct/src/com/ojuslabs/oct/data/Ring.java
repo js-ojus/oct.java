@@ -8,7 +8,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.ojuslabs.oct.exception.ImmutabilityException;
-import com.ojuslabs.oct.exception.NotFoundException;
 
 /**
  * Ring represents a simple cycle in a molecule. It keeps track of its atoms and
@@ -108,9 +107,8 @@ public class Ring
      * @param a
      *            The atom to add to this ring.
      * @throws ImmutabilityException
-     * @throws NotFoundException
      */
-    public void addAtom(Atom a) throws ImmutabilityException, NotFoundException {
+    public void addAtom(Atom a) throws ImmutabilityException {
         if (_completed) {
             throw new ImmutabilityException(String.format(
                     "Ring is already completed. %s", this.toString()));
@@ -140,10 +138,8 @@ public class Ring
      * the ring is less than 3, or if there is no bond connecting the first atom
      * and the last, an {@link IllegalStateException} is thrown. Completion also
      * effectively freezes the ring.
-     * 
-     * @throws NotFoundException
      */
-    public void complete() throws NotFoundException {
+    public void complete() {
         if (_completed) {
             return;
         }
