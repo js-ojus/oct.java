@@ -33,10 +33,10 @@ public class SdfIterator implements Iterator<List<String>>
 
     /**
      * Answers true if one more molecule's text is available; false otherwise.
-     * 
-     * Note that this method is not referentially transparent: there is file I/O
-     * involved. However, it tries to be referentially transparent for most
-     * practical purposes.
+     * <p>
+     * <b>N.B.</b> Note that this method is not referentially transparent: there
+     * is file I/O involved. However, it tries to be referentially transparent
+     * for most practical purposes.
      * 
      * @see java.util.Iterator#hasNext()
      */

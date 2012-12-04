@@ -10,6 +10,8 @@ public final class Constants
     /** Default size for string builders. */
     public static final int STRING_BUFFER_SIZE = 2560;
 
+    /** Initial size of tiny lists such as reactant and product lists. */
+    public static final int LIST_SIZE_T        = 2;
     /** Initial size of small lists such as neighbour lists. */
     public static final int LIST_SIZE_S        = 6;
     /** Initial size of mid-sized lists such as functional group lists. */
