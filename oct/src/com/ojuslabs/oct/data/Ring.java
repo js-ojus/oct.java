@@ -17,20 +17,20 @@ import com.ojuslabs.oct.exception.ImmutabilityException;
  */
 public class Ring
 {
-    final short      _id;       // Unique ID of this ring in its molecule.
+    final int        _id;       // Unique ID of this ring in its molecule.
 
     final Molecule   _m;        // Containing molecule of this ring.
 
     LinkedList<Atom> _atoms;    // The atoms in this ring. Atoms occur in
-                                 // order.
+    // order.
     LinkedList<Bond> _bonds;    // The bonds forming this ring. Bonds occur
-                                 // in order.
+    // in order.
 
     boolean          _isAro;    // Is this ring aromatic in its current
                                  // configuration?
 
     LinkedList<Ring> _nbrs;     // The neighbours of this ring that are
-                                 // either pair-fused or
+    // either pair-fused or
 
     boolean          _completed; // Is this ring completed and finalised?
 
@@ -40,7 +40,7 @@ public class Ring
      * @param id
      *            The unique ID of this ring in its molecule.
      */
-    Ring(Molecule m, short id) {
+    Ring(Molecule m, int id) {
         _id = id;
         _m = m;
 
@@ -59,7 +59,7 @@ public class Ring
     /**
      * @return The unique ID of this ring.
      */
-    public short id() {
+    public int id() {
         return _id;
     }
 
@@ -85,7 +85,7 @@ public class Ring
      *            Unique ID of the requested atom.
      * @return The requested atom if it exists; <code>null</code> otherwise.
      */
-    public Atom atom(short id) {
+    public Atom atom(int id) {
         for (Atom a : _atoms) {
             if (a.id() == id) {
                 return a;
@@ -111,14 +111,14 @@ public class Ring
     public void addAtom(Atom a) throws ImmutabilityException {
         if (_completed) {
             throw new ImmutabilityException(String.format(
-                    "Ring is already completed. %s", this.toString()));
+                    "Ring is already completed. %s", toString()));
         }
 
         if (null != atom(a.id())) {
             return;
         }
 
-        if (_atoms.size() > 0) {
+        if (!_atoms.isEmpty()) {
             Atom prev = _atoms.getLast();
             Bond b = _m.bondBetween(prev, a);
             if (null == b) {
@@ -171,7 +171,7 @@ public class Ring
         int min = Integer.MAX_VALUE;
         int idx = 0;
         for (int i = 0; i < _atoms.size(); i++) {
-            short id = _atoms.get(i).id();
+            int id = _atoms.get(i).id();
             if (id < min) {
                 min = id;
                 idx = i;
@@ -203,7 +203,7 @@ public class Ring
                 .format("Ring %d: [%s]", _id, Joiner.on(", ").join(_atoms));
     }
 
-    public Bond bond(short id) {
+    public Bond bond(int id) {
         Iterator<Bond> it = _bonds.iterator();
         Bond b = null;
         for (; it.hasNext(); b = it.next()) {
@@ -222,15 +222,27 @@ public class Ring
      */
     @Override
     public boolean equals(Object obj) {
-        if (!_completed) return false;
+        if (!_completed) {
+            return false;
+        }
 
-        if (this == obj) return true;
-        if (!(obj instanceof Ring)) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Ring)) {
+            return false;
+        }
 
         Ring other = (Ring) obj;
-        if (!other.isCompleted()) return false;
-        if (_m.id() != other.molecule().id()) return false;
-        if (_atoms.size() != other.size()) return false;
+        if (!other.isCompleted()) {
+            return false;
+        }
+        if (_m.id() != other.molecule().id()) {
+            return false;
+        }
+        if (_atoms.size() != other.size()) {
+            return false;
+        }
 
         LinkedList<Atom> l = other._atoms;
         for (int i = 0; i < _atoms.size(); i++) {
@@ -248,24 +260,21 @@ public class Ring
      * @return A read-only view of this ring's atoms.
      */
     public List<Atom> atoms() {
-        ImmutableList<Atom> l = ImmutableList.copyOf(_atoms);
-        return l;
+        return ImmutableList.copyOf(_atoms);
     }
 
     /**
      * @return A read-only view of this ring's bonds.
      */
     public List<Bond> bonds() {
-        ImmutableList<Bond> l = ImmutableList.copyOf(_bonds);
-        return l;
+        return ImmutableList.copyOf(_bonds);
     }
 
     /**
      * @return A read-only view of this ring's neighbouring rings.
      */
     public List<Ring> neighbours() {
-        ImmutableList<Ring> l = ImmutableList.copyOf(_nbrs);
-        return l;
+        return ImmutableList.copyOf(_nbrs);
     }
 
     /**

@@ -15,9 +15,14 @@ public class PeriodicTable
 {
     // Number of elements. This should be adjusted when adding or removing
     // elements from the list and the map.
-    static int           _NUM_ELEMENTS = 327;
+    static final int                      _NUM_ELEMENTS = 327;
 
-    static PeriodicTable _instance     = null; // Singleton assurance.
+    // Singleton instance.
+    static PeriodicTable                  _instance;
+
+    // Collections for ready reference.
+    private ImmutableList<Element>        _elements;
+    private ImmutableMap<String, Element> _symbolMap;
 
     public static PeriodicTable instance() {
         if (null != _instance) {
@@ -28,10 +33,6 @@ public class PeriodicTable
         _instance.init();
         return _instance;
     }
-
-    // Collections for ready reference.
-    private ImmutableList<Element>        _elements;
-    private ImmutableMap<String, Element> _symbolMap;
 
     PeriodicTable() {
         // Intentionally left blank.

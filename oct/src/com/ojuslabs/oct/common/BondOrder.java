@@ -32,7 +32,9 @@ public enum BondOrder
      */
     public static BondOrder ofValue(int n) {
         for (BondOrder o : BondOrder.values()) {
-            if (n == o.value()) return o;
+            if (n == o.value()) {
+                return o;
+            }
         }
 
         throw new NoSuchElementException(String.format(

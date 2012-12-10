@@ -1,6 +1,5 @@
 package com.ojuslabs.oct.data;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -17,18 +16,18 @@ import com.ojuslabs.oct.exception.UniquenessException;
  */
 public class Bond
 {
-    final short     _id;    // Unique ID of this bond in its molecule.
+    final int  _id;    // Unique ID of this bond in its molecule.
 
-    final Atom      _a1;
-    final Atom      _a2;
-    BondOrder       _order; // Order of this bond.
-    BondStereo      _stereo; // Stereo configuration of this bond.
+    final Atom _a1;
+    final Atom _a2;
+    BondOrder  _order; // Order of this bond.
+    BondStereo _stereo; // Stereo configuration of this bond.
 
-    boolean         _isAro; // Is this bond aromatic?
-    ArrayList<Ring> _rings; // The rings in which this bond
-                             // participates.
+    boolean    _isAro; // Is this bond aromatic?
+    List<Ring> _rings; // The rings in which this bond
+                        // participates.
 
-    int             _hash;  // Cached in the object for faster search.
+    int        _hash;  // Cached in the object for faster search.
 
     /**
      * @param id
@@ -38,7 +37,7 @@ public class Bond
      * @param a2
      *            The second atom participating in this bond.
      */
-    Bond(short id, Atom a1, Atom a2) {
+    Bond(int id, Atom a1, Atom a2) {
         _id = id;
         _a1 = a1;
         _a2 = a2;
@@ -51,7 +50,7 @@ public class Bond
     /**
      * @return The unique ID of this bond.
      */
-    public short id() {
+    public int id() {
         return _id;
     }
 
@@ -115,21 +114,21 @@ public class Bond
     /**
      * Answers the other participating atom in this bond.
      * 
-     * @param id
+     * @param ido
      *            ID of the atom whose pairing atom is requested.
      * @return The other atom participating in this bond.
      */
-    public Atom otherAtom(short id) {
-        if (_a1.id() == id) {
+    public Atom otherAtom(int ido) {
+        if (_a1.id() == ido) {
             return _a2;
         }
-        else if (_a2.id() == id) {
+        else if (_a2.id() == ido) {
             return _a1;
         }
         else {
             throw new NoSuchElementException(String.format(
                     "Atoms in this bond: %d, %d; given ID: %d", _a1.id(),
-                    _a2.id(), id));
+                    _a2.id(), ido));
         }
     }
 
@@ -143,7 +142,7 @@ public class Bond
      * @return A unique hash value that utilises the IDs of both the
      *         participating atoms.
      */
-    int hash(Atom a1, Atom a2) {
+    final int hash(Atom a1, Atom a2) {
         int result = 0;
         if (a1.id() < a2.id()) {
             result = 10000 * a1.id() + a2.id();
@@ -172,8 +171,12 @@ public class Bond
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof Bond)) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Bond)) {
+            return false;
+        }
 
         Bond other = (Bond) obj;
         if ((_order != other._order) || (_hash != other._hash)) {
@@ -258,10 +261,8 @@ public class Bond
      */
     public boolean inRingOfSize(int n) {
         for (Ring r : _rings) {
-            if (r.size() == n) {
-                if (null != r.bond(_id)) {
-                    return true;
-                }
+            if ((r.size() == n) && (null != r.bond(_id))) {
+                return true;
             }
         }
 
@@ -313,7 +314,6 @@ public class Bond
      * @return A read-only view of the rings this bond participates in.
      */
     public List<Ring> rings() {
-        ImmutableList<Ring> l = ImmutableList.copyOf(_rings);
-        return l;
+        return ImmutableList.copyOf(_rings);
     }
 }

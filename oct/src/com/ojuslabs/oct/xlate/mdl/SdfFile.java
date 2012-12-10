@@ -37,6 +37,7 @@ public class SdfFile implements Iterable<List<String>>
      * 
      * @see java.lang.Iterable#iterator()
      */
+    @Override
     public SdfIterator iterator() {
         try {
             return new SdfIterator(new FileReader(_path));

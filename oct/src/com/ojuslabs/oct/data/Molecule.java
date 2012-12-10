@@ -1,6 +1,5 @@
 package com.ojuslabs.oct.data;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -14,29 +13,29 @@ import com.ojuslabs.oct.common.BondOrder;
 
 public class Molecule
 {
-    final long                 _id;        // A unique ID. This does not change
-                                            // during the lifetime of the
-                                            // molecule.
+    final long                 _id;       // A unique ID. This does not change
+                                           // during the lifetime of the
+                                           // molecule.
 
-    ArrayList<Atom>            _atoms;     // List of this molecule's atoms.
-    ArrayList<Bond>            _bonds;     // List of this molecule's bonds.
-    ArrayList<Ring>            _rings;     // List of this molecule's rings.
+    List<Atom>                 _atoms;    // List of this molecule's atoms.
+    List<Bond>                 _bonds;    // List of this molecule's bonds.
+    List<Ring>                 _rings;    // List of this molecule's rings.
 
-    short                      _peakAId;   // Keeps track of running IDs of
-                                            // atoms.
-    short                      _peakBId;   // Keeps track of running IDs of
-                                            // bonds.
-    short                      _peakRId;   // Keeps track of running IDs of
-                                            // rings.
+    int                        _peakAId;  // Keeps track of running IDs of
+                                           // atoms.
+    int                        _peakBId;  // Keeps track of running IDs of
+                                           // bonds.
+    int                        _peakRId;  // Keeps track of running IDs of
+                                           // rings.
 
     public String              vendorId;
     public String              vendorName;
 
-    public Map<String, String> tags;       // Stores input data items as well
-                                            // as run-time attributes.
+    public Map<String, String> tags;      // Stores input data items as well
+                                           // as run-time attributes.
 
     // A running serial unique identifier for molecules.
-    private static long        _molId = 0L;
+    private static long        _molId;
 
     /**
      * Factory method for creating molecules with unique IDs.
@@ -85,23 +84,29 @@ public class Molecule
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof Molecule)) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Molecule)) {
+            return false;
+        }
 
         Molecule other = (Molecule) obj;
-        if (_id != other.id()) return false;
+        if (_id != other.id()) {
+            return false;
+        }
 
         return true;
     }
 
     /**
-     * @param id
+     * @param i
      *            Unique ID of the atom in this molecule.
      * @return Requested atom if found; <code>null</code> otherwise.
      */
-    public Atom atom(short id) {
+    public Atom atom(int i) {
         for (Atom a : _atoms) {
-            if (id == a.id()) {
+            if (i == a.id()) {
                 return a;
             }
         }
@@ -114,7 +119,7 @@ public class Molecule
      *            Unique ID of the bond in this molecule.
      * @return Requested bond if found; <code>null</code> otherwise.
      */
-    public Bond bond(short id) {
+    public Bond bond(int id) {
         for (Bond b : _bonds) {
             if (id == b.id()) {
                 return b;
@@ -150,7 +155,7 @@ public class Molecule
     // This part is reusable internally within this package without incurring
     // the overhead of the membership checks.
     Bond _bondBetween(Atom a1, Atom a2) {
-        if (0 == _bonds.size()) {
+        if (_bonds.isEmpty()) {
             return null;
         }
 
@@ -170,7 +175,7 @@ public class Molecule
      *            Unique ID of the ring in this molecule.
      * @return Requested ring if found; <code>null</code> otherwise.
      */
-    public Ring ring(short id) {
+    public Ring ring(int id) {
         for (Ring r : _rings) {
             if (id == r.id()) {
                 return r;
@@ -200,7 +205,9 @@ public class Molecule
     public int numberOfDoubleBonds() {
         int c = 0;
         for (Bond b : _bonds) {
-            if (BondOrder.DOUBLE == b.order()) c++;
+            if (BondOrder.DOUBLE == b.order()) {
+                c++;
+            }
         }
         return c;
     }
@@ -211,7 +218,9 @@ public class Molecule
     public int numberOfTripleBonds() {
         int c = 0;
         for (Bond b : _bonds) {
-            if (BondOrder.TRIPLE == b.order()) c++;
+            if (BondOrder.TRIPLE == b.order()) {
+                c++;
+            }
         }
         return c;
     }
@@ -227,24 +236,21 @@ public class Molecule
      * @return A read-only view of this molecule's atoms.
      */
     public List<Atom> atoms() {
-        ImmutableList<Atom> l = ImmutableList.copyOf(_atoms);
-        return l;
+        return ImmutableList.copyOf(_atoms);
     }
 
     /**
      * @return A read-only view of this molecule's bonds.
      */
     public List<Bond> bonds() {
-        ImmutableList<Bond> l = ImmutableList.copyOf(_bonds);
-        return l;
+        return ImmutableList.copyOf(_bonds);
     }
 
     /**
      * @return A read-only view of this molecule's rings.
      */
     public List<Ring> rings() {
-        ImmutableList<Ring> l = ImmutableList.copyOf(_rings);
-        return l;
+        return ImmutableList.copyOf(_rings);
     }
 
     /**
@@ -284,9 +290,9 @@ public class Molecule
         }
 
         // Is this bond already present?
-        Bond _b = this.bondBetween(a1, a2);
-        if (null != _b) {
-            return _b;
+        Bond tb = bondBetween(a1, a2);
+        if (null != tb) {
+            return tb;
         }
 
         Bond b = new Bond(++_peakBId, a1, a2);

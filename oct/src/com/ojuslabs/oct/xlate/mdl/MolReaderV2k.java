@@ -128,7 +128,9 @@ public class MolReaderV2k implements MolReader
         _skipTags = skipTags;
 
         // If we have to parse properties, we must first parse the CTAB section.
-        if (!_skipProps) _skipCtab = false;
+        if (!_skipProps) {
+            _skipCtab = false;
+        }
 
         Molecule m = Molecule.newInstance();
         _sectionStart = 0;
@@ -166,7 +168,7 @@ public class MolReaderV2k implements MolReader
         }
 
         String s = l.get(_currentLine).trim();
-        if (s.length() > 0) {
+        if (s.isEmpty()) {
             m.vendorId = s;
         }
 
@@ -281,8 +283,8 @@ public class MolReaderV2k implements MolReader
      *            The current molecule.
      */
     void parseBond(String s, Molecule m) {
-        Atom a1 = m.atom((short) Integer.parseInt(s.substring(0, 3)));
-        Atom a2 = m.atom((short) Integer.parseInt(s.substring(3, 6)));
+        Atom a1 = m.atom(Integer.parseInt(s.substring(0, 3)));
+        Atom a2 = m.atom(Integer.parseInt(s.substring(3, 6)));
         BondOrder bo = BondOrder.ofValue(Integer.parseInt(s.substring(6, 9)));
 
         Bond b = m.addBond(a1, a2, bo);
@@ -328,7 +330,9 @@ public class MolReaderV2k implements MolReader
 
         loop:
         for (; _currentLine < l.size(); _currentLine++) {
-            if (_skipProps) continue;
+            if (_skipProps) {
+                continue;
+            }
 
             String s = l.get(_currentLine);
             String prefix = s.substring(0, 7);
@@ -372,13 +376,14 @@ public class MolReaderV2k implements MolReader
 
             switch (prefix) {
             case _M_CHG:
-                m.atom((short) atomId).setCharge(value);
+                m.atom(atomId).setCharge(value);
                 break;
             case _M_ISO:
-                m.atom((short) atomId).setIsotope(value);
+                m.atom(atomId).setIsotope(value);
                 break;
             case _M_RAD:
-                m.atom((short) atomId).setRadical(Radical.ofValue(value));
+                m.atom(atomId).setRadical(Radical.ofValue(value));
+                break;
             }
 
             offset += 8;
@@ -399,12 +404,14 @@ public class MolReaderV2k implements MolReader
         String tag = null;
         for (; _currentLine < l.size(); _currentLine++) {
             String s = l.get(_currentLine).trim();
-            if (0 == s.length()) {
+            if (s.isEmpty()) {
                 _currentLine++;
                 continue;
             }
 
-            if (s.startsWith(SdfIterator.MOL_DELIM)) break;
+            if (s.startsWith(SdfIterator.MOL_DELIM)) {
+                break;
+            }
 
             if (!_skipTags) {
                 tag = _parseTag(m, s, tag);
@@ -436,8 +443,8 @@ public class MolReaderV2k implements MolReader
             return null;
         }
 
-        if (s.startsWith(">")) {
-            int idx1 = s.indexOf("<");
+        if ('>' == s.charAt(0)) {
+            int idx1 = s.indexOf('<');
             int idx2 = s.indexOf(">", idx1 + 1);
             if (-1 != idx2) {
                 return s.substring(idx1 + 1, idx2);

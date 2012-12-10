@@ -1,6 +1,6 @@
 package com.ojuslabs.oct.rxn;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import com.google.common.collect.Lists;
 import com.ojuslabs.oct.common.Constants;
@@ -27,23 +27,23 @@ import com.ojuslabs.oct.data.Molecule;
  */
 public class Reaction
 {
-    final int           _reactionNumber; // Reaction number (from the database
-                                         // of general reactions) which is
-                                         // associated with this reaction
-                                         // object.
+    final int      _reactionNumber; // Reaction number (from the database
+                                    // of general reactions) which is
+                                    // associated with this reaction
+                                    // object.
 
-    ArrayList<Molecule> _reactants;     // Reactant and coreactants.
-    ArrayList<Molecule> _products;      // Primary product and byproducts.
-    ArrayList<Molecule> _catalysts;     // These do NOT contribute any atoms to
-                                         // the
-                                         // products.
-    ArrayList<Molecule> _reagents;      // These contribute non-carbon atoms.
-    ArrayList<Molecule> _solvents;      // These do NOT contribute any atoms to
-                                         // the
-                                         // products.
+    List<Molecule> _reactants;     // Reactant and coreactants.
+    List<Molecule> _products;      // Primary product and byproducts.
+    List<Molecule> _catalysts;     // These do NOT contribute any atoms to
+                                    // the
+                                    // products.
+    List<Molecule> _reagents;      // These contribute non-carbon atoms.
+    List<Molecule> _solvents;      // These do NOT contribute any atoms to
+                                    // the
+                                    // products.
 
-    double              _yield;         // Yield of this reaction as a
-                                         // percentage.
+    double         _yield;         // Yield of this reaction as a
+                                    // percentage.
 
     public Reaction(int n) {
         if (n <= 0) {

@@ -2,6 +2,7 @@
 .classpath
 .project
 .settings
+.pmd
 
 *.class
 *.jar

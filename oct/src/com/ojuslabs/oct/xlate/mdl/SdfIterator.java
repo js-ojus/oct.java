@@ -42,7 +42,9 @@ public class SdfIterator implements Iterator<List<String>>
      */
     @Override
     public boolean hasNext() {
-        if (_haveMolInHand) return true;
+        if (_haveMolInHand) {
+            return true;
+        }
 
         do {
             try {

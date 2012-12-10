@@ -15,7 +15,7 @@ import com.ojuslabs.oct.data.Molecule;
  */
 public class Route
 {
-    private static int _routeId = 0;
+    private static int _routeId;
 
     final int          _id;          // A unique ID for this route.
     double             _yield;       // Effective yield of this route.

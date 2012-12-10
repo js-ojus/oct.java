@@ -1,25 +1,28 @@
 OCT
 ===
-*Ojus Chemistry Toolkit (OCT)* is an open-source toolkit intended to aid in solving a variety of cheminformatics problems.  Its primary focus shall be on problems pertaining to organic synthesis.
+*Ojus Chemistry Toolkit (OCT)* is a toolkit intended to aid in solving a variety of cheminformatics problems.  Its primary focus shall be on problems pertaining to organic synthesis.
 
-It is created and maintained by Ojus Software Labs Private Limited.  It is being made available under the liberal BSD 2-clause license, to encourage both participation and re-use.
+OCT is created and maintained by Ojus Software Labs Private Limited.  It is free software being made available under the liberal BSD 2-clause license, to encourage both participation and re-use.
 
 PROPOSED STRUCTURE
 ------------------
-*  The package `octcmd` contains some useful stand-alone programs that can be run from the command line.
+*  The package `oct.cmd` contains some useful stand-alone programs that can be run from the command line.
+
+*  The package `oct.common` contains common definitions utilized across the toolkit.
+   1.  `PeriodicTable`, which defines a chemical periodic table.
+   1.  `FunctionalGroups`, which defines all relevant functional groups.
+   1.   Constants enumerating various chemical properties and configurations.
+   1.  ... .
 
 *  The package `oct.data` contains the essential classes, including:
    -  `Atom`,
    -  `Bond`,
    -  `Ring`,
    -  `Molecule`,
+   -  `Reaction`,
+   -  `Route`,
+   -  `RouteNode`,
    -   ... .
-
-*  The package `oct.defs` contains common definitions utilized across the toolkit.
-   1.  `PeriodicTable`, which defines a chemical periodic table.
-   1.  `FunctionalGroups`, which defines all relevant functional groups.
-   1.  Several constants enumerating various chemical properties and configurations.
-   1.  ... .
 
 *  The package `oct.lib` contains the algorithmic code.  Property calculators, molecule analyzers, reaction retro-synthesizers, _etc._, reside here.
 

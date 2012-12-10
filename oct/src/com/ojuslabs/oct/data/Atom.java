@@ -1,6 +1,5 @@
 package com.ojuslabs.oct.data;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -24,31 +23,31 @@ import com.ojuslabs.oct.util.Point3D;
  */
 public class Atom
 {
-    Element         _element;     // This atom's element type.
+    Element        _element;     // This atom's element type.
 
-    Molecule        _m;           // Containing molecule, if the atom is
-                                   // bound to one.
+    Molecule       _m;           // Containing molecule, if the atom is
+                                  // bound to one.
 
-    short           _id;          // A unique ID within its molecule.
-    short           _cid;         // A unique canonicalised ID.
+    int            _id;          // A unique ID within its molecule.
+    int            _cid;         // A unique canonicalised ID.
 
-    public Point3D  coordinates;
+    public Point3D coordinates;
 
-    Chirality       _chirality;   // Chirality type.
-    byte            _numH;        // Number of attached H atoms.
-    byte            _charge;      // Residual charge on the atom.
-    Radical         _radical;
+    Chirality      _chirality;   // Chirality type.
+    byte           _numH;        // Number of attached H atoms.
+    byte           _charge;      // Residual charge on the atom.
+    Radical        _radical;
 
-    ArrayList<Bond> _bonds;       // Bonds this atom is a member of.
-    byte            _valence;     // Current valence of this atom.
+    List<Bond>     _bonds;       // Bonds this atom is a member of.
+    byte           _valence;     // Current valence of this atom.
 
-    ArrayList<Ring> _rings;       // Rings this atom is a member of.
-    boolean         _inAroRing;   // Is this atom in an aromatic ring?
-    boolean         _inHetAroRing; // Is this atom in a hetero-aromatic
-                                   // ring?
-    boolean         _isBridgeHead; // Is this atom a bridgehead?
-    boolean         _isSpiro;     // Is the sole common atom of two
-                                   // rings?
+    List<Ring>     _rings;       // Rings this atom is a member of.
+    boolean        _inAroRing;   // Is this atom in an aromatic ring?
+    boolean        _inHetAroRing; // Is this atom in a hetero-aromatic
+                                  // ring?
+    boolean        _isBridgeHead; // Is this atom a bridgehead?
+    boolean        _isSpiro;     // Is the sole common atom of two
+                                  // rings?
 
     /**
      * Initialisation of a new atom.
@@ -114,7 +113,9 @@ public class Atom
      *            If true, resets the state of the atom; else, leaves it as is.
      */
     public void setMolecule(Molecule m, boolean reset) {
-        if (_m == m) return;
+        if (_m == m) {
+            return;
+        }
 
         if (null != _m) {
             _m._removeAtom(this, Integer.MIN_VALUE);
@@ -131,14 +132,14 @@ public class Atom
     /**
      * @return The unique ID of this atom in its current molecule.
      */
-    public short id() {
+    public int id() {
         return _id;
     }
 
     /**
      * @return The unique canonical ID of this atom in its current molecule.
      */
-    public short cid() {
+    public int cid() {
         return _cid;
     }
 
@@ -149,7 +150,7 @@ public class Atom
      * @param id
      *            The new unique ID of this atom.
      */
-    void setId(short id) {
+    void setId(int id) {
         _id = id;
     }
 
@@ -160,7 +161,7 @@ public class Atom
      * @param id
      *            The new canonical ID of this atom.
      */
-    void setCid(short id) {
+    void setCid(int id) {
         _cid = id;
     }
 
@@ -229,13 +230,23 @@ public class Atom
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof Atom)) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Atom)) {
+            return false;
+        }
 
         Atom other = (Atom) obj;
-        if ((null == _m) || (null == other.molecule())) return false;
-        if (_id != other._id) return false;
-        if (_m.id() != other.molecule().id()) return false;
+        if ((null == _m) || (null == other.molecule())) {
+            return false;
+        }
+        if (_id != other._id) {
+            return false;
+        }
+        if (_m.id() != other.molecule().id()) {
+            return false;
+        }
 
         return true;
     }
@@ -273,8 +284,7 @@ public class Atom
      * @return An read-only view of the bonds of this atom.
      */
     public List<Bond> bonds() {
-        ImmutableList<Bond> l = ImmutableList.copyOf(_bonds);
-        return l;
+        return ImmutableList.copyOf(_bonds);
     }
 
     /**
@@ -331,10 +341,8 @@ public class Atom
      */
     public boolean inRingOfSize(int n) {
         for (Ring r : _rings) {
-            if (r.size() == n) {
-                if (null != r.atom(_id)) {
-                    return true;
-                }
+            if ((r.size() == n) && (null != r.atom(_id))) {
+                return true;
             }
         }
 
@@ -348,7 +356,7 @@ public class Atom
      * @throws UniquenessException
      */
     public Ring smallestRing() throws UniquenessException {
-        if (0 == _rings.size()) {
+        if (_rings.isEmpty()) {
             return null;
         }
 
@@ -380,8 +388,7 @@ public class Atom
      * @return A read-only view of the rings this atom participates in.
      */
     public List<Ring> rings() {
-        ImmutableList<Ring> l = ImmutableList.copyOf(_rings);
-        return l;
+        return ImmutableList.copyOf(_rings);
     }
 
     /**
