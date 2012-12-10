@@ -1,6 +1,5 @@
-package com.ojuslabs.oct.rxn;
+package com.ojuslabs.oct.data;
 
-import com.ojuslabs.oct.data.Molecule;
 
 /**
  * Route represents a chemical synthesis route. A route is a tree, with its

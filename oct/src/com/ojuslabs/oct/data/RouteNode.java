@@ -1,11 +1,10 @@
-package com.ojuslabs.oct.rxn;
+package com.ojuslabs.oct.data;
 
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.ojuslabs.oct.common.Constants;
-import com.ojuslabs.oct.data.Molecule;
 
 /**
  * RouteNode is a node in its containing route's synthesis tree. Note that a
