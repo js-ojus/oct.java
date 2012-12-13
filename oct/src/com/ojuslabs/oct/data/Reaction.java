@@ -26,23 +26,22 @@ import com.ojuslabs.oct.common.Constants;
  */
 public class Reaction
 {
-    final int      _reactionNumber; // Reaction number (from the database
-                                    // of general reactions) which is
-                                    // associated with this reaction
-                                    // object.
+    private final int      _reactionNumber; // Reaction number (from the
+                                            // database of general reactions)
+                                            // which is associated with this
+                                            // reaction object.
 
-    List<Molecule> _reactants;     // Reactant and coreactants.
-    List<Molecule> _products;      // Primary product and byproducts.
-    List<Molecule> _catalysts;     // These do NOT contribute any atoms to
-                                    // the
-                                    // products.
-    List<Molecule> _reagents;      // These contribute non-carbon atoms.
-    List<Molecule> _solvents;      // These do NOT contribute any atoms to
-                                    // the
-                                    // products.
+    private List<Molecule> _reactants;     // Reactant and coreactants.
+    private List<Molecule> _products;      // Primary product and byproducts.
+    private List<Molecule> _catalysts;     // These do NOT contribute any atoms
+                                            // to the products.
+    private List<Molecule> _reagents;      // These contribute non-carbon
+                                            // atoms.
+    private List<Molecule> _solvents;      // These do NOT contribute any atoms
+                                            // to the products.
 
-    double         _yield;         // Yield of this reaction as a
-                                    // percentage.
+    private double         _yield;         // Yield of this reaction as a
+                                            // percentage.
 
     public Reaction(int n) {
         if (n <= 0) {

@@ -23,31 +23,29 @@ import com.ojuslabs.oct.util.Point3D;
  */
 public class Atom
 {
-    Element        _element;     // This atom's element type.
+    private Element    _element;     // This atom's element type.
 
-    Molecule       _m;           // Containing molecule, if the atom is
-                                  // bound to one.
+    private Molecule   _m;           // Containing molecule, if the atom is
+                                      // bound to one.
 
-    int            _id;          // A unique ID within its molecule.
-    int            _cid;         // A unique canonicalised ID.
+    private int        _id;          // A unique ID within its molecule.
+    private int        _cid;         // A unique canonicalised ID.
 
-    public Point3D coordinates;
+    public Point3D     coordinates;
 
-    Chirality      _chirality;   // Chirality type.
-    byte           _numH;        // Number of attached H atoms.
-    byte           _charge;      // Residual charge on the atom.
-    Radical        _radical;
+    private Chirality  _chirality;   // Chirality type.
+    private byte       _numH;        // Number of attached H atoms.
+    private byte       _charge;      // Residual charge on the atom.
+    private Radical    _radical;
 
-    List<Bond>     _bonds;       // Bonds this atom is a member of.
-    byte           _valence;     // Current valence of this atom.
+    private List<Bond> _bonds;       // Bonds this atom is a member of.
+    private byte       _valence;     // Current valence of this atom.
 
-    List<Ring>     _rings;       // Rings this atom is a member of.
-    boolean        _inAroRing;   // Is this atom in an aromatic ring?
-    boolean        _inHetAroRing; // Is this atom in a hetero-aromatic
-                                  // ring?
-    boolean        _isBridgeHead; // Is this atom a bridgehead?
-    boolean        _isSpiro;     // Is the sole common atom of two
-                                  // rings?
+    private List<Ring> _rings;       // Rings this atom is a member of.
+    private boolean    _inAroRing;   // Is this atom in an aromatic ring?
+    private boolean    _inHetAroRing; // Is this atom in a hetero-aromatic ring?
+    private boolean    _isBridgeHead; // Is this atom a bridgehead?
+    private boolean    _isSpiro;     // Is the sole common atom of two rings?
 
     /**
      * Initialisation of a new atom.

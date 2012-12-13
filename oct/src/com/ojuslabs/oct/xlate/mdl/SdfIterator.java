@@ -15,12 +15,12 @@ import com.ojuslabs.oct.common.Constants;
 
 public class SdfIterator implements Iterator<List<String>>
 {
-    static final String  MOL_DELIM = "$$$$";
+    static final String          MOL_DELIM = "$$$$";
 
-    final BufferedReader _reader;
-    final List<String>   _text;
-    boolean              _haveMolInHand;
-    int                  _count;
+    private final BufferedReader _reader;
+    private final List<String>   _text;
+    private boolean              _haveMolInHand;
+    private int                  _count;
 
     /**
      * @param istream

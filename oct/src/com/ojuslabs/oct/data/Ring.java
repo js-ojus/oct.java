@@ -17,22 +17,24 @@ import com.ojuslabs.oct.exception.ImmutabilityException;
  */
 public class Ring
 {
-    final int        _id;       // Unique ID of this ring in its molecule.
+    private final int        _id;       // Unique ID of this ring in its
+                                         // molecule.
 
-    final Molecule   _m;        // Containing molecule of this ring.
+    private final Molecule   _m;        // Containing molecule of this ring.
 
-    LinkedList<Atom> _atoms;    // The atoms in this ring. Atoms occur in
-    // order.
-    LinkedList<Bond> _bonds;    // The bonds forming this ring. Bonds occur
-    // in order.
+    private LinkedList<Atom> _atoms;    // The atoms in this ring. Atoms occur
+                                         // in order.
+    private LinkedList<Bond> _bonds;    // The bonds forming this ring. Bonds
+                                         // occur in order.
 
-    boolean          _isAro;    // Is this ring aromatic in its current
-                                 // configuration?
+    private boolean          _isAro;    // Is this ring aromatic in its current
+                                         // configuration?
 
-    LinkedList<Ring> _nbrs;     // The neighbours of this ring that are
-    // either pair-fused or
+    private LinkedList<Ring> _nbrs;     // The neighbours of this ring that are
+                                         // either pair-fused or
 
-    boolean          _completed; // Is this ring completed and finalised?
+    private boolean          _completed; // Is this ring completed and
+                                         // finalised?
 
     /**
      * @param m

@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class SdfBuffer implements Iterable<List<String>>
 {
-    final String _buffer;
+    private final String _buffer;
 
     /**
      * @param buf

@@ -15,22 +15,22 @@ import com.ojuslabs.oct.util.Point3D;
 
 public class MolReaderV2k implements MolReader
 {
-    static final String _M_END = "M  END";
-    static final String _M_CHG = "M  CHG";
-    static final String _M_ISO = "M  ISO";
-    static final String _M_RAD = "M  RAD";
+    static final String   _M_END = "M  END";
+    static final String   _M_CHG = "M  CHG";
+    static final String   _M_ISO = "M  ISO";
+    static final String   _M_RAD = "M  RAD";
 
-    boolean             _skipCtab;
-    boolean             _skipProps;
-    boolean             _skipTags;
+    private boolean       _skipCtab;
+    private boolean       _skipProps;
+    private boolean       _skipTags;
 
-    int                 _sectionStart;    // Line number where the current
-                                           // section began.
-    int                 _currentLine;     // Line number of the current line.
+    private int           _sectionStart;    // Line number where the current
+                                             // section began.
+    private int           _currentLine;     // Line number of the current line.
 
-    MolReaderHook       _ctabHook;
-    MolReaderHook       _propsHook;
-    MolReaderHook       _tagsHook;
+    private MolReaderHook _ctabHook;
+    private MolReaderHook _propsHook;
+    private MolReaderHook _tagsHook;
 
     public MolReaderV2k() {
         // Intentionally left blank.

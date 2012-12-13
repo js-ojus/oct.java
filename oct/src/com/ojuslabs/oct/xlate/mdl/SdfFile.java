@@ -10,8 +10,8 @@ import java.util.List;
  */
 public class SdfFile implements Iterable<List<String>>
 {
-    final String  _path;
-    final boolean _outMode;
+    private final String  _path;
+    private final boolean _outMode;
 
     /**
      * @param path

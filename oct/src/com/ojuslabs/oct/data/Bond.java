@@ -16,18 +16,17 @@ import com.ojuslabs.oct.exception.UniquenessException;
  */
 public class Bond
 {
-    final int  _id;    // Unique ID of this bond in its molecule.
+    private final int  _id;    // Unique ID of this bond in its molecule.
 
-    final Atom _a1;
-    final Atom _a2;
-    BondOrder  _order; // Order of this bond.
-    BondStereo _stereo; // Stereo configuration of this bond.
+    private final Atom _a1;
+    private final Atom _a2;
+    private BondOrder  _order; // Order of this bond.
+    private BondStereo _stereo; // Stereo configuration of this bond.
 
-    boolean    _isAro; // Is this bond aromatic?
-    List<Ring> _rings; // The rings in which this bond
-                        // participates.
+    private boolean    _isAro; // Is this bond aromatic?
+    private List<Ring> _rings; // The rings in which this bond participates.
 
-    int        _hash;  // Cached in the object for faster search.
+    private int        _hash;  // Cached in the object for faster search.
 
     /**
      * @param id
@@ -142,7 +141,7 @@ public class Bond
      * @return A unique hash value that utilises the IDs of both the
      *         participating atoms.
      */
-    final int hash(Atom a1, Atom a2) {
+    int hash(Atom a1, Atom a2) {
         int result = 0;
         if (a1.id() < a2.id()) {
             result = 10000 * a1.id() + a2.id();
@@ -152,6 +151,13 @@ public class Bond
         }
 
         return result;
+    }
+
+    /**
+     * @return The precomputed hash value reflecting the atoms in this bond.
+     */
+    int _hashValue() {
+        return _hash;
     }
 
     /*

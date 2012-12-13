@@ -13,26 +13,26 @@ import com.ojuslabs.oct.common.BondOrder;
 
 public class Molecule
 {
-    final long                 _id;       // A unique ID. This does not change
+    private final long         _id;       // A unique ID. This does not change
                                            // during the lifetime of the
                                            // molecule.
 
-    List<Atom>                 _atoms;    // List of this molecule's atoms.
-    List<Bond>                 _bonds;    // List of this molecule's bonds.
-    List<Ring>                 _rings;    // List of this molecule's rings.
+    private List<Atom>         _atoms;    // List of this molecule's atoms.
+    private List<Bond>         _bonds;    // List of this molecule's bonds.
+    private List<Ring>         _rings;    // List of this molecule's rings.
 
-    int                        _peakAId;  // Keeps track of running IDs of
+    private int                _peakAId;  // Keeps track of running IDs of
                                            // atoms.
-    int                        _peakBId;  // Keeps track of running IDs of
+    private int                _peakBId;  // Keeps track of running IDs of
                                            // bonds.
-    int                        _peakRId;  // Keeps track of running IDs of
+    private int                _peakRId;  // Keeps track of running IDs of
                                            // rings.
 
     public String              vendorId;
     public String              vendorName;
 
-    public Map<String, String> tags;      // Stores input data items as well
-                                           // as run-time attributes.
+    public Map<String, String> tags;      // Stores input data items as well as
+                                           // run-time attributes.
 
     // A running serial unique identifier for molecules.
     private static long        _molId;
@@ -73,7 +73,7 @@ public class Molecule
      */
     @Override
     public int hashCode() {
-        final int prime = 31;
+        int prime = 31;
         return prime * (int) _id;
     }
 
@@ -161,8 +161,9 @@ public class Molecule
 
         int hash = _bonds.get(0).hash(a1, a2);
         for (Bond b : _bonds) {
-            if (b._hash == hash) { // TODO(js): Change this only in conjuction
-                                   // with Bond#hashCode().
+            if (b._hashValue() == hash) { // TODO(js): Change this only in
+                                          // conjuction
+                // with Bond#hashCode().
                 return b;
             }
         }

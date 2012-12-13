@@ -18,25 +18,26 @@ import com.ojuslabs.oct.common.Constants;
  */
 public class RouteNode
 {
-    final int       _id;            // A unique ID for this node.
-    String          _label;         // The unique dotted-decimal notation
-                                     // ID of this node. This
-                                     // is composed by walking down the
-                                     // tree from the root node
-                                     // down to this node.
-    Route           _route;         // The containing route of this node.
+    private final int       _id;            // A unique ID for this node.
+    private String          _label;          // The unique dotted-decimal
+                                             // notation ID of this node. This
+                                             // is composed by walking down the
+                                             // tree from the root node down to
+                                             // this node.
+    private Route           _route;         // The containing route of this
+                                             // node.
 
-    double          _yield;         // The effective yield up to this
-                                     // point.
-    boolean         _hasConvergence; // Does this branch have any
-                                     // convergent reactions?
+    private double          _yield;         // The effective yield up to this
+                                             // point.
+    private boolean         _hasConvergence; // Does this branch have any
+                                             // convergent reactions?
 
-    List<RouteNode> _children;      // In-coming reactants.
-    Molecule        _product;       // This node's product molecule.
-    List<Molecule>  _byproducts;    // Other products that may be
-                                     // generated.
-    Reaction        _reaction;      // The reaction resulting in this
-                                     // node's product molecule.
+    private List<RouteNode> _children;      // In-coming reactants.
+    private Molecule        _product;       // This node's product molecule.
+    private List<Molecule>  _byproducts;    // Other products that may be
+                                             // generated.
+    private Reaction        _reaction;      // The reaction resulting in this
+                                             // node's product molecule.
 
     /**
      * Each RouteNode instance should have an ID that is unique within its

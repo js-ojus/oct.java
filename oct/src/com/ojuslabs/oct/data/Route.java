@@ -1,6 +1,5 @@
 package com.ojuslabs.oct.data;
 
-
 /**
  * Route represents a chemical synthesis route. A route is a tree, with its
  * origin (root) in the goal molecule. It can have any branching factor at any
@@ -16,15 +15,15 @@ public class Route
 {
     private static int _routeId;
 
-    final int          _id;          // A unique ID for this route.
-    double             _yield;       // Effective yield of this route.
-    int                _numSteps;    // Maximum depth of this synthesis tree.
+    private final int  _id;          // A unique ID for this route.
+    private double     _yield;       // Effective yield of this route.
+    private int        _numSteps;    // Maximum depth of this synthesis tree.
 
-    Molecule           _goalMolecule; // The goal molecule of this route.
-    RouteNode          _goalNode;    // The node representing the final step
+    private Molecule   _goalMolecule; // The goal molecule of this route.
+    private RouteNode  _goalNode;    // The node representing the final step
                                       // that produces the goal molecule.
 
-    int                _peakNodeId;  // A running serial ID for the nodes in
+    private int        _peakNodeId;  // A running serial ID for the nodes in
                                       // this route.
 
     /**
