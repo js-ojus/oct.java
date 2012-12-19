@@ -52,6 +52,10 @@ public class Atom
      */
     public Atom(Element elem) {
         _element = elem;
+        _valence = (byte) _element.valence;
+
+        _chirality = Chirality.NONE;
+        _radical = Radical.NONE;
 
         _bonds = Lists.newArrayListWithCapacity(LIST_SIZE_S);
         _rings = Lists.newArrayListWithCapacity(LIST_SIZE_S);
@@ -62,6 +66,9 @@ public class Atom
      * other scenarios as well. <b>N.B.</b> This method is package-internal.
      */
     void reset() {
+        _chirality = Chirality.NONE;
+        _radical = Radical.NONE;
+
         _bonds.clear();
         _rings.clear();
 

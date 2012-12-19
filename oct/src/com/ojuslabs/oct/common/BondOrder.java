@@ -4,14 +4,14 @@ import java.util.NoSuchElementException;
 
 public enum BondOrder
 {
+    UNSPECIFIED(0), // Could be any of the following.
     SINGLE(1),
     DOUBLE(2),
     TRIPLE(3),
     AROMATIC(4),
     SINGLE_OR_DOUBLE(5),
     SINGLE_OR_AROMATIC(6),
-    DOUBLE_OR_AROMATIC(7),
-    UNSPECIFIED(8); // Could be any of the above.
+    DOUBLE_OR_AROMATIC(7);
 
     private final int _order;
 

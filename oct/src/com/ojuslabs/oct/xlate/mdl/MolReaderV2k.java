@@ -193,8 +193,8 @@ public class MolReaderV2k implements MolReader
                     String.format("This reader can parse only molecules in V2000 format."));
         }
 
-        int numAtoms = Integer.parseInt(s.substring(0, 3));
-        int numBonds = Integer.parseInt(s.substring(3, 6));
+        int numAtoms = Integer.parseInt(s.substring(0, 3).trim());
+        int numBonds = Integer.parseInt(s.substring(3, 6).trim());
 
         if (_skipCtab) {
             _currentLine += numAtoms + numBonds;
@@ -229,10 +229,10 @@ public class MolReaderV2k implements MolReader
         String sym = s.substring(31, 34).trim();
         String iso = s.substring(34, 36).trim();
         Element el = PeriodicTable.instance().element(sym);
-        el = (0 == iso.length()) ?
+        el = (0 == Integer.parseInt(iso)) ?
                 el :
                 PeriodicTable.instance().isotope(sym,
-                        Math.round(el.valence) + Integer.parseInt(iso));
+                        (int) Math.round(el.weight) + Integer.parseInt(iso));
 
         Atom a = new Atom(el);
 
@@ -241,7 +241,7 @@ public class MolReaderV2k implements MolReader
                 Double.parseDouble(s.substring(10, 20)),
                 Double.parseDouble(s.substring(20, 30)));
 
-        int charge = Integer.parseInt(s.substring(36, 39));
+        int charge = Integer.parseInt(s.substring(36, 39).trim());
         switch (charge) {
         case 1:
             a.setCharge(3);
@@ -268,7 +268,10 @@ public class MolReaderV2k implements MolReader
             a.setCharge(0);
         }
 
-        a.setValence(Integer.parseInt(s.substring(48, 51)));
+        int val = Integer.parseInt(s.substring(48, 51).trim());
+        if (val > 0 && val < 15) {
+            a.setValence(val);
+        }
 
         m.addAtom(a);
     }
@@ -283,14 +286,15 @@ public class MolReaderV2k implements MolReader
      *            The current molecule.
      */
     void parseBond(String s, Molecule m) {
-        Atom a1 = m.atom(Integer.parseInt(s.substring(0, 3)));
-        Atom a2 = m.atom(Integer.parseInt(s.substring(3, 6)));
-        BondOrder bo = BondOrder.ofValue(Integer.parseInt(s.substring(6, 9)));
+        Atom a1 = m.atom(Integer.parseInt(s.substring(0, 3).trim()));
+        Atom a2 = m.atom(Integer.parseInt(s.substring(3, 6).trim()));
+        BondOrder bo = BondOrder.ofValue(Integer.parseInt(s.substring(6, 9)
+                .trim()));
 
         Bond b = m.addBond(a1, a2, bo);
 
         BondStereo bs = BondStereo.NONE;
-        int ibs = Integer.parseInt(s.substring(9, 12));
+        int ibs = Integer.parseInt(s.substring(9, 12).trim());
         if (BondOrder.SINGLE == bo) {
             switch (ibs) {
             case 1:
@@ -335,7 +339,7 @@ public class MolReaderV2k implements MolReader
             }
 
             String s = l.get(_currentLine);
-            String prefix = s.substring(0, 7);
+            String prefix = s.substring(0, 6);
 
             switch (prefix) {
             case _M_END:

@@ -43,6 +43,9 @@ public class Bond
 
         _hash = hash(_a1, _a2);
 
+        _order = BondOrder.UNSPECIFIED;
+        _stereo = BondStereo.NONE;
+
         _rings = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_S);
     }
 
@@ -94,17 +97,17 @@ public class Bond
         if (res > _a1.valence()) {
             throw new IllegalStateException(
                     String.format(
-                            "Illegal state for atom: %d->%d. Number of bonds: %d, new bond order: %d",
-                            _a1.molecule(), _a1.id(), _a1.numberOfBonds(),
-                            o.value()));
+                            "Illegal state for atom: %d->%d. Current valence: %d. Number of bonds: %d, new bond order: %d",
+                            _a1.molecule().id(), _a1.id(), _a1.valence(),
+                            _a1.numberOfBonds(), o.value()));
         }
         res = _a2.numberOfBonds() + delta;
         if (res > _a2.valence()) {
             throw new IllegalStateException(
                     String.format(
-                            "Illegal state for atom: %d->%d. Number of bonds: %d, new bond order: %d",
-                            _a2.molecule(), _a2.id(), _a2.numberOfBonds(),
-                            o.value()));
+                            "Illegal state for atom: %d->%d. Current valence: %d. Number of bonds: %d, new bond order: %d",
+                            _a2.molecule().id(), _a2.id(), _a2.valence(),
+                            _a2.numberOfBonds(), o.value()));
         }
 
         _order = o;
