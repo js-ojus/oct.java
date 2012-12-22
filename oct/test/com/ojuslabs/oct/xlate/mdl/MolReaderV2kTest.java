@@ -2,6 +2,10 @@ package com.ojuslabs.oct.xlate.mdl;
 
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -30,10 +34,10 @@ public class MolReaderV2kTest
                 // Intentionally left blank.
             }
         });
-        assert (null != _reader.ctabHook());
+        assertNotNull(_reader.ctabHook());
 
         _reader.unregisterCtabHook();
-        assert (null == _reader.ctabHook());
+        assertNull(_reader.ctabHook());
     }
 
     @Test
@@ -44,10 +48,10 @@ public class MolReaderV2kTest
                 // Intentionally left blank.
             }
         });
-        assert (null != _reader.propertiesHook());
+        assertNotNull(_reader.propertiesHook());
 
         _reader.unregisterPropertiesHook();
-        assert (null == _reader.propertiesHook());
+        assertNull(_reader.propertiesHook());
     }
 
     @Test
@@ -58,10 +62,10 @@ public class MolReaderV2kTest
                 // Intentionally left blank.
             }
         });
-        assert (null != _reader.tagsHook());
+        assertNotNull(_reader.tagsHook());
 
         _reader.unregisterTagsHook();
-        assert (null == _reader.tagsHook());
+        assertNull(_reader.tagsHook());
     }
 
     @Test
@@ -73,12 +77,12 @@ public class MolReaderV2kTest
 
         List<String> l = it.next();
         Molecule m = _reader.parse(l, false, false, false);
-        assert (null != m);
+        assertNotNull(m);
 
-        assert (24 == m.numberOfAtoms());
-        assert (26 == m.numberOfBonds());
-        assert (6 == m.numberOfDoubleBonds());
-        assert (1 == m.numberOfTripleBonds());
+        assertEquals(24, m.numberOfAtoms());
+        assertEquals(26, m.numberOfBonds());
+        assertEquals(6, m.numberOfDoubleBonds());
+        assertEquals(1, m.numberOfTripleBonds());
 
         m = null;
         it = null;

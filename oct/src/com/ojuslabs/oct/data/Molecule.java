@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.ojuslabs.oct.common.BondOrder;
+import com.ojuslabs.oct.common.Constants;
 
 public class Molecule
 {
@@ -379,7 +380,10 @@ public class Molecule
 
     // Bypasses the membership check.
     void _removeAtom(Atom a, int idx) {
+        List<Atom> alist = Lists
+                .newArrayListWithCapacity(Constants.LIST_SIZE_S);
         for (Bond b : a.bonds()) {
+            alist.add(b.otherAtom(a.id()));
             _breakBond(b, Integer.MIN_VALUE);
         }
 
@@ -388,6 +392,12 @@ public class Molecule
         }
         else {
             _atoms.remove(idx);
+        }
+
+        for (Atom ta : alist) {
+            if (0 == ta.numberOfNeighbours()) {
+                removeAtom(ta);
+            }
         }
     }
 }
