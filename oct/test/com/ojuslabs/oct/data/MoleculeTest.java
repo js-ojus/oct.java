@@ -48,7 +48,7 @@ public class MoleculeTest
     public void test002() {
         _m.removeAtom(_m.atom(23));
 
-        assertEquals(22, _m.numberOfAtoms());
+        assertEquals(23, _m.numberOfAtoms());
         assertEquals(0, _m.numberOfTripleBonds());
     }
 

@@ -15,7 +15,7 @@ public class PeriodicTable
 {
     // Number of elements. This should be adjusted when adding or removing
     // elements from the list and the map.
-    static final int                      _NUM_ELEMENTS = 327;
+    static final int                      _NUM_ELEMENTS = 328;
 
     // Singleton instance.
     static PeriodicTable                  _instance;
@@ -373,6 +373,7 @@ public class PeriodicTable
         lbuilder.add(new Element(0, "Q_QH", 0, -1));
         lbuilder.add(new Element(0, "Q_X", 0, -1));
         lbuilder.add(new Element(0, "Q_XH", 0, -1));
+        lbuilder.add(new Element(0, "R", 0, -1));
         _elements = lbuilder.build();
 
         // Now, we initialise the map.

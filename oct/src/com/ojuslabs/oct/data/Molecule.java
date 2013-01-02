@@ -393,11 +393,5 @@ public class Molecule
         else {
             _atoms.remove(idx);
         }
-
-        for (Atom ta : alist) {
-            if (0 == ta.numberOfNeighbours()) {
-                removeAtom(ta);
-            }
-        }
     }
 }
