@@ -1,8 +1,12 @@
 OCT
 ===
-*Ojus Chemistry Toolkit (OCT)* is a toolkit intended to aid in solving a variety of cheminformatics problems.  Its primary focus shall be on problems pertaining to organic synthesis.
+__Ojus Chemistry Toolkit (OCT)__ is a toolkit intended to aid in solving a variety of cheminformatics problems.  Its primary focus shall be on problems pertaining to organic synthesis.
 
-OCT is created and maintained by Ojus Software Labs Private Limited.  It is free software being made available under the liberal BSD 2-clause license, to encourage both participation and re-use.
+__OCT__ is created and maintained by __Ojus Software Labs Private Limited__.  It is available under two licenses.
+
+* As free software made available under the GNU Affero General Public License version 3 (GNU AGPL), to encourage both participation and re-use.  A copy of GNU AGPL should be available together with this README, in a file named _LICENSE_.
+
+* A commercial license that allows its inclusion or use in closed-source software.  Contact [Ojus Labs](mailto:sales@ojuslabs.com) for inquiries.
 
 PROPOSED STRUCTURE
 ------------------
@@ -14,7 +18,7 @@ PROPOSED STRUCTURE
    1.   Constants enumerating various chemical properties and configurations.
    1.  ... .
 
-*  The package `oct.data` contains the essential classes, including:
+*  The package `oct.core` contains the essential classes, including:
    -  `Atom`,
    -  `Bond`,
    -  `Ring`,
@@ -24,20 +28,20 @@ PROPOSED STRUCTURE
    -  `RouteNode`,
    -   ... .
 
-*  The package `oct.lib` contains the algorithmic code.  Property calculators, molecule analyzers, reaction retro-synthesizers, _etc._, reside here.
+*  This package also contains the algorithmic code.  Property calculators, molecule analyzers, reaction retro-synthesizers, _etc._, reside here.
 
 *  The package `oct.util` contains general utility classes and functions that may be useful across the toolkit.
 
-*  The package `oct.xlate` contains the code to convert molecules and reactions from one format to another.
+*  The package `oct.xlate` contains the code to convert molecules and reactions to (and from) their internal formats from (and to) popular external formats.  Initial support shall be for MDL formats.
 
 STATUS
 ------
-The toolkit is currently in its initial stages, and is *not* yet usable.
+The toolkit is currently in its initial stages, and is _not_ yet usable.
 
 TECHNOLOGY
 ----------
-The main programming language is Java.  The excellent Guava library from Google is also employed.  The molecule catalogue and reaction rules are stored in a MongoDB instance.
+The main programming language is __Java__.  The toolkit makes extensive use of the elegant __Guava__ library.  The molecule catalogue and the reaction rulebase are proposed to be stored in a no-SQL database instance.
 
 CONTRIBUTING
 ------------
-Contribution by way of comments, reviews, design suggestions, criticism or patches is most welcome, and shall be gratefully acknowledged. Those submitting patches acknowledge that they agree to be bound by the terms in the file LICENSE, available together with this README.
+Participation by way of comments, criticism or feature requests is most welcome, and shall be gratefully acknowledged.  Currently, patches are not accepted because of copyright issues.  This may change in future.
