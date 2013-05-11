@@ -44,4 +44,4 @@ The main programming language is __Java__.  The toolkit makes extensive use of t
 
 CONTRIBUTING
 ------------
-Participation by way of comments, criticism or feature requests is most welcome, and shall be gratefully acknowledged.  Currently, patches are not accepted because of copyright issues.  This may change in future.
+Participation by way of comments, criticism or feature requests is most welcome, and shall be gratefully acknowledged.  If you are interested in submitting a patch, please also read the file _COPYRIGHT_ present together with this _README_.
