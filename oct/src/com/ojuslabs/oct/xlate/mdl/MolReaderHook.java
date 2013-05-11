@@ -2,7 +2,7 @@ package com.ojuslabs.oct.xlate.mdl;
 
 import java.util.List;
 
-import com.ojuslabs.oct.data.Molecule;
+import com.ojuslabs.oct.core.Molecule;
 
 /**
  * MolReaderHook defines a single-method interface that MolReader callbacks have

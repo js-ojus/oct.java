@@ -9,6 +9,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.ojuslabs.oct.core.Molecule;
 import com.ojuslabs.oct.xlate.mdl.MolReader;
 import com.ojuslabs.oct.xlate.mdl.MolReaderV2k;
 import com.ojuslabs.oct.xlate.mdl.SdfFile;

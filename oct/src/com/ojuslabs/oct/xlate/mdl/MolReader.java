@@ -2,7 +2,7 @@ package com.ojuslabs.oct.xlate.mdl;
 
 import java.util.List;
 
-import com.ojuslabs.oct.data.Molecule;
+import com.ojuslabs.oct.core.Molecule;
 
 /**
  * MolReader is the interface that is implemented by all MDL-format `.mol' text

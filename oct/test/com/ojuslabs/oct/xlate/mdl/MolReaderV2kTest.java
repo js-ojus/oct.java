@@ -10,7 +10,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.ojuslabs.oct.data.Molecule;
+import com.ojuslabs.oct.core.Molecule;
 
 public class MolReaderV2kTest
 {

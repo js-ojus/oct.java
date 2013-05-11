@@ -8,9 +8,9 @@ import com.ojuslabs.oct.common.BondStereo;
 import com.ojuslabs.oct.common.Element;
 import com.ojuslabs.oct.common.PeriodicTable;
 import com.ojuslabs.oct.common.Radical;
-import com.ojuslabs.oct.data.Atom;
-import com.ojuslabs.oct.data.Bond;
-import com.ojuslabs.oct.data.Molecule;
+import com.ojuslabs.oct.core.Atom;
+import com.ojuslabs.oct.core.Bond;
+import com.ojuslabs.oct.core.Molecule;
 import com.ojuslabs.oct.util.Point3D;
 
 public class MolReaderV2k implements MolReader
