@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) 2012-2013 Ojus Software Labs Private Limited.
+ * 
+ * All rights reserved. Please see the files README.md, LICENSE and COPYRIGHT
+ * for details.
+ */
+
 package com.ojuslabs.oct.common;
 
 /**

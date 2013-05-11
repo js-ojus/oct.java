@@ -1,10 +1,17 @@
+/**
+ * Copyright (c) 2012-2013 Ojus Software Labs Private Limited.
+ * 
+ * All rights reserved. Please see the files README.md, LICENSE and COPYRIGHT
+ * for details.
+ */
+
 package com.ojuslabs.oct.core;
+
+import static com.ojuslabs.oct.common.Constants.LIST_SIZE_L;
 
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-
-import static com.ojuslabs.oct.common.Constants.LIST_SIZE_L;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;

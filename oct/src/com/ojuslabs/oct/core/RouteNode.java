@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) 2012-2013 Ojus Software Labs Private Limited.
+ * 
+ * All rights reserved. Please see the files README.md, LICENSE and COPYRIGHT
+ * for details.
+ */
+
 package com.ojuslabs.oct.core;
 
 import java.util.List;
@@ -19,7 +26,7 @@ import com.ojuslabs.oct.common.Constants;
 public class RouteNode
 {
     private final int       _id;            // A unique ID for this node.
-    private String          _label;          // The unique dotted-decimal
+    private String          _label;         // The unique dotted-decimal
                                              // notation ID of this node. This
                                              // is composed by walking down the
                                              // tree from the root node down to

@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) 2012-2013 Ojus Software Labs Private Limited.
+ * 
+ * All rights reserved. Please see the files README.md, LICENSE and COPYRIGHT
+ * for details.
+ */
+
 package com.ojuslabs.oct.xlate.mdl;
 
 import java.util.List;
@@ -332,8 +339,7 @@ public class MolReaderV2k implements MolReader
     void parseProps(List<String> l, Molecule m) {
         _sectionStart = ++_currentLine;
 
-        loop:
-        for (; _currentLine < l.size(); _currentLine++) {
+        loop: for (; _currentLine < l.size(); _currentLine++) {
             if (_skipProps) {
                 continue;
             }
