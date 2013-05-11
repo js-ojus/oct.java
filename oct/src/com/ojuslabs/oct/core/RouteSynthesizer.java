@@ -5,7 +5,8 @@
  * for details.
  */
 
-package com.ojuslabs.oct.lib;
+package com.ojuslabs.oct.core;
+
 
 /**
  * RouteSynthesizer is the high-level entry point for retrosynthesis. It starts

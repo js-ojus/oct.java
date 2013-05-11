@@ -1,10 +1,17 @@
-package com.ojuslabs.oct.xlate.mdl;
+/**
+ * Copyright (c) 2012-2013 Ojus Software Labs Private Limited.
+ * 
+ * All rights reserved. Please see the files README.md, LICENSE and COPYRIGHT
+ * for details.
+ */
 
-import java.util.List;
+package com.ojuslabs.oct.xlate.mdl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+
+import java.util.List;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
