@@ -27,7 +27,7 @@ public class Ring
     private final int        _id;       // Unique ID of this ring in its
                                          // molecule.
 
-    private final Molecule   _m;        // Containing molecule of this ring.
+    private final Molecule   _mol;        // Containing molecule of this ring.
 
     private LinkedList<Atom> _atoms;    // The atoms in this ring. Atoms occur
                                          // in order.
@@ -51,7 +51,7 @@ public class Ring
      */
     Ring(Molecule m, int id) {
         _id = id;
-        _m = m;
+        _mol = m;
 
         _atoms = Lists.newLinkedList();
         _bonds = Lists.newLinkedList();
@@ -62,7 +62,7 @@ public class Ring
      * @return The containing molecule of this ring.
      */
     public Molecule molecule() {
-        return _m;
+        return _mol;
     }
 
     /**
@@ -129,7 +129,7 @@ public class Ring
 
         if (!_atoms.isEmpty()) {
             Atom prev = _atoms.getLast();
-            Bond b = _m.bondBetween(prev, a);
+            Bond b = _mol.bondBetween(prev, a);
             if (null == b) {
                 throw new IllegalStateException(
                         String.format(
@@ -163,7 +163,7 @@ public class Ring
 
         Atom a1 = _atoms.getFirst();
         Atom a2 = _atoms.getLast();
-        Bond b = _m._bondBetween(a1, a2);
+        Bond b = _mol._bondBetween(a1, a2);
         if (null == b) {
             throw new IllegalStateException(String.format(
                     "No bond between the first and the last atoms: %d, %d",
@@ -246,7 +246,7 @@ public class Ring
         if (!other.isCompleted()) {
             return false;
         }
-        if (_m.id() != other.molecule().id()) {
+        if (_mol.id() != other.molecule().id()) {
             return false;
         }
         if (_atoms.size() != other.size()) {

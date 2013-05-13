@@ -339,7 +339,8 @@ public class MolReaderV2k implements MolReader
     void parseProps(List<String> l, Molecule m) {
         _sectionStart = ++_currentLine;
 
-        loop: for (; _currentLine < l.size(); _currentLine++) {
+        loop:
+        for (; _currentLine < l.size(); _currentLine++) {
             if (_skipProps) {
                 continue;
             }

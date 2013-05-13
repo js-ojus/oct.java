@@ -9,8 +9,8 @@ package com.ojuslabs.oct.core;
 
 import static com.ojuslabs.oct.common.Constants.LIST_SIZE_S;
 
+import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -30,53 +30,73 @@ import com.ojuslabs.oct.util.Point3D;
  */
 public class Atom
 {
-    private Element    _element;     // This atom's element type.
+    private Element          _element;     // This atom's element type.
 
-    private Molecule   _m;           // Containing molecule, if the atom is
-                                      // bound to one.
+    private Molecule         _mol;         // Containing molecule, if the atom
+                                            // is
+                                            // bound to one.
 
-    private int        _id;          // A unique ID within its molecule.
-    private int        _cid;         // A unique canonicalised ID.
+    private int              _id;          // A unique canonical ID within its
+                                            // molecule; 1-based.
+    private int              _inputId;     // The input order serial number of
+                                            // this
+                                            // atom; 1-based.
 
-    public Point3D     coordinates;
+    public Point3D           coordinates;  // These may be given or computed.
 
-    private Chirality  _chirality;   // Chirality type.
-    private byte       _numH;        // Number of attached H atoms.
-    private byte       _charge;      // Residual charge on the atom.
-    private Radical    _radical;
+    private byte             _numH;        // Number of attached H atoms.
+    private byte             _charge;      // Residual charge on the atom.
+    private byte             _valence;     // Current valence configuration of
+                                            // this
+                                            // atom.
 
-    private List<Bond> _bonds;       // Bonds this atom is a member of.
-    private byte       _valence;     // Current valence of this atom.
+    private final List<Bond> _bonds;       // Bonds this atom is a member of.
+    private final List<Atom> _nbrs;        // This list in-line expands
+                                            // `_bonds` with
+    // repetitions for double/triple bonds.
 
-    private List<Ring> _rings;       // Rings this atom is a member of.
-    private boolean    _inAroRing;   // Is this atom in an aromatic ring?
-    private boolean    _inHetAroRing; // Is this atom in a hetero-aromatic ring?
-    private boolean    _isBridgeHead; // Is this atom a bridgehead?
-    private boolean    _isSpiro;     // Is the sole common atom of two rings?
+    private Chirality        _chirality;   // Chirality type.
+    private Radical          _radical;
+
+    private final List<Ring> _rings;       // Rings this atom is a member of.
+    private boolean          _inAroRing;   // Is this atom in an aromatic ring?
+    private boolean          _inHetAroRing; // Is this atom in a hetero-aromatic
+                                            // ring?
+    private boolean          _isBridgeHead; // Is this atom a bridgehead?
+    private boolean          _isSpiro;     // Is the sole common atom of two
+                                            // rings?
 
     /**
      * Initialisation of a new atom.
+     * 
+     * @param elem
+     *            The element type of this atom.
      */
     public Atom(Element elem) {
         _element = elem;
-        _valence = (byte) _element.valence;
+        if (null != elem) {
+            _valence = (byte) _element.valence;
+        }
 
         _chirality = Chirality.NONE;
         _radical = Radical.NONE;
 
         _bonds = Lists.newArrayListWithCapacity(LIST_SIZE_S);
+        _nbrs = Lists.newArrayListWithCapacity(LIST_SIZE_S);
         _rings = Lists.newArrayListWithCapacity(LIST_SIZE_S);
     }
 
     /**
-     * Resets the state of this atom. Useful when re-parenting. May be useful in
-     * other scenarios as well. <b>N.B.</b> This method is package-internal.
+     * Resets the state of this atom. This method is useful when re-parenting an
+     * atom. It may be useful in other scenarios as well, but use with caution!
+     * <b>N.B.</b> This method is package-internal.
      */
     void reset() {
         _chirality = Chirality.NONE;
         _radical = Radical.NONE;
 
         _bonds.clear();
+        _nbrs.clear();
         _rings.clear();
 
         _inAroRing = false;
@@ -110,7 +130,7 @@ public class Atom
      * @return This atom's containing molecule, if any; else, <code>null</code>.
      */
     public Molecule molecule() {
-        return _m;
+        return _mol;
     }
 
     /**
@@ -118,41 +138,44 @@ public class Atom
      * different molecule, and (b) it can be used to detach this atom from its
      * current parent.
      * 
-     * @param m
+     * @param mol
      *            Containing molecule, if any. To remove the current parent,
      *            pass <code>null</code>.
-     * @param reset
+     * @param clear
      *            If true, resets the state of the atom; else, leaves it as is.
      */
-    public void setMolecule(Molecule m, boolean reset) {
-        if (_m == m) {
+    public void setMolecule(Molecule mol, boolean clear) {
+        if (_mol == mol) {
             return;
         }
 
-        if (null != _m) {
-            _m._removeAtom(this, Integer.MIN_VALUE);
+        if (null != _mol) {
+            _mol._removeAtom(this, Integer.MIN_VALUE);
         }
 
-        _m = m;
+        _mol = mol;
         _id = 0;
-        _cid = 0;
-        if (reset) {
+        _inputId = 0;
+        if (clear) {
             reset();
         }
     }
 
     /**
-     * @return The unique ID of this atom in its current molecule.
+     * @return The canonical ID of this atom in its current molecule.
      */
     public int id() {
         return _id;
     }
 
     /**
-     * @return The unique canonical ID of this atom in its current molecule.
+     * <b>N.B.</b> The return value of this method makes sense only as long as
+     * the molecule is in a pristine state after initial construction.
+     * 
+     * @return The input order ID of this atom in its current molecule.
      */
-    public int cid() {
-        return _cid;
+    public int inputId() {
+        return _inputId;
     }
 
     /**
@@ -173,8 +196,8 @@ public class Atom
      * @param id
      *            The new canonical ID of this atom.
      */
-    void setCid(int id) {
-        _cid = id;
+    void setInputId(int id) {
+        _inputId = id;
     }
 
     /**
@@ -219,7 +242,9 @@ public class Atom
      *            The new valence configuration of this atom.
      */
     public void setValence(int v) {
-        _valence = (byte) v;
+        if (v > 0) { // We do not deal with rare gases.
+            _valence = (byte) v;
+        }
     }
 
     /*
@@ -229,8 +254,8 @@ public class Atom
      */
     @Override
     public String toString() {
-        return String.format("Atom ID: %d, CID: %d, element: %s", _id, _cid,
-                _element.symbol);
+        return String.format("Atom ID: %d, input ID: %d, element: %s", _id,
+                _inputId, _element.symbol);
     }
 
     /**
@@ -242,54 +267,64 @@ public class Atom
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof Atom)) {
-            return false;
-        }
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (!(obj instanceof Atom)) return false;
 
         Atom other = (Atom) obj;
-        if ((null == _m) || (null == other.molecule())) {
+        if ((null == _mol) || (null == other.molecule())) {
             return false;
         }
-        if (_id != other._id) {
-            return false;
-        }
-        if (_m.id() != other.molecule().id()) {
+        if ((_id != other._id) || (_mol.id() != other.molecule().id())) {
             return false;
         }
 
         return true;
     }
 
-    // TODO(js): Implement a meaningful `hashCode'.
+    /**
+     * A free (unbound) atom has a hash code of 0. The hash code of a bound atom
+     * depends on its molecule's globally unique ID as well as its own canonical
+     * ID in that molecule.
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        if (null == _mol) {
+            return 0;
+        }
+
+        return _id + 10000 * (int) _mol.id();
+    }
 
     /**
-     * @return Number of distinct neighbours of this atom.
+     * This method answers the number of distinct neighbours of this atom. It is
+     * the same as the number of bonds in which this atom participates.
+     * 
+     * @return The number of bonds of which this atom is a member.
      */
-    public int numberOfNeighbours() {
+    public int numberOfBonds() {
         return _bonds.size();
     }
 
-    public int numberOfBonds() {
-        double c = 0.0;
-        for (Bond b : _bonds) {
-            switch (b.order()) {
-            case SINGLE:
-                c += 1;
-                break;
-            case DOUBLE:
-                c += 2;
-                break;
-            case TRIPLE:
-                c += 3;
-                break;
-            default: // Must be NONE.
-                // Do nothing.
-            }
-        }
-        return (int) c;
+    /**
+     * The number of neighbours is what we get by in-line expanding the list of
+     * bonds, accounting for repetitions of neighbours whenever the bond is
+     * either double or triple.
+     * 
+     * @return The total number of electrons of this atom that are participating
+     *         in its bonds.
+     */
+    public int numberOfNeighbours() {
+        return _nbrs.size();
+    }
+
+    /**
+     * @return The total number of hydrogen atoms bound to this atom.
+     */
+    public int numberOfHydrogens() {
+        return _numH;
     }
 
     /**
@@ -305,17 +340,22 @@ public class Atom
      * 
      * @param other
      *            The other atom potentially bound to this atom.
-     * @return The requested bond between this atom and the other atom.
+     * @return The requested bond between this atom and the other atom;
+     *         <code>null</code> if one such does not exist.
+     * @throws IllegalArgumentException
      */
-    public Bond bondTo(Atom other) {
-        if ((other.molecule() != _m) || (null == _m.atom(other.id()))) {
-            throw new NoSuchElementException(String.format(
+    public Bond bondTo(Atom other) throws IllegalArgumentException {
+        if (null == other) {
+            throw new IllegalArgumentException("Null atom given.");
+        }
+        if ((other.molecule() != _mol) || (null == _mol.atom(other.id()))) {
+            throw new IllegalArgumentException(String.format(
                     "Given atom does not belong this molecule: %d->%d", other
                             .molecule().id(), other.id()));
         }
 
         for (Bond b : _bonds) {
-            if (other == b.otherAtom(_id)) {
+            if (b.otherAtom(_id) == other) {
                 return b;
             }
         }
@@ -416,43 +456,98 @@ public class Atom
     }
 
     /**
-     * Adds the given bond to this atom.
+     * Checks to see that the proposed +ve or -ve change in the number of
+     * neighbours is valid for this atom's current valence configuration. This
+     * method is package-internal currently.
      * 
-     * Should the addition of this bond increase the number of bonds of this
-     * atom beyond its current valence configuration, an
-     * {@link IllegalStateException} exception is thrown.
-     * 
-     * @param b
-     *            The bond to add to this atom. <b>N.B.</b> The current atom
-     *            must participate in the given bond; however, this is assumed
-     *            to have been taken care of by the parent molecule.
-     *            Accordingly, this method is package-internal.
+     * @param delta
+     *            The number by which the number of neighbours may be liable to
+     *            change.
+     * @return <code>true</code> if the proposed change is within acceptable
+     *         valence limits; <code>false</code> otherwise.
      */
-    void addBond(Bond b) {
-        if (_bonds.contains(b)) {
-            return;
-        }
-        if (b.order().value() + numberOfBonds() > _valence) {
-            throw new IllegalStateException(
-                    String.format(
-                            "Too many bonds; atom: %d, valence: %d, current number of bonds: %d, order of the new bond: %d",
-                            _id, _valence, numberOfBonds(), b.order()));
+    boolean tryChangeNumberOfNeighbours(int delta) {
+        if (_nbrs.size() + delta > _valence) {
+            return false;
         }
 
-        _bonds.add(b);
+        return true;
     }
 
     /**
-     * Removes the given bond from this atom.
+     * Adds the given bond to this atom, performing no validations.
+     * 
+     * This method does <b><i>not</i></b> check to see if the proposed increment
+     * in the number of neighbours is valid for this atom's current valence
+     * configuration. <b>N.B.</b> The current atom must be a part of the given
+     * bond. However, this is assumed to have been taken care of by the parent
+     * molecule.
      * 
      * @param b
-     *            The bond to remove from this atom. <b>N.B.</b> The current
-     *            atom must participate in the given bond; however, this is
-     *            assumed to have been taken care of by the parent molecule.
-     *            Accordingly, this method is package-internal.
-     * @return True if the given bond was actually removed; false otherwise.
+     *            The bond to be added to this atom.
+     * @return <code>true</code> upon successful addition; <code>false</code>
+     *         otherwise.
+     */
+    boolean unsafeAddBond(Bond b) {
+        if (_bonds.contains(b)) {
+            return false;
+        }
+
+        _bonds.add(b);
+        int delta = b.order().value();
+        Atom other = b.otherAtom(_id);
+        for (int i = 0; i < delta; i++) {
+            _nbrs.add(other);
+        }
+
+        return true;
+    }
+
+    /**
+     * Adds the given bond to this atom.
+     * 
+     * Should the addition of this bond increase the number of bonds of this
+     * atom beyond its current valence configuration, an exception is thrown.
+     * <b>N.B.</b> The current atom must participate in the given bond; however,
+     * this is assumed to have been taken care of by the parent molecule.
+     * 
+     * @param b
+     *            The bond to add to this atom.
+     * @return <code>true</code> upon successful addition; <code>false</code>
+     *         otherwise.
+     * @throws IllegalStateException
+     */
+    boolean addBond(Bond b) throws IllegalStateException {
+        if (tryChangeNumberOfNeighbours(b.order().value())) {
+            throw new IllegalStateException(
+                    String.format(
+                            "Requested state illegal: atom: %d, valence: %d, current number of bonds: %d, order of the new bond: %d",
+                            _id, _valence, numberOfBonds(), b.order().value()));
+        }
+
+        return unsafeAddBond(b);
+    }
+
+    /**
+     * Removes the given bond from this atom. It also adjusts the neighbours
+     * list appropriately. <b>N.B.</b> The current atom must participate in the
+     * given bond; however, this is assumed to have been taken care of by the
+     * parent molecule. Accordingly, this method is package-internal.
+     * 
+     * @param b
+     *            The bond to remove from this atom.
+     * @return <b>true</b> if the given bond was actually removed; <b>false</b>
+     *         otherwise.
      */
     boolean removeBond(Bond b) {
+        Atom other = b.otherAtom(_id);
+        Iterator<Atom> it = _nbrs.iterator();
+        while (it.hasNext()) {
+            if (it.next() == other) {
+                it.remove();
+            }
+        }
+
         return _bonds.remove(b);
     }
 

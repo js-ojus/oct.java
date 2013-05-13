@@ -7,8 +7,6 @@
 
 package com.ojuslabs.oct.common;
 
-import java.util.NoSuchElementException;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -18,7 +16,7 @@ import com.google.common.collect.ImmutableMap;
  * weights, isotopes and symbol string representations. It provides a set of
  * convenience methods to access and utilise the said data.
  */
-public class PeriodicTable
+public final class PeriodicTable
 {
     // Number of elements. This should be adjusted when adding or removing
     // elements from the list and the map.
@@ -31,6 +29,13 @@ public class PeriodicTable
     private ImmutableList<Element>        _elements;
     private ImmutableMap<String, Element> _symbolMap;
 
+    /**
+     * A single instance of <code>PeriodicTable</code> is ever present in the
+     * program. This method ensures that, and always answers the same singleton
+     * instance.
+     * 
+     * @return The singleton instance of <code>PeriodicTable</code>.
+     */
     public static PeriodicTable instance() {
         if (null != _instance) {
             return _instance;
@@ -395,11 +400,12 @@ public class PeriodicTable
      * @param sym
      *            Element's symbol.
      * @return Requested element.
+     * @throws IllegalArgumentException
      */
-    public Element element(String sym) {
+    public Element element(String sym) throws IllegalArgumentException {
         Element el = _symbolMap.get(sym);
         if (null == el) {
-            throw new NoSuchElementException("Invalid symbol given: " + sym);
+            throw new IllegalArgumentException("Invalid symbol given: " + sym);
         }
         return el;
     }
@@ -408,10 +414,11 @@ public class PeriodicTable
      * @param num
      *            Atomic number.
      * @return Requested element.
+     * @throws IllegalArgumentException
      */
-    public Element element(int num) {
+    public Element element(int num) throws IllegalArgumentException {
         if ((num < 1) || (num >= _NUM_ELEMENTS)) {
-            throw new NoSuchElementException(String.format(
+            throw new IllegalArgumentException(String.format(
                     "Invalid atomic number given: %s", num));
         }
         return _elements.get(num);
