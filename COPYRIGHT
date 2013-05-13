@@ -1,7 +1,24 @@
 (c) 2012-2013 Ojus Software Labs Private Limited.  All rights reserved.
 
-1. Submitted patches need an explicit statement of non-infringement of any third-party patents and copyrights, to the reasonable best knowledge of the submitter.  We want to do good work, not fight legal battles.
+1. Submitted patches need an explicit statement of non-infringement of
+   any third-party patents and copyrights, to the reasonable best
+   knowledge of the submitter.  Submitted patches need to grant to the
+   project an explicit, perpetual, world-wide, royalty-free permission
+   for any and all included patents and copyrights in respect of use
+   of, creation of derivative works from, and distribution of any
+   combination of the above.  We want to do good work, not fight legal
+   battles.
 
-2. Submitted patches need an explicit joint copyright attribution to ``Ojus Software Labs Private Limited".  This is required in order to make sure that no author can jeopardise the project.
+2. Submitted patches need an explicit joint copyright attribution to
+   ``Ojus Software Labs Private Limited".  The author continues to
+   hold joint copyright to the work, and is free to use, create
+   derived works from, and distribute the copyrighted work.  This is
+   required in order to make sure that no author can jeopardise the
+   project.
 
-3. Submitted patches need an explicit agreement to the project's dual-licensing policy.
+3. Submitted patches need an explicit agreement to the project's
+   dual-licensing policy.  This is needed to help improve the
+   financial viability of the project.
+
+The above may be formalised into a `Contributor License Agreement
+(CLA)' in future.
