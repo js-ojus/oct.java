@@ -284,7 +284,8 @@ public class Ring
     public int hashCode() {
         int res = 0;
         for (Atom a : _atoms) {
-            res += 31 * a.id();
+            res += a.id();
+            res *= 13;
         }
 
         return res;
