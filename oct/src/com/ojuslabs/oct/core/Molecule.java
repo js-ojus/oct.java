@@ -109,7 +109,7 @@ public class Molecule
 
     /**
      * @param i
-     *            Unique ID of the atom in this molecule.
+     *            Unique canonical ID of the atom in this molecule.
      * @return Requested atom if found; <code>null</code> otherwise.
      */
     public Atom atom(int i) {

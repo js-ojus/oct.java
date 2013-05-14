@@ -7,7 +7,6 @@
 
 package com.ojuslabs.oct.core;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -24,34 +23,35 @@ import com.ojuslabs.oct.exception.ImmutabilityException;
  */
 public class Ring
 {
-    private final int        _id;       // Unique ID of this ring in its
-                                         // molecule.
+    private final int              _id;       // Unique ID of this ring in its
+                                               // molecule.
 
-    private final Molecule   _mol;        // Containing molecule of this ring.
+    private final Molecule         _mol;      // Containing molecule of this
+                                               // ring.
 
-    private LinkedList<Atom> _atoms;    // The atoms in this ring. Atoms occur
-                                         // in order.
-    private LinkedList<Bond> _bonds;    // The bonds forming this ring. Bonds
-                                         // occur in order.
+    private final LinkedList<Atom> _atoms;    // The atoms in this ring. Atoms
+                                               // occur in order.
+    private final LinkedList<Bond> _bonds;    // The bonds forming this ring.
+                                               // Bonds occur in order.
+    private final LinkedList<Ring> _nbrs;     // Other rings that share at
+                                               // least one bond with this ring.
 
-    private boolean          _isAro;    // Is this ring aromatic in its current
-                                         // configuration?
+    private boolean                _isAro;    // Is this ring aromatic in its
+                                               // current
+                                               // configuration?
 
-    private LinkedList<Ring> _nbrs;     // The neighbours of this ring that are
-                                         // either pair-fused or
-
-    private boolean          _completed; // Is this ring completed and
-                                         // finalised?
+    private boolean                _completed; // Is this ring completed and
+                                               // finalised?
 
     /**
-     * @param m
+     * @param mol
      *            The containing molecule of this ring.
      * @param id
      *            The unique ID of this ring in its molecule.
      */
-    Ring(Molecule m, int id) {
+    Ring(int id, Molecule mol) {
         _id = id;
-        _mol = m;
+        _mol = mol;
 
         _atoms = Lists.newLinkedList();
         _bonds = Lists.newLinkedList();
@@ -91,7 +91,7 @@ public class Ring
 
     /**
      * @param id
-     *            Unique ID of the requested atom.
+     *            Unique canonical ID of the requested atom.
      * @return The requested atom if it exists; <code>null</code> otherwise.
      */
     public Atom atom(int id) {
@@ -105,25 +105,29 @@ public class Ring
     }
 
     /**
-     * Adds the given atom to this ring. The given atom is ignored if it is
-     * already a member of this ring. It checks to see that a bond exists
-     * between the most-recently-added atom and the current atom. An
-     * {@link IllegalStateException} is thrown otherwise.
+     * Adds the given atom to this ring.
      * 
-     * <b>N.B.</b> It is an error to attempt adding atoms to a <i>completed</i>
-     * ring. It results in an exception getting thrown.
+     * The given atom is ignored if it is already a member of this ring. It
+     * checks to see that a bond exists between the most-recently-added atom and
+     * the current atom. An {@link IllegalStateException} is thrown otherwise.
      * 
      * @param a
      *            The atom to add to this ring.
+     * @throws IllegalStateException
+     *             if the given atom does not logically continue from the
+     *             most-recently added atom.
      * @throws ImmutabilityException
+     *             if an attempt is made at adding atoms to a <i>completed</i>
+     *             ring.
      */
-    public void addAtom(Atom a) throws ImmutabilityException {
+    public void addAtom(Atom a) throws IllegalStateException,
+            ImmutabilityException {
         if (_completed) {
             throw new ImmutabilityException(String.format(
                     "Ring is already completed. %s", toString()));
         }
 
-        if (null != atom(a.id())) {
+        if (_atoms.contains(a)) {
             return;
         }
 
@@ -143,12 +147,14 @@ public class Ring
     }
 
     /**
-     * Completes the link between the last atom and the first. If the size of
-     * the ring is less than 3, or if there is no bond connecting the first atom
-     * and the last, an {@link IllegalStateException} is thrown. Completion also
+     * Completes the link between the last atom and the first. Completion also
      * effectively freezes the ring.
+     * 
+     * @throws IllegalStateException
+     *             if the size of the ring is less than 3, or if there is no
+     *             bond connecting the first atom and the last.
      */
-    public void complete() {
+    public void complete() throws IllegalStateException {
         if (_completed) {
             return;
         }
@@ -175,9 +181,12 @@ public class Ring
         _completed = true;
     }
 
-    // Transforms the ring into a standard representation.
+    // Transforms the ring into a standard representation, where the ring
+    // (logically) `begins' with that atom which has the lowest unique ID.
     void canonicalise() {
         int min = Integer.MAX_VALUE;
+
+        // Find the index at which the atom with the lowest ID occurs.
         int idx = 0;
         for (int i = 0; i < _atoms.size(); i++) {
             int id = _atoms.get(i).id();
@@ -212,14 +221,19 @@ public class Ring
                 .format("Ring %d: [%s]", _id, Joiner.on(", ").join(_atoms));
     }
 
+    /**
+     * @param id
+     *            The unique ID of the bond to locate.
+     * @return The bond with the given ID, if it occurs in this ring;
+     *         <code>null</code> otherwise.
+     */
     public Bond bond(int id) {
-        Iterator<Bond> it = _bonds.iterator();
-        Bond b = null;
-        for (; it.hasNext(); b = it.next()) {
+        for (Bond b : _bonds) {
             if (b.id() == id) {
                 return b;
             }
         }
+
         return null;
     }
 
@@ -231,27 +245,15 @@ public class Ring
      */
     @Override
     public boolean equals(Object obj) {
-        if (!_completed) {
-            return false;
-        }
+        if (!_completed) return false;
 
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof Ring)) {
-            return false;
-        }
+        if (this == obj) return true;
+        if (!(obj instanceof Ring)) return false;
 
         Ring other = (Ring) obj;
-        if (!other.isCompleted()) {
-            return false;
-        }
-        if (_mol.id() != other.molecule().id()) {
-            return false;
-        }
-        if (_atoms.size() != other.size()) {
-            return false;
-        }
+        if (!other.isCompleted()) return false;
+        if (_mol.id() != other.molecule().id()) return false;
+        if (_atoms.size() != other.size()) return false;
 
         LinkedList<Atom> l = other._atoms;
         for (int i = 0; i < _atoms.size(); i++) {
@@ -263,7 +265,20 @@ public class Ring
         return true;
     }
 
-    // TODO(js): Implement a meaningful `hashCode'.
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        int res = 0;
+        for (Atom a : _atoms) {
+            res += 31 * a.id();
+        }
+
+        return res;
+    }
 
     /**
      * @return A read-only view of this ring's atoms.
