@@ -8,19 +8,21 @@
 package com.ojuslabs.oct.core;
 
 import static com.ojuslabs.oct.common.Constants.LIST_SIZE_L;
+import static com.ojuslabs.oct.common.Constants.LIST_SIZE_S;
 
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.ojuslabs.oct.common.BondOrder;
 import com.ojuslabs.oct.common.Constants;
 
 public class Molecule
 {
+    // A running serial unique identifier for molecules.
+    private static long        _nextId = 0;
+
     // A unique ID. This does not change during the lifetime of the molecule.
     private final long         _id;
 
@@ -38,13 +40,20 @@ public class Molecule
     // Keeps track of running IDs of rings.
     private int                _peakRId;
 
-    public String              vendorId;
+    // Vendor-assigned unique ID of this molecule.
+    public String              vendorMoleculeId;
+    // Name of the vendor.
     public String              vendorName;
 
-    public Map<String, String> tags;
+    /*
+     * The following pair of lists for attributes is needed because the input
+     * order of the attributes is lost otherwise.
+     */
 
-    // A running serial unique identifier for molecules.
-    private static long        _molId;
+    // Attribute names from either input or run-time.
+    private final List<String> _attrNames;
+    // Corresponding attribute values.
+    private final List<String> _attrValues;
 
     /**
      * Factory method for creating molecules with unique IDs.
@@ -52,7 +61,7 @@ public class Molecule
      * @return A new, uniquely-identifiable molecule.
      */
     public static synchronized Molecule newInstance() {
-        return new Molecule(++_molId);
+        return new Molecule(++_nextId);
     }
 
     /**
@@ -65,7 +74,8 @@ public class Molecule
         _bonds = Lists.newArrayListWithCapacity(LIST_SIZE_L);
         _rings = Lists.newArrayListWithCapacity(LIST_SIZE_L);
 
-        tags = Maps.newHashMap();
+        _attrNames = Lists.newArrayListWithCapacity(LIST_SIZE_S);
+        _attrValues = Lists.newArrayListWithCapacity(LIST_SIZE_S);
     }
 
     /**
@@ -383,7 +393,9 @@ public class Molecule
         _removeAtom(a, idx);
     }
 
-    // Bypasses the membership check.
+    /*
+     * Bypasses the membership check.
+     */
     void _removeAtom(Atom a, int idx) {
         List<Atom> alist = Lists
                 .newArrayListWithCapacity(Constants.LIST_SIZE_S);
@@ -398,5 +410,79 @@ public class Molecule
         else {
             _atoms.remove(idx);
         }
+    }
+
+    /**
+     * Adds a name-value pair to this molecule's set of attributes, only if the
+     * given name does <b>not</b> already occur therein.
+     * 
+     * @param name
+     *            The name of the attribute; must not be empty.
+     * @param value
+     *            The value of the attribute; must not be empty.
+     * @throws IllegalArgumentException
+     *             if either the name or the value is empty.
+     * @throws IllegalStateException
+     *             if the given attribute name already exists.
+     */
+    public void addAttribute(String name, String value)
+            throws IllegalArgumentException, IllegalStateException {
+        if (name.isEmpty() || value.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Either the given attribute name or its value is empty.");
+        }
+        if (_attrNames.contains(name)) {
+            throw new IllegalStateException(
+                    "The given attribute name already exists.");
+        }
+
+        _attrNames.add(name);
+        _attrValues.add(value);
+    }
+
+    /**
+     * @param name
+     *            The name of the attribute; must not be empty.
+     * @param value
+     *            The value of the attribute; must not be empty.
+     * @return The value previously set for this attribute name.
+     * @throws IllegalArgumentException
+     *             if either the name or the value is empty.
+     * @throws NoSuchElementException
+     *             if the given attribute name does not exist.
+     */
+    public String setAttribute(String name, String value) {
+        if (name.isEmpty() || value.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Either the given attribute name or its value is empty.");
+        }
+
+        int idx = _attrNames.indexOf(name);
+        if (-1 == idx) {
+            throw new NoSuchElementException(
+                    "The given attribute name does not exist.");
+        }
+
+        return _attrValues.set(idx, value);
+    }
+
+    /**
+     * @param name
+     *            The attribute to remove from this molecule.
+     * @return {@code true} upon successful deletion; {@code false} otherwise.
+     */
+    public boolean removeAttribute(String name) {
+        if (null == name || name.isEmpty()) {
+            return false;
+        }
+
+        int idx = _attrNames.indexOf(name);
+        if (-1 == idx) {
+            return false;
+        }
+
+        _attrNames.remove(idx);
+        _attrValues.remove(idx);
+        return true;
     }
 }

@@ -13,7 +13,6 @@ import java.util.List;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.ojuslabs.oct.exception.ImmutabilityException;
 
 /**
  * Ring represents a simple cycle in a molecule. It keeps track of its atoms and
@@ -107,21 +106,18 @@ public class Ring
      * 
      * The given atom is ignored if it is already a member of this ring. It
      * checks to see that a bond exists between the most-recently-added atom and
-     * the current atom. An {@link IllegalStateException} is thrown otherwise.
+     * the current atom. An exception is thrown otherwise.
      * 
      * @param a
      *            The atom to add to this ring.
      * @throws IllegalStateException
-     *             if the given atom does not logically continue from the
-     *             most-recently added atom.
-     * @throws ImmutabilityException
      *             if an attempt is made at adding atoms to a <i>completed</i>
-     *             ring.
+     *             ring, or if the given atom does not logically continue from
+     *             the most-recently added atom.
      */
-    public void addAtom(Atom a) throws IllegalStateException,
-            ImmutabilityException {
+    public void addAtom(Atom a) throws IllegalStateException {
         if (_completed) {
-            throw new ImmutabilityException(String.format(
+            throw new IllegalStateException(String.format(
                     "Ring is already completed. %s", toString()));
         }
 

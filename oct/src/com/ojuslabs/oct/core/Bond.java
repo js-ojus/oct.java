@@ -14,7 +14,6 @@ import com.google.common.collect.Lists;
 import com.ojuslabs.oct.common.BondOrder;
 import com.ojuslabs.oct.common.BondStereo;
 import com.ojuslabs.oct.common.Constants;
-import com.ojuslabs.oct.exception.UniquenessException;
 
 /**
  * Bond represents a chemical bond. This flavour is strictly between two atoms,
@@ -296,10 +295,10 @@ public class Bond
     /**
      * @return The smallest ring in which this bond participates, if one such
      *         unique ring exists; {@code null} otherwise.
-     * @throws UniquenessException
+     * @throws IllegalStateException
      *             if more than one ring of the smallest size are found.
      */
-    public Ring smallestRing() throws UniquenessException {
+    public Ring smallestRing() throws IllegalStateException {
         int min = Integer.MAX_VALUE;
         int count = 0;
         Ring ret = null;
@@ -316,7 +315,7 @@ public class Bond
         }
 
         if (count > 1) {
-            throw new UniquenessException(String.format(
+            throw new IllegalStateException(String.format(
                     "Smallest ring size: %d, number of smallest rings: %d",
                     ret.size(), count));
         }

@@ -140,23 +140,23 @@ public class MolReaderV2k implements MolReader
             _skipCtab = false;
         }
 
-        Molecule m = Molecule.newInstance();
+        Molecule mol = Molecule.newInstance();
         _sectionStart = 0;
         _currentLine = 0;
 
         try {
-            parseHeader(l, m);
+            parseHeader(l, mol);
 
-            parseCtab(l, m);
-            parseProps(l, m);
-            parseTags(l, m);
+            parseCtab(l, mol);
+            parseProps(l, mol);
+            parseTags(l, mol);
         }
         catch (final Exception e) {
             e.printStackTrace();
             return null;
         }
 
-        return m;
+        return mol;
     }
 
     /**
@@ -166,10 +166,10 @@ public class MolReaderV2k implements MolReader
      * 
      * @param l
      *            List of lines of input molecule's text.
-     * @param m
+     * @param mol
      *            The molecule object being constructed.
      */
-    void parseHeader(List<String> l, Molecule m) {
+    void parseHeader(List<String> l, Molecule mol) {
         if (l.size() < 4) {
             throw new IllegalArgumentException(String.format(
                     "Invalid MOL header:\n%s", Joiner.on("").join(l)));
@@ -177,7 +177,7 @@ public class MolReaderV2k implements MolReader
 
         String s = l.get(_currentLine).trim();
         if (s.isEmpty()) {
-            m.vendorId = s;
+            mol.vendorMoleculeId = s;
         }
 
         _currentLine = 3;
@@ -189,10 +189,10 @@ public class MolReaderV2k implements MolReader
      * 
      * @param l
      *            List of lines of input molecule's text.
-     * @param m
+     * @param mol
      *            The molecule object being constructed.
      */
-    void parseCtab(List<String> l, Molecule m) {
+    void parseCtab(List<String> l, Molecule mol) {
         _sectionStart = _currentLine;
 
         String s = l.get(_currentLine);
@@ -211,15 +211,15 @@ public class MolReaderV2k implements MolReader
 
         for (int i = 0; i < numAtoms; i++) {
             _currentLine++;
-            parseAtom(l.get(_currentLine), m);
+            parseAtom(l.get(_currentLine), mol);
         }
         for (int i = 0; i < numBonds; i++) {
             _currentLine++;
-            parseBond(l.get(_currentLine), m);
+            parseBond(l.get(_currentLine), mol);
         }
 
         if (null != _ctabHook) {
-            _ctabHook.apply(l.subList(_sectionStart, _currentLine), m);
+            _ctabHook.apply(l.subList(_sectionStart, _currentLine), mol);
         }
     }
 
@@ -229,10 +229,10 @@ public class MolReaderV2k implements MolReader
      * 
      * @param s
      *            Line containing the atom specification.
-     * @param m
+     * @param mol
      *            The current molecule.
      */
-    private void parseAtom(String s, Molecule m) {
+    private void parseAtom(String s, Molecule mol) {
         // We need the element type to be able to create an atom.
         String sym = s.substring(31, 34).trim();
         String iso = s.substring(34, 36).trim();
@@ -281,7 +281,7 @@ public class MolReaderV2k implements MolReader
             a.setValence(val);
         }
 
-        m.addAtom(a);
+        mol.addAtom(a);
     }
 
     /**
@@ -290,16 +290,16 @@ public class MolReaderV2k implements MolReader
      * 
      * @param s
      *            Line containing the bond specification.
-     * @param m
+     * @param mol
      *            The current molecule.
      */
-    void parseBond(String s, Molecule m) {
-        Atom a1 = m.atom(Integer.parseInt(s.substring(0, 3).trim()));
-        Atom a2 = m.atom(Integer.parseInt(s.substring(3, 6).trim()));
+    void parseBond(String s, Molecule mol) {
+        Atom a1 = mol.atom(Integer.parseInt(s.substring(0, 3).trim()));
+        Atom a2 = mol.atom(Integer.parseInt(s.substring(3, 6).trim()));
         BondOrder bo = BondOrder.ofValue(Integer.parseInt(s.substring(6, 9)
                 .trim()));
 
-        Bond b = m.addBond(a1, a2, bo);
+        Bond b = mol.addBond(a1, a2, bo);
 
         BondStereo bs = BondStereo.NONE;
         int ibs = Integer.parseInt(s.substring(9, 12).trim());
@@ -334,10 +334,10 @@ public class MolReaderV2k implements MolReader
      * 
      * @param l
      *            List of lines of input molecule's text.
-     * @param m
+     * @param mol
      *            The molecule object being constructed.
      */
-    void parseProps(List<String> l, Molecule m) {
+    void parseProps(List<String> l, Molecule mol) {
         _sectionStart = ++_currentLine;
 
         loop:
@@ -355,7 +355,7 @@ public class MolReaderV2k implements MolReader
             case _M_CHG:
             case _M_ISO:
             case _M_RAD:
-                _parseProp(s, m, prefix);
+                _parseProp(s, mol, prefix);
                 break;
             }
         }
@@ -363,7 +363,7 @@ public class MolReaderV2k implements MolReader
         if ((!_skipProps) &&
                 (_currentLine > _sectionStart) &&
                 (null != _propsHook)) {
-            _propsHook.apply(l.subList(_sectionStart, _currentLine), m);
+            _propsHook.apply(l.subList(_sectionStart, _currentLine), mol);
         }
     }
 
@@ -372,13 +372,13 @@ public class MolReaderV2k implements MolReader
      * 
      * @param s
      *            The string with the property.
-     * @param m
+     * @param mol
      *            The molecule object being constructed.
      * @param prefix
      *            We currently handle <code>M  CHG</code>, <code>M  ISO</code>,
      *            <code>M  RAD</code> and <code>M  END</code>.
      */
-    void _parseProp(String s, Molecule m, String prefix) {
+    void _parseProp(String s, Molecule mol, String prefix) {
         int n = Integer.parseInt(s.substring(6, 9));
 
         int offset = 10;
@@ -388,13 +388,13 @@ public class MolReaderV2k implements MolReader
 
             switch (prefix) {
             case _M_CHG:
-                m.atom(atomId).setCharge(value);
+                mol.atom(atomId).setCharge(value);
                 break;
             case _M_ISO:
-                m.atom(atomId).setIsotope(value);
+                mol.atom(atomId).setIsotope(value);
                 break;
             case _M_RAD:
-                m.atom(atomId).setRadical(Radical.ofValue(value));
+                mol.atom(atomId).setRadical(Radical.ofValue(value));
                 break;
             }
 
@@ -407,10 +407,10 @@ public class MolReaderV2k implements MolReader
      * 
      * @param l
      *            List of lines of input molecule's text.
-     * @param m
+     * @param mol
      *            The molecule object being constructed.
      */
-    void parseTags(List<String> l, Molecule m) {
+    void parseTags(List<String> l, Molecule mol) {
         _sectionStart = ++_currentLine;
 
         String tag = null;
@@ -426,21 +426,21 @@ public class MolReaderV2k implements MolReader
             }
 
             if (!_skipTags) {
-                tag = _parseTag(m, s, tag);
+                tag = _parseTag(mol, s, tag);
             }
         }
 
         if ((!_skipTags) &&
                 (_currentLine > _sectionStart) &&
                 (null != _tagsHook)) {
-            _tagsHook.apply(l.subList(_sectionStart, _currentLine), m);
+            _tagsHook.apply(l.subList(_sectionStart, _currentLine), mol);
         }
     }
 
     /**
      * Parses and sets a data item in the given molecule.
      * 
-     * @param m
+     * @param mol
      *            The molecule object being constructed.
      * @param s
      *            The string with either the tag (data item name) or its value.
@@ -448,9 +448,14 @@ public class MolReaderV2k implements MolReader
      *            The previously parsed line, which may be a tag.
      * @return The current tag or {@code null} depending on the previous value.
      */
-    String _parseTag(Molecule m, String s, String tag) {
+    String _parseTag(Molecule mol, String s, String tag) {
         if (null != tag) {
-            m.tags.put(tag, s);
+            try {
+                mol.addAttribute(tag, s);
+            }
+            catch (IllegalStateException e) {
+                System.err.println("== Duplicate attribute: " + tag);
+            }
             return null;
         }
 

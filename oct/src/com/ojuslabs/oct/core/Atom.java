@@ -18,7 +18,6 @@ import com.ojuslabs.oct.common.Chirality;
 import com.ojuslabs.oct.common.Element;
 import com.ojuslabs.oct.common.PeriodicTable;
 import com.ojuslabs.oct.common.Radical;
-import com.ojuslabs.oct.exception.UniquenessException;
 import com.ojuslabs.oct.util.Point3D;
 
 /**
@@ -427,9 +426,9 @@ public class Atom
      * @return The smallest ring in which this atom participates, if one such
      *         exists; {@code null} otherwise. If more than one ring of the
      *         smallest size if found, an exception is thrown.
-     * @throws UniquenessException
+     * @throws IllegalStateException
      */
-    public Ring smallestRing() throws UniquenessException {
+    public Ring smallestRing() throws IllegalStateException {
         if (_rings.isEmpty()) {
             return null;
         }
@@ -450,7 +449,7 @@ public class Atom
         }
 
         if (count > 1) {
-            throw new UniquenessException(String.format(
+            throw new IllegalStateException(String.format(
                     "Smallest ring size: %d, number of smallest rings: %d",
                     ret.size(), count));
         }
