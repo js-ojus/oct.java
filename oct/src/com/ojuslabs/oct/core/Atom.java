@@ -348,10 +348,10 @@ public class Atom
         if (null == other) {
             throw new IllegalArgumentException("Null atom given.");
         }
-        if ((other.molecule() != _mol) || (null == _mol.atom(other.id()))) {
+        if ((other.molecule() != _mol) || (null == _mol.atom(other._id))) {
             throw new IllegalArgumentException(String.format(
                     "Given atom does not belong this molecule: %d->%d", other
-                            .molecule().id(), other.id()));
+                            .molecule().id(), other._id));
         }
 
         for (Bond b : _bonds) {

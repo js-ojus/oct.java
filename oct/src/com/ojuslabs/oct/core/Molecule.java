@@ -25,9 +25,9 @@ public class Molecule
                                            // during the lifetime of the
                                            // molecule.
 
-    private List<Atom>         _atoms;    // List of this molecule's atoms.
-    private List<Bond>         _bonds;    // List of this molecule's bonds.
-    private List<Ring>         _rings;    // List of this molecule's rings.
+    private final List<Atom>   _atoms;    // List of this molecule's atoms.
+    private final List<Bond>   _bonds;    // List of this molecule's bonds.
+    private final List<Ring>   _rings;    // List of this molecule's rings.
 
     private int                _peakAId;  // Keeps track of running IDs of
                                            // atoms.
@@ -167,11 +167,9 @@ public class Molecule
             return null;
         }
 
-        int hash = _bonds.get(0).hash(a1, a2);
+        int hash = Bond.hash(a1, a2);
         for (Bond b : _bonds) {
-            if (b._hashValue() == hash) { // TODO(js): Change this only in
-                                          // conjuction
-                // with Bond#hashCode().
+            if (b.hashValue() == hash) {
                 return b;
             }
         }
@@ -304,8 +302,7 @@ public class Molecule
             return tb;
         }
 
-        Bond b = new Bond(++_peakBId, a1, a2);
-        b.setOrder(order);
+        Bond b = new Bond(++_peakBId, a1, a2, order);
         _bonds.add(b);
 
         // Set neighbours appropriately.

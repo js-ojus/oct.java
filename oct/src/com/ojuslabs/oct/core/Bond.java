@@ -8,7 +8,6 @@
 package com.ojuslabs.oct.core;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -23,34 +22,43 @@ import com.ojuslabs.oct.exception.UniquenessException;
  */
 public class Bond
 {
-    private final int  _id;    // Unique ID of this bond in its molecule.
+    private final int        _id;    // Unique ID of this bond in its molecule.
 
-    private final Atom _a1;
-    private final Atom _a2;
-    private BondOrder  _order; // Order of this bond.
-    private BondStereo _stereo; // Stereo configuration of this bond.
+    private final Atom       _a1;
+    private final Atom       _a2;
+    private BondOrder        _order; // Order of this bond.
+    private BondStereo       _stereo; // Stereo configuration of this bond.
 
-    private boolean    _isAro; // Is this bond aromatic?
-    private List<Ring> _rings; // The rings in which this bond participates.
+    private boolean          _isAro; // Is this bond aromatic?
+    private final List<Ring> _rings; // The rings in which this bond
+                                      // participates.
 
-    private int        _hash;  // Cached in the object for faster search.
+    private final int        _hash;  // Cached in the object for faster search.
 
     /**
+     * The atoms participating in a bond cannot change. Accordingly, they have
+     * be non-null and valid in the current molecule. However, this constructor
+     * is package-internal. It is the responsibility of {@link Molecule} to
+     * comply with these requirements.
+     * 
      * @param id
      *            The unique ID of this bond.
      * @param a1
      *            The first atom participating in this bond.
      * @param a2
      *            The second atom participating in this bond.
+     * @param order
+     *            The bond order of this bond. See {@link common.BondOrder} for
+     *            possible values.
      */
-    Bond(int id, Atom a1, Atom a2) {
+    Bond(int id, Atom a1, Atom a2, BondOrder order) {
         _id = id;
         _a1 = a1;
         _a2 = a2;
 
         _hash = hash(_a1, _a2);
 
-        _order = BondOrder.UNSPECIFIED;
+        _order = order;
         _stereo = BondStereo.NONE;
 
         _rings = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_S);
@@ -87,14 +95,25 @@ public class Bond
 
     /**
      * Sets the new order for this bond. It also adjusts the valence of the
-     * member atoms appropriately. Should that result in an invalid state, an
-     * {@link IllegalStateException} is thrown.
+     * member atoms appropriately.
+     * 
+     * There are three broad scenarios.
+     * <ol>
+     * <li>The given bond order is the same as the current one. The method
+     * returns immediately.</li>
+     * <li>The given bond order violates the valence of at least one atom. An
+     * exception is thrown.</li>
+     * <li>The given bond order can be successfully set, and is set.</li>
+     * </ol>
      * 
      * @param o
      *            The new bond order to set. See {@link BondOrder} for possible
      *            bond orders.
+     * @throws IllegalStateException
+     *             if the new bond order violates the valence configuration of
+     *             at least one atom.
      */
-    public void setOrder(BondOrder o) {
+    public void setOrder(BondOrder o) throws IllegalStateException {
         if (o == _order) {
             return;
         }
@@ -121,98 +140,6 @@ public class Bond
     }
 
     /**
-     * Answers the other participating atom in this bond.
-     * 
-     * @param ido
-     *            ID of the atom whose pairing atom is requested.
-     * @return The other atom participating in this bond.
-     */
-    public Atom otherAtom(int ido) {
-        if (_a1.id() == ido) {
-            return _a2;
-        }
-        else if (_a2.id() == ido) {
-            return _a1;
-        }
-        else {
-            throw new NoSuchElementException(String.format(
-                    "Atoms in this bond: %d, %d; given ID: %d", _a1.id(),
-                    _a2.id(), ido));
-        }
-    }
-
-    /**
-     * Computes and answers a unique hash for quick lookup.
-     * 
-     * <b>N.B.</b> A better design should have this as a thread-local top-level
-     * <i>function</i>. Unfortunately, Java does not offer a simple way of doing
-     * that.
-     * 
-     * @return A unique hash value that utilises the IDs of both the
-     *         participating atoms.
-     */
-    int hash(Atom a1, Atom a2) {
-        int result = 0;
-        if (a1.id() < a2.id()) {
-            result = 10000 * a1.id() + a2.id();
-        }
-        else {
-            result = 10000 * a2.id() + a1.id();
-        }
-
-        return result;
-    }
-
-    /**
-     * @return The precomputed hash value reflecting the atoms in this bond.
-     */
-    int _hashValue() {
-        return _hash;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
-        return String.format("Bond ID: %d [%d, %d]", _id, _a1.id(), _a2.id());
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof Bond)) {
-            return false;
-        }
-
-        Bond other = (Bond) obj;
-        if ((_order != other._order) || (_hash != other._hash)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    // TODO(js): Implement a meaningful `hashCode'. The value in `_hash' is not
-    // usable because `_order' is not immutable currently.
-
-    /**
-     * @return True if this bond has at least one aromatic atom participating.
-     */
-    public boolean isAromatic() {
-        return _isAro;
-    }
-
-    /**
      * @return The stereo configuration of this bond. See {@link BondStereo} for
      *         possible stereo configurations.
      */
@@ -230,11 +157,87 @@ public class Bond
     }
 
     /**
+     * Answers the other participating atom in this bond.
+     * 
+     * @param ido
+     *            ID of the atom whose pairing atom is requested.
+     * @return The other atom participating in this bond.
+     * @throws IllegalArgumentException
+     *             if the given atom is not a part of this bond.
+     */
+    public Atom otherAtom(int ido) throws IllegalArgumentException {
+        if (_a1.id() == ido) {
+            return _a2;
+        }
+        else if (_a2.id() == ido) {
+            return _a1;
+        }
+
+        throw new IllegalArgumentException(String.format(
+                "Atoms in this bond: %d, %d; given ID: %d", _a1.id(),
+                _a2.id(), ido));
+    }
+
+    /**
+     * Checks to see if the current bond binds the given atoms.
+     * 
+     * @param a1
+     *            One of the atoms in the bond.
+     * @param a2
+     *            The other atom in the bond.
+     * @return <code>true</code> if this bond binds the given atoms;
+     *         <code>false</code> otherwise.
+     */
+    public boolean binds(Atom a1, Atom a2) {
+        if ((_a1 == a1) && (_a2 == a2)) return true;
+        if ((_a1 == a2) && (_a2 == a1)) return true;
+
+        return false;
+    }
+
+    /**
+     * Computes and answers a unique hash for quick lookup.
+     * 
+     * <b>N.B.</b> A better design should have this as a thread-local top-level
+     * <i>function</i>. Unfortunately, Java does not offer a simple way of doing
+     * that.
+     * 
+     * @return A unique hash value that utilises the IDs of both the
+     *         participating atoms.
+     */
+    public static int hash(Atom a1, Atom a2) {
+        int result = 0;
+        if (a1.id() < a2.id()) {
+            result = 10000 * a1.id() + a2.id();
+        }
+        else {
+            result = 10000 * a2.id() + a1.id();
+        }
+
+        return result;
+    }
+
+    /**
+     * @return The precomputed hash value reflecting the atoms in this bond.
+     */
+    int hashValue() {
+        return _hash;
+    }
+
+    /**
+     * @return True if this bond has at least one aromatic atom participating.
+     */
+    public boolean isAromatic() {
+        return _isAro;
+    }
+
+    /**
+     * <b>N.B.</b> The current bond must participate in the given ring; however,
+     * this is assumed to have been taken care of by the parent molecule.
+     * Accordingly, this method is package-internal.
+     * 
      * @param r
-     *            The ring to add to this bond. <b>N.B.</b> The current bond
-     *            must participate in the given ring; however, this is assumed
-     *            to have been taken care of by the parent molecule.
-     *            Accordingly, this method is package-internal.
+     *            The ring to add to this bond.
      */
     void addRing(Ring r) {
         if (!_rings.contains(r)) {
@@ -243,12 +246,14 @@ public class Bond
     }
 
     /**
+     * <b>N.B.</b> The current bond must participate in the given ring; however,
+     * this is assumed to have been taken care of by the parent molecule.
+     * Accordingly, this method is package-internal.
+     * 
      * @param r
-     *            The ring to remove from this bond. <b>N.B.</b> The current
-     *            bond must participate in the given ring; however, this is
-     *            assumed to have been taken care of by the parent molecule.
-     *            Accordingly, this method is package-internal.
-     * @return True if the given ring was actually removed; false otherwise.
+     *            The ring to remove from this bond.
+     * @return <code>true</code> if the given ring was actually removed;
+     *         <code>false</code> otherwise.
      */
     boolean removeRing(Ring r) {
         return _rings.remove(r);
@@ -261,23 +266,19 @@ public class Bond
      *         otherwise.
      */
     public boolean inRing(Ring r) {
-        if (null == r.bond(_id)) {
-            return false;
-        }
-
-        return true;
+        return _rings.contains(r);
     }
 
     /**
      * @param n
      *            Required size of the ring in which this bond has to
      *            participate.
-     * @return True if this bond participates in at least one such ring; false
-     *         otherwise.
+     * @return <code>true</code> if this bond participates in at least one such
+     *         ring; <code>false</code> otherwise.
      */
     public boolean inRingOfSize(int n) {
         for (Ring r : _rings) {
-            if ((r.size() == n) && (null != r.bond(_id))) {
+            if (r.size() == n) {
                 return true;
             }
         }
@@ -287,12 +288,12 @@ public class Bond
 
     /**
      * @return The smallest ring in which this bond participates, if one such
-     *         exists; <code>null</code> otherwise. If more than one ring of the
-     *         smallest size if found, an exception is thrown.
+     *         unique ring exists; <code>null</code> otherwise.
      * @throws UniquenessException
+     *             if more than one ring of the smallest size are found.
      */
     public Ring smallestRing() throws UniquenessException {
-        int min = 0;
+        int min = Integer.MAX_VALUE;
         int count = 0;
         Ring ret = null;
 
@@ -331,5 +332,47 @@ public class Bond
      */
     public List<Ring> rings() {
         return ImmutableList.copyOf(_rings);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return String.format("Bond ID: %d [%d, %d]", _id, _a1.id(), _a2.id());
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Bond)) {
+            return false;
+        }
+
+        Bond other = (Bond) obj;
+        if ((_order != other._order) || (_hash != other._hash)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        return _hash << _order.value();
     }
 }
