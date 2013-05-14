@@ -58,15 +58,25 @@ public final class Element
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (!(obj instanceof Element)) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof Element)) {
+            return false;
+        }
 
         Element other = (Element) obj;
         if (symbol == null) {
-            if (other.symbol != null) return false;
+            if (other.symbol != null) {
+                return false;
+            }
         }
-        else if (!symbol.equals(other.symbol)) return false;
+        else if (!symbol.equals(other.symbol)) {
+            return false;
+        }
         return true;
     }
 }

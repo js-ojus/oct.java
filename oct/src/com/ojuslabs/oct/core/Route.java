@@ -16,22 +16,26 @@ package com.ojuslabs.oct.core;
  * molecule.
  * <p>
  * Note that in the absence of convergent synthesis reactions, the said tree
- * degenerates to linear list.
+ * degenerates to a linear list.
  */
 public class Route
 {
-    private static int _routeId;
+    private static int      _routeId;
 
-    private final int  _id;          // A unique ID for this route.
-    private double     _yield;       // Effective yield of this route.
-    private int        _numSteps;    // Maximum depth of this synthesis tree.
+    // A unique ID for this route.
+    private final int       _id;
+    // Effective yield of this route.
+    private double          _yield;
+    // Maximum depth of this synthesis tree.
+    private int             _numSteps;
 
-    private Molecule   _goalMolecule; // The goal molecule of this route.
-    private RouteNode  _goalNode;    // The node representing the final step
-                                      // that produces the goal molecule.
+    // The goal molecule of this route.
+    private final Molecule  _goalMolecule;
+    // The node representing the final step that produces the goal molecule.
+    private final RouteNode _goalNode;
 
-    private int        _peakNodeId;  // A running serial ID for the nodes in
-                                      // this route.
+    // A running serial ID for the nodes in this route.
+    private int             _peakNodeId;
 
     /**
      * Factory method for creating new routes.

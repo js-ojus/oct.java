@@ -30,41 +30,42 @@ import com.ojuslabs.oct.util.Point3D;
  */
 public class Atom
 {
-    private Element          _element;     // This atom's element type.
+    // This atom's element type.
+    private Element          _element;
+    // Containing molecule, if the atom is bound to one.
+    private Molecule         _mol;
+    // A unique canonical ID within its molecule; 1-based.
+    private int              _id;
+    // The input order serial number of this atom; 1-based.
+    private int              _inputId;
 
-    private Molecule         _mol;         // Containing molecule, if the atom
-                                            // is
-                                            // bound to one.
+    // These may be given or computed.
+    public Point3D           coordinates;
 
-    private int              _id;          // A unique canonical ID within its
-                                            // molecule; 1-based.
-    private int              _inputId;     // The input order serial number of
-                                            // this
-                                            // atom; 1-based.
+    // Total number of attached H atoms. These may be explicit or implicit.
+    private byte             _numH;
+    // Residual charge on the atom.
+    private byte             _charge;
+    // Current valence configuration of this atom.
+    private byte             _valence;
 
-    public Point3D           coordinates;  // These may be given or computed.
+    // Bonds this atom is a member of.
+    private final List<Bond> _bonds;
+    // This list in-line expands `_bonds` with repetitions for double/triple
+    // bonds.
+    private final List<Atom> _nbrs;
 
-    private byte             _numH;        // Number of attached H atoms.
-    private byte             _charge;      // Residual charge on the atom.
-    private byte             _valence;     // Current valence configuration of
-                                            // this
-                                            // atom.
-
-    private final List<Bond> _bonds;       // Bonds this atom is a member of.
-    private final List<Atom> _nbrs;        // This list in-line expands
-                                            // `_bonds` with
-    // repetitions for double/triple bonds.
-
-    private Chirality        _chirality;   // Chirality type.
+    private Chirality        _chirality;
     private Radical          _radical;
 
-    private final List<Ring> _rings;       // Rings this atom is a member of.
-    private boolean          _inAroRing;   // Is this atom in an aromatic ring?
-    private boolean          _inHetAroRing; // Is this atom in a hetero-aromatic
-                                            // ring?
-    private boolean          _isBridgeHead; // Is this atom a bridgehead?
-    private boolean          _isSpiro;     // Is the sole common atom of two
-                                            // rings?
+    // Rings this atom is a member of.
+    private final List<Ring> _rings;
+    private boolean          _inAroRing;
+    private boolean          _inHetAroRing;
+    // Is this atom a bridgehead of a bicyclic system of rings?
+    private boolean          _isBridgeHead;
+    // Is this atom the sole common atom of all of its rings?
+    private boolean          _isSpiro;
 
     /**
      * Initialisation of a new atom.
@@ -127,7 +128,7 @@ public class Atom
     }
 
     /**
-     * @return This atom's containing molecule, if any; else, <code>null</code>.
+     * @return This atom's containing molecule, if any; else, {@code null}.
      */
     public Molecule molecule() {
         return _mol;
@@ -140,7 +141,7 @@ public class Atom
      * 
      * @param mol
      *            Containing molecule, if any. To remove the current parent,
-     *            pass <code>null</code>.
+     *            pass {@code null}.
      * @param clear
      *            If true, resets the state of the atom; else, leaves it as is.
      */
@@ -216,6 +217,21 @@ public class Atom
     }
 
     /**
+     * @return The current chiral configuration of this atom.
+     */
+    public Chirality chirality() {
+        return _chirality;
+    }
+
+    /**
+     * @param chirality
+     *            The new chiral configuration of this atom.
+     */
+    void setChirality(Chirality chirality) {
+        _chirality = chirality;
+    }
+
+    /**
      * @return The radical configuration of this atom.
      */
     public Radical radical() {
@@ -267,9 +283,15 @@ public class Atom
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (!(obj instanceof Atom)) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof Atom)) {
+            return false;
+        }
 
         Atom other = (Atom) obj;
         if ((null == _mol) || (null == other.molecule())) {
@@ -341,7 +363,7 @@ public class Atom
      * @param other
      *            The other atom potentially bound to this atom.
      * @return The requested bond between this atom and the other atom;
-     *         <code>null</code> if one such does not exist.
+     *         {@code null} if one such does not exist.
      * @throws IllegalArgumentException
      */
     public Bond bondTo(Atom other) throws IllegalArgumentException {
@@ -403,7 +425,7 @@ public class Atom
 
     /**
      * @return The smallest ring in which this atom participates, if one such
-     *         exists; <code>null</code> otherwise. If more than one ring of the
+     *         exists; {@code null} otherwise. If more than one ring of the
      *         smallest size if found, an exception is thrown.
      * @throws UniquenessException
      */
@@ -463,8 +485,8 @@ public class Atom
      * @param delta
      *            The number by which the number of neighbours may be liable to
      *            change.
-     * @return <code>true</code> if the proposed change is within acceptable
-     *         valence limits; <code>false</code> otherwise.
+     * @return {@code true} if the proposed change is within acceptable valence
+     *         limits; {@code false} otherwise.
      */
     boolean tryChangeNumberOfNeighbours(int delta) {
         if (_nbrs.size() + delta > _valence) {
@@ -485,8 +507,7 @@ public class Atom
      * 
      * @param b
      *            The bond to be added to this atom.
-     * @return <code>true</code> upon successful addition; <code>false</code>
-     *         otherwise.
+     * @return {@code true} upon successful addition; {@code false} otherwise.
      */
     boolean unsafeAddBond(Bond b) {
         if (_bonds.contains(b)) {
@@ -513,8 +534,7 @@ public class Atom
      * 
      * @param b
      *            The bond to add to this atom.
-     * @return <code>true</code> upon successful addition; <code>false</code>
-     *         otherwise.
+     * @return {@code true} upon successful addition; {@code false} otherwise.
      * @throws IllegalStateException
      */
     boolean addBond(Bond b) throws IllegalStateException {
@@ -574,5 +594,40 @@ public class Atom
      */
     boolean removeRing(Ring r) {
         return _rings.remove(r);
+    }
+
+    /**
+     * @return {@code true} if this atom is currently a bridgehead;
+     *         {@code false} otherwise.
+     */
+    public boolean isBridgeHead() {
+        return _isBridgeHead;
+    }
+
+    /**
+     * @param mark
+     *            {@code true} if this atom should be set as a bridgehead;
+     *            {@code false} to reset the state to being not a bridgehead.
+     */
+    void markAsBridgeHead(boolean mark) {
+        _isBridgeHead = mark;
+    }
+
+    /**
+     * @return {@code true} if this atom is currently in a spiro configuration;
+     *         {@code false} otherwise.
+     */
+    public boolean isSpiro() {
+        return _isSpiro;
+    }
+
+    /**
+     * @param mark
+     *            {@code true} if this atom should be set in a spiro
+     *            configuration; {@code false} to reset the state to being not
+     *            in a spiro configuration.
+     */
+    void markAsSpiro(boolean mark) {
+        _isSpiro = mark;
     }
 }

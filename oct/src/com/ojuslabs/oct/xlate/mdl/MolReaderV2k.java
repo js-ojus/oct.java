@@ -31,9 +31,10 @@ public class MolReaderV2k implements MolReader
     private boolean       _skipProps;
     private boolean       _skipTags;
 
-    private int           _sectionStart;    // Line number where the current
-                                             // section began.
-    private int           _currentLine;     // Line number of the current line.
+    // Line number where the current section began.
+    private int           _sectionStart;
+    // Line number of the current line.
+    private int           _currentLine;
 
     private MolReaderHook _ctabHook;
     private MolReaderHook _propsHook;
@@ -445,8 +446,7 @@ public class MolReaderV2k implements MolReader
      *            The string with either the tag (data item name) or its value.
      * @param tag
      *            The previously parsed line, which may be a tag.
-     * @return The current tag or <code>null</code> depending on the previous
-     *         value.
+     * @return The current tag or {@code null} depending on the previous value.
      */
     String _parseTag(Molecule m, String s, String tag) {
         if (null != tag) {

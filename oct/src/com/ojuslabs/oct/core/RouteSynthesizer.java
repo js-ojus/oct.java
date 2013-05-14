@@ -7,7 +7,6 @@
 
 package com.ojuslabs.oct.core;
 
-
 /**
  * RouteSynthesizer is the high-level entry point for retrosynthesis. It starts
  * with a goal molecule, and searches for suitable routes in accordance with

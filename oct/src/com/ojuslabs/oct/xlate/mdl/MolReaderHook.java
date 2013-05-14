@@ -24,7 +24,7 @@ public interface MolReaderHook
      * @param l
      *            Part or full text of the molecule, as may be applicable.
      * @param m
-     *            Molecule object; guaranteed to be non-<code>null</code>.
+     *            Molecule object; guaranteed to be non-{@code null}.
      */
     void apply(List<String> l, Molecule m);
 }

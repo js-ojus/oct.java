@@ -22,18 +22,21 @@ import com.ojuslabs.oct.exception.UniquenessException;
  */
 public class Bond
 {
-    private final int        _id;    // Unique ID of this bond in its molecule.
+    // Unique ID of this bond in its molecule.
+    private final int        _id;
 
     private final Atom       _a1;
     private final Atom       _a2;
-    private BondOrder        _order; // Order of this bond.
-    private BondStereo       _stereo; // Stereo configuration of this bond.
+    private BondOrder        _order;
+    private BondStereo       _stereo;
 
-    private boolean          _isAro; // Is this bond aromatic?
-    private final List<Ring> _rings; // The rings in which this bond
-                                      // participates.
+    // Is this bond aromatic?
+    private boolean          _isAro;
+    // The rings in which this bond participates.
+    private final List<Ring> _rings;
 
-    private final int        _hash;  // Cached in the object for faster search.
+    // Cached in the object for faster search.
+    private final int        _hash;
 
     /**
      * The atoms participating in a bond cannot change. Accordingly, they have
@@ -185,12 +188,16 @@ public class Bond
      *            One of the atoms in the bond.
      * @param a2
      *            The other atom in the bond.
-     * @return <code>true</code> if this bond binds the given atoms;
-     *         <code>false</code> otherwise.
+     * @return {@code true} if this bond binds the given atoms; {@code false}
+     *         otherwise.
      */
     public boolean binds(Atom a1, Atom a2) {
-        if ((_a1 == a1) && (_a2 == a2)) return true;
-        if ((_a1 == a2) && (_a2 == a1)) return true;
+        if ((_a1 == a1) && (_a2 == a2)) {
+            return true;
+        }
+        if ((_a1 == a2) && (_a2 == a1)) {
+            return true;
+        }
 
         return false;
     }
@@ -252,8 +259,8 @@ public class Bond
      * 
      * @param r
      *            The ring to remove from this bond.
-     * @return <code>true</code> if the given ring was actually removed;
-     *         <code>false</code> otherwise.
+     * @return {@code true} if the given ring was actually removed;
+     *         {@code false} otherwise.
      */
     boolean removeRing(Ring r) {
         return _rings.remove(r);
@@ -273,8 +280,8 @@ public class Bond
      * @param n
      *            Required size of the ring in which this bond has to
      *            participate.
-     * @return <code>true</code> if this bond participates in at least one such
-     *         ring; <code>false</code> otherwise.
+     * @return {@code true} if this bond participates in at least one such ring;
+     *         {@code false} otherwise.
      */
     public boolean inRingOfSize(int n) {
         for (Ring r : _rings) {
@@ -288,7 +295,7 @@ public class Bond
 
     /**
      * @return The smallest ring in which this bond participates, if one such
-     *         unique ring exists; <code>null</code> otherwise.
+     *         unique ring exists; {@code null} otherwise.
      * @throws UniquenessException
      *             if more than one ring of the smallest size are found.
      */

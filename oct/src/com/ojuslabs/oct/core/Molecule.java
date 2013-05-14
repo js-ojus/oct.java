@@ -21,26 +21,27 @@ import com.ojuslabs.oct.common.Constants;
 
 public class Molecule
 {
-    private final long         _id;       // A unique ID. This does not change
-                                           // during the lifetime of the
-                                           // molecule.
+    // A unique ID. This does not change during the lifetime of the molecule.
+    private final long         _id;
 
-    private final List<Atom>   _atoms;    // List of this molecule's atoms.
-    private final List<Bond>   _bonds;    // List of this molecule's bonds.
-    private final List<Ring>   _rings;    // List of this molecule's rings.
+    // Atoms currently belonging to this molecule.
+    private final List<Atom>   _atoms;
+    // Bonds binding the atoms in this molecule.
+    private final List<Bond>   _bonds;
+    // Rings in all the ring systems in this molecule.
+    private final List<Ring>   _rings;
 
-    private int                _peakAId;  // Keeps track of running IDs of
-                                           // atoms.
-    private int                _peakBId;  // Keeps track of running IDs of
-                                           // bonds.
-    private int                _peakRId;  // Keeps track of running IDs of
-                                           // rings.
+    // Keeps track of running IDs of atoms.
+    private int                _peakAId;
+    // Keeps track of running IDs of bonds.
+    private int                _peakBId;
+    // Keeps track of running IDs of rings.
+    private int                _peakRId;
 
     public String              vendorId;
     public String              vendorName;
 
-    public Map<String, String> tags;      // Stores input data items as well as
-                                           // run-time attributes.
+    public Map<String, String> tags;
 
     // A running serial unique identifier for molecules.
     private static long        _molId;
@@ -110,7 +111,7 @@ public class Molecule
     /**
      * @param i
      *            Unique canonical ID of the atom in this molecule.
-     * @return Requested atom if found; <code>null</code> otherwise.
+     * @return Requested atom if found; {@code null} otherwise.
      */
     public Atom atom(int i) {
         for (Atom a : _atoms) {
@@ -125,7 +126,7 @@ public class Molecule
     /**
      * @param id
      *            Unique ID of the bond in this molecule.
-     * @return Requested bond if found; <code>null</code> otherwise.
+     * @return Requested bond if found; {@code null} otherwise.
      */
     public Bond bond(int id) {
         for (Bond b : _bonds) {
@@ -146,7 +147,7 @@ public class Molecule
      * @param a2
      *            The other atom in the bond.
      * @return The bond between the two given atoms, if one such exists;
-     *         <code>null</code> otherwise.
+     *         {@code null} otherwise.
      */
     public Bond bondBetween(Atom a1, Atom a2) {
         if ((this != a1.molecule()) || (this != a2.molecule())) {
@@ -180,7 +181,7 @@ public class Molecule
     /**
      * @param id
      *            Unique ID of the ring in this molecule.
-     * @return Requested ring if found; <code>null</code> otherwise.
+     * @return Requested ring if found; {@code null} otherwise.
      */
     public Ring ring(int id) {
         for (Ring r : _rings) {
@@ -280,7 +281,7 @@ public class Molecule
 
     /**
      * Adds a bond in this molecule between the two given atoms. Caller should
-     * ensure that the given atoms are not <code>null</code>.
+     * ensure that the given atoms are not {@code null}.
      * 
      * @param a1
      *            One of the atoms to be bonded.

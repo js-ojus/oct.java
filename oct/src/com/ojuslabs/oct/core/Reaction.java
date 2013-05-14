@@ -33,22 +33,21 @@ import com.ojuslabs.oct.common.Constants;
  */
 public class Reaction
 {
-    private final int      _reactionNumber; // Reaction number (from the
-                                            // database of general reactions)
-                                            // which is associated with this
-                                            // reaction object.
-
-    private List<Molecule> _reactants;     // Reactant and coreactants.
-    private List<Molecule> _products;      // Primary product and byproducts.
-    private List<Molecule> _catalysts;     // These do NOT contribute any atoms
-                                            // to the products.
-    private List<Molecule> _reagents;      // These contribute non-carbon
-                                            // atoms.
-    private List<Molecule> _solvents;      // These do NOT contribute any atoms
-                                            // to the products.
-
-    private double         _yield;         // Yield of this reaction as a
-                                            // percentage.
+    // Reaction number (from the database of general reactions) which is
+    // associated with this reaction object.
+    private final int            _reactionNumber;
+    // Reactant and coreactants.
+    private final List<Molecule> _reactants;
+    // Primary product and byproducts.
+    private final List<Molecule> _products;
+    // These do NOT contribute any atoms to the products.
+    private final List<Molecule> _catalysts;
+    // These contribute non-carbon atoms.
+    private final List<Molecule> _reagents;
+    // These do NOT contribute any atoms to the products.
+    private final List<Molecule> _solvents;
+    // Yield of this reaction as a percentage.
+    private double               _yield;
 
     public Reaction(int n) {
         if (n <= 0) {

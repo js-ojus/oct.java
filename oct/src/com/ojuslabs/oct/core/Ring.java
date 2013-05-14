@@ -23,25 +23,23 @@ import com.ojuslabs.oct.exception.ImmutabilityException;
  */
 public class Ring
 {
-    private final int              _id;       // Unique ID of this ring in its
-                                               // molecule.
+    // Unique ID of this ring in its molecule.
+    private final int              _id;
+    // Containing molecule of this ring.
+    private final Molecule         _mol;
 
-    private final Molecule         _mol;      // Containing molecule of this
-                                               // ring.
+    // The atoms in this ring. Atoms occur in order.
+    private final LinkedList<Atom> _atoms;
+    // The bonds forming this ring. Bonds occur in order.
+    private final LinkedList<Bond> _bonds;
+    // Other rings that share at least one bond with this ring.
+    private final LinkedList<Ring> _nbrs;
 
-    private final LinkedList<Atom> _atoms;    // The atoms in this ring. Atoms
-                                               // occur in order.
-    private final LinkedList<Bond> _bonds;    // The bonds forming this ring.
-                                               // Bonds occur in order.
-    private final LinkedList<Ring> _nbrs;     // Other rings that share at
-                                               // least one bond with this ring.
+    // Is this ring aromatic in its current configuration?
+    private boolean                _isAro;
 
-    private boolean                _isAro;    // Is this ring aromatic in its
-                                               // current
-                                               // configuration?
-
-    private boolean                _completed; // Is this ring completed and
-                                               // finalised?
+    // Is this ring completed and finalised?
+    private boolean                _completed;
 
     /**
      * @param mol
@@ -92,7 +90,7 @@ public class Ring
     /**
      * @param id
      *            Unique canonical ID of the requested atom.
-     * @return The requested atom if it exists; <code>null</code> otherwise.
+     * @return The requested atom if it exists; {@code null} otherwise.
      */
     public Atom atom(int id) {
         for (Atom a : _atoms) {
@@ -225,7 +223,7 @@ public class Ring
      * @param id
      *            The unique ID of the bond to locate.
      * @return The bond with the given ID, if it occurs in this ring;
-     *         <code>null</code> otherwise.
+     *         {@code null} otherwise.
      */
     public Bond bond(int id) {
         for (Bond b : _bonds) {
@@ -245,15 +243,27 @@ public class Ring
      */
     @Override
     public boolean equals(Object obj) {
-        if (!_completed) return false;
+        if (!_completed) {
+            return false;
+        }
 
-        if (this == obj) return true;
-        if (!(obj instanceof Ring)) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Ring)) {
+            return false;
+        }
 
         Ring other = (Ring) obj;
-        if (!other.isCompleted()) return false;
-        if (_mol.id() != other.molecule().id()) return false;
-        if (_atoms.size() != other.size()) return false;
+        if (!other.isCompleted()) {
+            return false;
+        }
+        if (_mol.id() != other.molecule().id()) {
+            return false;
+        }
+        if (_atoms.size() != other.size()) {
+            return false;
+        }
 
         LinkedList<Atom> l = other._atoms;
         for (int i = 0; i < _atoms.size(); i++) {
