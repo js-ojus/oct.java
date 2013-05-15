@@ -20,7 +20,7 @@ import com.google.common.collect.Lists;
  * 
  * A ring is created bound to a molecule, and cannot be re-bound.
  */
-public class Ring
+public final class Ring
 {
     // Unique ID of this ring in its molecule.
     private final int              _id;

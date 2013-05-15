@@ -19,7 +19,7 @@ import com.ojuslabs.oct.common.Constants;
  * Bond represents a chemical bond. This flavour is strictly between two atoms,
  * and does <b>not</b> cater to multi-bond requirements.
  */
-public class Bond
+public final class Bond
 {
     // Unique ID of this bond in its molecule.
     private final int        _id;

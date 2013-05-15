@@ -7,59 +7,72 @@
 
 package com.ojuslabs.oct.core;
 
+import static com.ojuslabs.oct.common.Constants.LIST_SIZE_S;
+
 import java.util.List;
 
 import com.google.common.collect.Lists;
-import com.ojuslabs.oct.common.Constants;
+import com.ojuslabs.oct.util.Reference;
 
 /**
- * Reaction is central to this library. It represents a chemical reaction with
+ * Reaction is central to this library. It represents a chemical reaction
+ * characterised by:
  * <ul>
- * <li>one or more reactants,</li>
- * <li>one or more products,</li>
- * <li>one or more catalysts,</li>
- * <li>one or more reagents and</li>
- * <li>one or more solvents.</li>
+ * <li>one product and</li>
+ * <li>one or more characteristic produced substructures in the product.</li>
  * </ul>
  * <p>
- * In addition, it has a rich variety of characteristics including
+ * In addition, it is qualified by:
  * <ul>
- * <li>yield,</li>
- * <li>allowed temperature range,</li>
- * <li>interfering groups (including potential destructions),</li>
- * <li>reaction conditions and</li>
+ * <li>criteria that atoms and bonds of the product have to meet, for this
+ * reaction to produce a characteristic substructure,</li>
+ * <li>criteria that specific reactants getting generated have to meet, for this
+ * reaction to generate them from generic reactant structures,</li>
+ * <li>reagents needed in the process,</li>
+ * <li>required temperature range,</li>
+ * <li>percentage yield of the product, subject to all of the above, and</li>
  * <li>literature references.</li>
  * </ul>
  */
 public class Reaction
 {
-    // Reaction number (from the database of general reactions) which is
-    // associated with this reaction object.
-    private final int            _reactionNumber;
-    // Reactant and coreactants.
-    private final List<Molecule> _reactants;
-    // Primary product and byproducts.
-    private final List<Molecule> _products;
-    // These do NOT contribute any atoms to the products.
-    private final List<Molecule> _catalysts;
-    // These contribute non-carbon atoms.
-    private final List<Molecule> _reagents;
-    // These do NOT contribute any atoms to the products.
-    private final List<Molecule> _solvents;
-    // Yield of this reaction as a percentage.
-    private double               _yield;
+    /*
+     * A unique reaction number (from the database of general reactions) which
+     * is associated with this reaction object.
+     */
+    private final int             _reactionNumber;
+
+    /*
+     * A list of the characteristic produced substructures of this general
+     * reaction.
+     */
+    private final List<Integer>   _pSubstructures;
+    // Criteria that the atoms and the bonds of the product should satisfy.
+    private final List<Integer>   _prodCriteria;
+    // Criteria that the atoms and the bonds of the reactant(s) should satisfy.
+    private final List<Integer>   _reacCriteria;
+    // Reagents participating in this reaction.
+    private final List<Integer>   _reagents;
+
+    // Lower limit of the required temperature range.
+    private int                   _tempLower;
+    // Upper limit of the required temperature range.
+    private int                   _tempUpper;
+
+    // Percentage yield of the product molecule.
+    private double                _yield;
+
+    // Literature references.
+    private final List<Reference> _references;
 
     public Reaction(int n) {
-        if (n <= 0) {
-            throw new IllegalArgumentException(
-                    String.format("Reaction number has to be a positive integer."));
-        }
         _reactionNumber = n;
 
-        _reactants = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_T);
-        _products = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_T);
-        _catalysts = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_T);
-        _reagents = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_T);
-        _solvents = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_T);
+        _pSubstructures = Lists.newArrayListWithCapacity(LIST_SIZE_S);
+        _prodCriteria = Lists.newArrayListWithCapacity(LIST_SIZE_S);
+        _reacCriteria = Lists.newArrayListWithCapacity(LIST_SIZE_S);
+        _reagents = Lists.newArrayListWithCapacity(LIST_SIZE_S);
+
+        _references = Lists.newArrayListWithCapacity(LIST_SIZE_S);
     }
 }

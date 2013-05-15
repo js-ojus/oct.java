@@ -27,7 +27,7 @@ import com.ojuslabs.oct.util.Point3D;
  * 
  * An atom is usually bound to a molecule, but may be free intermittently.
  */
-public class Atom
+public final class Atom
 {
     // This atom's element type.
     private Element          _element;
