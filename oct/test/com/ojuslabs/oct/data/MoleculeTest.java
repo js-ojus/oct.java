@@ -54,7 +54,7 @@ public class MoleculeTest
 
     @Test
     public void test002() {
-        _m.removeAtom(_m.atom(23));
+        _m.removeAtom(_m.atomByInputId(23));
 
         assertEquals(23, _m.numberOfAtoms());
         assertEquals(0, _m.numberOfTripleBonds());
@@ -62,7 +62,7 @@ public class MoleculeTest
 
     @Test
     public void test003() {
-        _m.removeAtom(_m.atom(2));
+        _m.removeAtom(_m.atomByInputId(2));
 
         assertEquals(23, _m.numberOfAtoms());
         assertEquals(24, _m.numberOfBonds());

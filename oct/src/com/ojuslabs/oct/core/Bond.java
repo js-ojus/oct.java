@@ -115,7 +115,7 @@ public class Bond
      *             if the new bond order violates the valence configuration of
      *             at least one atom.
      */
-    public void setOrder(BondOrder o) throws IllegalStateException {
+    public void setOrder(BondOrder o) {
         if (o == _order) {
             return;
         }
@@ -167,7 +167,7 @@ public class Bond
      * @throws IllegalArgumentException
      *             if the given atom is not a part of this bond.
      */
-    public Atom otherAtom(int ido) throws IllegalArgumentException {
+    public Atom otherAtom(int ido) {
         if (_a1.id() == ido) {
             return _a2;
         }
@@ -298,7 +298,7 @@ public class Bond
      * @throws IllegalStateException
      *             if more than one ring of the smallest size are found.
      */
-    public Ring smallestRing() throws IllegalStateException {
+    public Ring smallestRing() {
         int min = Integer.MAX_VALUE;
         int count = 0;
         Ring ret = null;
@@ -334,7 +334,7 @@ public class Bond
     }
 
     /**
-     * @return A read-only view of the rings this bond participates in.
+     * @return A read-only copy of the rings this bond participates in.
      */
     public List<Ring> rings() {
         return ImmutableList.copyOf(_rings);

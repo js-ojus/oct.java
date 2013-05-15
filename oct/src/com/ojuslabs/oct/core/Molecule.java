@@ -16,7 +16,6 @@ import java.util.NoSuchElementException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.ojuslabs.oct.common.BondOrder;
-import com.ojuslabs.oct.common.Constants;
 
 public class Molecule
 {
@@ -85,47 +84,23 @@ public class Molecule
         return _id;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#hashCode()
+    /**
+     * @param id
+     *            Unique normalised ID of the atom in this molecule.
+     * @return The atom with the given normalised ID.
      */
-    @Override
-    public int hashCode() {
-        int prime = 31;
-        return prime * (int) _id;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof Molecule)) {
-            return false;
-        }
-
-        Molecule other = (Molecule) obj;
-        if (_id != other.id()) {
-            return false;
-        }
-
-        return true;
+    public Atom atom(int id) {
+        return _atoms.get(id - 1);
     }
 
     /**
-     * @param i
-     *            Unique canonical ID of the atom in this molecule.
+     * @param id
+     *            Input ID of the atom in this molecule.
      * @return Requested atom if found; {@code null} otherwise.
      */
-    public Atom atom(int i) {
+    public Atom atomByInputId(int id) {
         for (Atom a : _atoms) {
-            if (i == a.id()) {
+            if (a.inputId() == id) {
                 return a;
             }
         }
@@ -140,7 +115,7 @@ public class Molecule
      */
     public Bond bond(int id) {
         for (Bond b : _bonds) {
-            if (id == b.id()) {
+            if (b.id() == id) {
                 return b;
             }
         }
@@ -158,22 +133,26 @@ public class Molecule
      *            The other atom in the bond.
      * @return The bond between the two given atoms, if one such exists;
      *         {@code null} otherwise.
+     * @throws IllegalArgumentException
+     *             if the given atoms do not belong to this molecule.
      */
     public Bond bondBetween(Atom a1, Atom a2) {
         if ((this != a1.molecule()) || (this != a2.molecule())) {
-            throw new NoSuchElementException(
+            throw new IllegalArgumentException(
                     String.format(
                             "At least one of the given atoms does not belong to this molecule: %d, atoms: %d->%d, %d->%d",
                             _id, a1.molecule().id(), a1.id(), a2.molecule()
                                     .id(), a2.id()));
         }
 
-        return _bondBetween(a1, a2);
+        return unsafeBondBetween(a1, a2);
     }
 
-    // This part is reusable internally within this package without incurring
-    // the overhead of the membership checks.
-    Bond _bondBetween(Atom a1, Atom a2) {
+    /*
+     * This part is reusable internally within this package without incurring
+     * the overhead of the membership checks.
+     */
+    Bond unsafeBondBetween(Atom a1, Atom a2) {
         if (_bonds.isEmpty()) {
             return null;
         }
@@ -195,7 +174,7 @@ public class Molecule
      */
     public Ring ring(int id) {
         for (Ring r : _rings) {
-            if (id == r.id()) {
+            if (r.id() == id) {
                 return r;
             }
         }
@@ -251,21 +230,40 @@ public class Molecule
     }
 
     /**
-     * @return A read-only view of this molecule's atoms.
+     * <b>N.B.</b> This method does <b>not</b> determine the aromaticity of the
+     * rings in this molecule. This oly queries the corresponding attribute in
+     * the rings. The actual determination of aromaticity is assumed to have
+     * been already performed elsewhere.
+     * 
+     * @return The number of aromatic rings in this molecule.
+     */
+    public int numberOfAromaticRings() {
+        int c = 0;
+        for (Ring r : _rings) {
+            if (r.isAromatic()) {
+                c++;
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * @return A read-only copy of this molecule's atoms.
      */
     public List<Atom> atoms() {
         return ImmutableList.copyOf(_atoms);
     }
 
     /**
-     * @return A read-only view of this molecule's bonds.
+     * @return A read-only copy of this molecule's bonds.
      */
     public List<Bond> bonds() {
         return ImmutableList.copyOf(_bonds);
     }
 
     /**
-     * @return A read-only view of this molecule's rings.
+     * @return A read-only copy of this molecule's rings.
      */
     public List<Ring> rings() {
         return ImmutableList.copyOf(_rings);
@@ -273,38 +271,83 @@ public class Molecule
 
     /**
      * Adds the given atom to this molecule. Should it be needed, it first
-     * removes it from its previous containing molecule. The rest of the state
-     * of the atom is not cleared.
+     * removes it from its current containing molecule. The rest of the state of
+     * the atom (such as its bonds) is also cleared.
      * 
      * @param a
      *            The atom to be added to this molecule.
+     * @throws IllegalArgumentException
+     *             if the given atom is {@code null}.
      */
     public void addAtom(Atom a) {
-        if ((null == a) || (this == a.molecule())) {
+        if (null == a) {
+            throw new IllegalArgumentException("Null atom given.");
+        }
+        if (this == a.molecule()) {
             return;
         }
 
-        a.setMolecule(this, false);
-        a.setId(++_peakAId);
+        a.setMolecule(this, true);
+        a.setInputId(++_peakAId);
         _atoms.add(a);
     }
 
     /**
-     * Adds a bond in this molecule between the two given atoms. Caller should
-     * ensure that the given atoms are not {@code null}.
+     * Adds the given newly-created atom to this molecule. <b>N.B. The given
+     * atom should be a fresh atom: <i>i.e.,</i> it should never have been a
+     * part of any molecule so far. Violating this will lead to undefined
+     * results.</b>
+     * 
+     * @param a
+     *            The atom to be added to this molecule.
+     * @throws IllegalArgumentException
+     *             if the given atom is {@code null}.
+     * @see #addAtom(Atom)
+     */
+    public void addNewAtom(Atom a) {
+        if (null == a) {
+            throw new IllegalArgumentException("Null atom given.");
+        }
+
+        a.setMolecule(this, false);
+        a.setInputId(++_peakAId);
+        _atoms.add(a);
+    }
+
+    /**
+     * Adds a bond in this molecule between the two given atoms, if one such
+     * does not exist already. Caller should ensure that the given atoms are not
+     * {@code null}.
      * 
      * @param a1
      *            One of the atoms to be bonded.
      * @param a2
      *            The other atom to be bonded.
+     * @param order
+     *            Must be single, double, triple or aromatic.
+     * @throws IllegalArgumentException
+     *             if given atoms do not belong to this molecule, or an invalid
+     *             bond order is given.
+     * @throws IllegalStateException
+     *             if forming this bond would violate the valence of at least
+     *             one of the participating atoms.
+     * @see com.ojuslabs.oct.common.BondOrder
      */
     public Bond addBond(Atom a1, Atom a2, BondOrder order) {
         if ((this != a1.molecule()) || (this != a2.molecule())) {
-            throw new NoSuchElementException(
+            throw new IllegalArgumentException(
                     String.format(
-                            "One of the atoms in the given bond does not exist in this molecule; atoms: %d->%d, %d->%d",
-                            a1.molecule().id(), a1.id(), a2.molecule().id(),
-                            a2.id()));
+                            "Molecule: %d, atom1's molecule: %d, atom2's molecule: %d",
+                            _id, a1.molecule().id(), a2.molecule().id()));
+        }
+        if ((BondOrder.SINGLE != order) &&
+                (BondOrder.DOUBLE != order) &&
+                (BondOrder.TRIPLE != order) &&
+                (BondOrder.AROMATIC != order)) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Only single, double, triple and aromatic bonds are allowed; given %s.",
+                            order.name()));
         }
 
         // Is this bond already present?
@@ -313,12 +356,22 @@ public class Molecule
             return tb;
         }
 
+        // Is it legal to form this bond between the given atoms?
+        boolean ok1 = a1.tryChangeNumberOfNeighbours(order.value());
+        boolean ok2 = a2.tryChangeNumberOfNeighbours(order.value());
+        if (!ok1 || !ok2) {
+            throw new IllegalStateException(
+                    String.format(
+                            "Valence violation: molecule %d, atom1 %d, atom2 %d, new bond order %d.",
+                            _id, a1.valence(), a2.valence(), order.value()));
+        }
+
         Bond b = new Bond(++_peakBId, a1, a2, order);
-        _bonds.add(b);
 
         // Set neighbours appropriately.
-        a1.addBond(b);
-        a2.addBond(b);
+        a1.unsafeAddBond(b);
+        a2.unsafeAddBond(b);
+        _bonds.add(b);
 
         return b;
     }
@@ -329,21 +382,25 @@ public class Molecule
      * 
      * @param b
      *            The bond to be broken.
+     * @throws IllegalArgumentException
+     *             if the given bond does not belong to this molecule.
      */
     public void breakBond(Bond b) {
         int idx = _bonds.indexOf(b);
         if (-1 == idx) {
-            throw new NoSuchElementException(
+            throw new IllegalArgumentException(
                     String.format(
                             "Given bond is not in this molecule. Molecule: %d, bond: %d",
                             _id, b.id()));
         }
 
-        _breakBond(b, idx);
+        unsafeBreakBond(b, idx);
     }
 
-    // Bypasses the membership check.
-    void _breakBond(Bond b, int idx) {
+    /*
+     * Bypasses the membership check.
+     */
+    void unsafeBreakBond(Bond b, int idx) {
         // Update both atoms.
         b.atom1().removeBond(b);
         b.atom2().removeBond(b);
@@ -359,8 +416,10 @@ public class Molecule
         }
     }
 
-    // Rings are broken only indirectly through one of their bonds. Hence this
-    // method is package-internal.
+    /*
+     * Rings are broken only indirectly through one of their bonds. Hence this
+     * method is package-internal.
+     */
     void removeRing(Ring r) {
         for (Atom a : r.atoms()) {
             a.removeRing(r);
@@ -380,28 +439,27 @@ public class Molecule
      * 
      * @param a
      *            The atom to remove from this molecule.
+     * @throws IllegalArgumentException
+     *             if the given atom does not belong to this molecule.
      */
     public void removeAtom(Atom a) {
         int idx = _atoms.indexOf(a);
         if (-1 == idx) {
-            throw new NoSuchElementException(
+            throw new IllegalArgumentException(
                     String.format(
                             "Given atom is not in this molecule. Molecule: %d, atom: %d",
                             _id, a.id()));
         }
 
-        _removeAtom(a, idx);
+        unsafeRemoveAtom(a, idx);
     }
 
     /*
      * Bypasses the membership check.
      */
-    void _removeAtom(Atom a, int idx) {
-        List<Atom> alist = Lists
-                .newArrayListWithCapacity(Constants.LIST_SIZE_S);
+    void unsafeRemoveAtom(Atom a, int idx) {
         for (Bond b : a.bonds()) {
-            alist.add(b.otherAtom(a.id()));
-            _breakBond(b, Integer.MIN_VALUE);
+            unsafeBreakBond(b, Integer.MIN_VALUE);
         }
 
         if (Integer.MIN_VALUE == idx) {
@@ -425,8 +483,7 @@ public class Molecule
      * @throws IllegalStateException
      *             if the given attribute name already exists.
      */
-    public void addAttribute(String name, String value)
-            throws IllegalArgumentException, IllegalStateException {
+    public void addAttribute(String name, String value) {
         if (name.isEmpty() || value.isEmpty()) {
             throw new IllegalArgumentException(
                     "Either the given attribute name or its value is empty.");
@@ -483,6 +540,94 @@ public class Molecule
 
         _attrNames.remove(idx);
         _attrValues.remove(idx);
+        return true;
+    }
+
+    /**
+     * @param name
+     *            The attribute whose presence needs to be checked.
+     * @return {@code true} if the given attribute exists; {@code false}
+     *         otherwise.
+     */
+    public boolean hasAttribute(String name) {
+        return _attrNames.contains(name);
+    }
+
+    /**
+     * @param name
+     *            The attribute whose value is requested.
+     * @return The requested value, if found.
+     * @throws NoSuchElementException
+     *             if the given attribute is not found.
+     */
+    public String attribute(String name) {
+        int idx = _attrNames.indexOf(name);
+        if (-1 == idx) {
+            throw new NoSuchElementException(String.format(
+                    "The given attribute `%s' does not exist.", name));
+        }
+
+        return _attrValues.get(idx);
+    }
+
+    /**
+     * <b>N.B.</b> Note that values can repeat. Hence, this method answers the
+     * <b><i>first</i></b> attribute (in input order) that has the given value.
+     * Do not use this method for more specific results in the case of repeating
+     * values.
+     * 
+     * @param value
+     *            The attribute value whose name is requested.
+     * @return The requested name, if found.
+     * @throws NoSuchElementException
+     *             if the given attribute value is not found.
+     */
+    public String attributeNameFor(String value) {
+        int idx = _attrValues.indexOf(value);
+        if (-1 == idx) {
+            throw new NoSuchElementException(String.format(
+                    "The given attribute value `%s' does not exist.", value));
+        }
+
+        return _attrNames.get(idx);
+    }
+
+    /**
+     * @return A read-only copy of this molecule's attributes.
+     */
+    public List<String> attributes() {
+        return ImmutableList.copyOf(_attrNames);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        return (int) _id;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Molecule)) {
+            return false;
+        }
+
+        Molecule other = (Molecule) obj;
+        if (_id != other.id()) {
+            return false;
+        }
+
         return true;
     }
 }

@@ -88,7 +88,7 @@ public class Ring
 
     /**
      * @param id
-     *            Unique canonical ID of the requested atom.
+     *            Unique normalised ID of the requested atom.
      * @return The requested atom if it exists; {@code null} otherwise.
      */
     public Atom atom(int id) {
@@ -115,7 +115,7 @@ public class Ring
      *             ring, or if the given atom does not logically continue from
      *             the most-recently added atom.
      */
-    public void addAtom(Atom a) throws IllegalStateException {
+    public void addAtom(Atom a) {
         if (_completed) {
             throw new IllegalStateException(String.format(
                     "Ring is already completed. %s", toString()));
@@ -148,7 +148,7 @@ public class Ring
      *             if the size of the ring is less than 3, or if there is no
      *             bond connecting the first atom and the last.
      */
-    public void complete() throws IllegalStateException {
+    public void complete() {
         if (_completed) {
             return;
         }
@@ -163,7 +163,7 @@ public class Ring
 
         Atom a1 = _atoms.getFirst();
         Atom a2 = _atoms.getLast();
-        Bond b = _mol._bondBetween(a1, a2);
+        Bond b = _mol.unsafeBondBetween(a1, a2);
         if (null == b) {
             throw new IllegalStateException(String.format(
                     "No bond between the first and the last atoms: %d, %d",
@@ -171,13 +171,15 @@ public class Ring
         }
 
         _bonds.add(b);
-        canonicalise();
+        normalise();
         _completed = true;
     }
 
-    // Transforms the ring into a standard representation, where the ring
-    // (logically) `begins' with that atom which has the lowest unique ID.
-    void canonicalise() {
+    /**
+     * Transforms the ring into a standard representation, where the ring
+     * (logically) `begins' with that atom which has the lowest unique ID.
+     */
+    void normalise() {
         int min = Integer.MAX_VALUE;
 
         // Find the index at which the atom with the lowest ID occurs.
@@ -288,21 +290,21 @@ public class Ring
     }
 
     /**
-     * @return A read-only view of this ring's atoms.
+     * @return A read-only copy of this ring's atoms.
      */
     public List<Atom> atoms() {
         return ImmutableList.copyOf(_atoms);
     }
 
     /**
-     * @return A read-only view of this ring's bonds.
+     * @return A read-only copy of this ring's bonds.
      */
     public List<Bond> bonds() {
         return ImmutableList.copyOf(_bonds);
     }
 
     /**
-     * @return A read-only view of this ring's neighbouring rings.
+     * @return A read-only copy of this ring's neighbouring rings.
      */
     public List<Ring> neighbours() {
         return ImmutableList.copyOf(_nbrs);

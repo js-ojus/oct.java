@@ -33,7 +33,7 @@ public class Atom
     private Element          _element;
     // Containing molecule, if the atom is bound to one.
     private Molecule         _mol;
-    // A unique canonical ID within its molecule; 1-based.
+    // A unique normalised ID within its molecule; 1-based.
     private int              _id;
     // The input order serial number of this atom; 1-based.
     private int              _inputId;
@@ -142,15 +142,16 @@ public class Atom
      *            Containing molecule, if any. To remove the current parent,
      *            pass {@code null}.
      * @param clear
-     *            If true, resets the state of the atom; else, leaves it as is.
+     *            If {@code true}, resets the state of the atom; else, leaves it
+     *            as is.
      */
-    public void setMolecule(Molecule mol, boolean clear) {
+    void setMolecule(Molecule mol, boolean clear) {
         if (_mol == mol) {
             return;
         }
 
         if (null != _mol) {
-            _mol._removeAtom(this, Integer.MIN_VALUE);
+            _mol.unsafeRemoveAtom(this, Integer.MIN_VALUE);
         }
 
         _mol = mol;
@@ -162,10 +163,21 @@ public class Atom
     }
 
     /**
-     * @return The canonical ID of this atom in its current molecule.
+     * @return The normalised ID of this atom in its current molecule.
      */
     public int id() {
         return _id;
+    }
+
+    /**
+     * Sets the new unique normalised ID of this atom. <b>N.B.</b> This method
+     * is package-internal, since only a molecule sets the IDs of its atoms.
+     * 
+     * @param id
+     *            The new unique ID of this atom.
+     */
+    void setId(int id) {
+        _id = id;
     }
 
     /**
@@ -179,25 +191,19 @@ public class Atom
     }
 
     /**
-     * Sets the new unique ID of this atom. <b>N.B.</b> This method is
+     * Sets the input ID of this atom. <b>N.B.</b> This method is
      * package-internal, since only a molecule sets the IDs of its atoms.
+     * <p>
+     * Initially, the normalised ID is set to be the same as the input ID, for
+     * convenience. When the molecule is normalised, all atoms are assigned
+     * their respective normalised IDs.
      * 
      * @param id
-     *            The new unique ID of this atom.
-     */
-    void setId(int id) {
-        _id = id;
-    }
-
-    /**
-     * Sets the new canonical ID of this atom. <b>N.B.</b> This method is
-     * package-internal, since only a molecule sets the IDs of its atoms.
-     * 
-     * @param id
-     *            The new canonical ID of this atom.
+     *            The new normalised ID of this atom.
      */
     void setInputId(int id) {
         _inputId = id;
+        _id = id;
     }
 
     /**
@@ -305,8 +311,8 @@ public class Atom
 
     /**
      * A free (unbound) atom has a hash code of 0. The hash code of a bound atom
-     * depends on its molecule's globally unique ID as well as its own canonical
-     * ID in that molecule.
+     * depends on its molecule's globally unique ID as well as its own
+     * normalised ID in that molecule.
      * 
      * @see java.lang.Object#hashCode()
      */
@@ -349,7 +355,7 @@ public class Atom
     }
 
     /**
-     * @return An read-only view of the bonds of this atom.
+     * @return An read-only copy of the bonds of this atom.
      */
     public List<Bond> bonds() {
         return ImmutableList.copyOf(_bonds);
@@ -365,7 +371,7 @@ public class Atom
      *         {@code null} if one such does not exist.
      * @throws IllegalArgumentException
      */
-    public Bond bondTo(Atom other) throws IllegalArgumentException {
+    public Bond bondTo(Atom other) {
         if (null == other) {
             throw new IllegalArgumentException("Null atom given.");
         }
@@ -428,7 +434,7 @@ public class Atom
      *         smallest size if found, an exception is thrown.
      * @throws IllegalStateException
      */
-    public Ring smallestRing() throws IllegalStateException {
+    public Ring smallestRing() {
         if (_rings.isEmpty()) {
             return null;
         }
@@ -458,7 +464,7 @@ public class Atom
     }
 
     /**
-     * @return A read-only view of the rings this atom participates in.
+     * @return A read-only copy of the rings this atom participates in.
      */
     public List<Ring> rings() {
         return ImmutableList.copyOf(_rings);
@@ -524,23 +530,22 @@ public class Atom
     }
 
     /**
-     * Adds the given bond to this atom.
-     * 
-     * Should the addition of this bond increase the number of bonds of this
-     * atom beyond its current valence configuration, an exception is thrown.
-     * <b>N.B.</b> The current atom must participate in the given bond; however,
-     * this is assumed to have been taken care of by the parent molecule.
+     * Adds the given bond to this atom. <b>N.B.</b> The current atom must
+     * participate in the given bond; however, this is assumed to have been
+     * taken care of by the parent molecule.
      * 
      * @param b
      *            The bond to add to this atom.
      * @return {@code true} upon successful addition; {@code false} otherwise.
      * @throws IllegalStateException
+     *             should the addition of this bond increase the number of bonds
+     *             of this atom beyond its current valence configuration.
      */
-    boolean addBond(Bond b) throws IllegalStateException {
+    boolean addBond(Bond b) {
         if (tryChangeNumberOfNeighbours(b.order().value())) {
             throw new IllegalStateException(
                     String.format(
-                            "Requested state illegal: atom: %d, valence: %d, current number of bonds: %d, order of the new bond: %d",
+                            "Atom: %d, valence: %d, current number of bonds: %d, order of the new bond: %d",
                             _id, _valence, numberOfBonds(), b.order().value()));
         }
 

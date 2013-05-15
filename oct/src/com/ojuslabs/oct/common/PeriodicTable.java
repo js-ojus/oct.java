@@ -402,7 +402,7 @@ public final class PeriodicTable
      * @return Requested element.
      * @throws IllegalArgumentException
      */
-    public Element element(String sym) throws IllegalArgumentException {
+    public Element element(String sym) {
         Element el = _symbolMap.get(sym);
         if (null == el) {
             throw new IllegalArgumentException("Invalid symbol given: " + sym);
@@ -416,7 +416,7 @@ public final class PeriodicTable
      * @return Requested element.
      * @throws IllegalArgumentException
      */
-    public Element element(int num) throws IllegalArgumentException {
+    public Element element(int num) {
         if ((num < 1) || (num >= _NUM_ELEMENTS)) {
             throw new IllegalArgumentException(String.format(
                     "Invalid atomic number given: %s", num));

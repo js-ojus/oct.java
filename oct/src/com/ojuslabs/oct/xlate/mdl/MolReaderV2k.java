@@ -281,7 +281,7 @@ public class MolReaderV2k implements MolReader
             a.setValence(val);
         }
 
-        mol.addAtom(a);
+        mol.addNewAtom(a);
     }
 
     /**
@@ -294,8 +294,8 @@ public class MolReaderV2k implements MolReader
      *            The current molecule.
      */
     void parseBond(String s, Molecule mol) {
-        Atom a1 = mol.atom(Integer.parseInt(s.substring(0, 3).trim()));
-        Atom a2 = mol.atom(Integer.parseInt(s.substring(3, 6).trim()));
+        Atom a1 = mol.atomByInputId(Integer.parseInt(s.substring(0, 3).trim()));
+        Atom a2 = mol.atomByInputId(Integer.parseInt(s.substring(3, 6).trim()));
         BondOrder bo = BondOrder.ofValue(Integer.parseInt(s.substring(6, 9)
                 .trim()));
 
@@ -388,13 +388,13 @@ public class MolReaderV2k implements MolReader
 
             switch (prefix) {
             case _M_CHG:
-                mol.atom(atomId).setCharge(value);
+                mol.atomByInputId(atomId).setCharge(value);
                 break;
             case _M_ISO:
-                mol.atom(atomId).setIsotope(value);
+                mol.atomByInputId(atomId).setIsotope(value);
                 break;
             case _M_RAD:
-                mol.atom(atomId).setRadical(Radical.ofValue(value));
+                mol.atomByInputId(atomId).setRadical(Radical.ofValue(value));
                 break;
             }
 

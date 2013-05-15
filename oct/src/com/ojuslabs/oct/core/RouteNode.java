@@ -119,7 +119,7 @@ public class RouteNode
     }
 
     /**
-     * @return A view of the children nodes of this route node.
+     * @return A read-only copy of the children nodes of this route node.
      */
     public List<RouteNode> children() {
         return ImmutableList.copyOf(_children);
