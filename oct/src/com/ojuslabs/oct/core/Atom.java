@@ -18,6 +18,7 @@ import com.ojuslabs.oct.common.Chirality;
 import com.ojuslabs.oct.common.Element;
 import com.ojuslabs.oct.common.PeriodicTable;
 import com.ojuslabs.oct.common.Radical;
+import com.ojuslabs.oct.common.Unsaturation;
 import com.ojuslabs.oct.util.Point3D;
 
 /**
@@ -43,10 +44,12 @@ public final class Atom
 
     // Total number of attached H atoms. These may be explicit or implicit.
     private byte             _numH;
-    // Residual charge on the atom.
+    // Net charge of the atom.
     private byte             _charge;
     // Current valence configuration of this atom.
     private byte             _valence;
+    // Current `unsaturation' value of this atom.
+    private Unsaturation     _unsaturation;
 
     // Bonds this atom is a member of.
     private final List<Bond> _bonds;
@@ -268,61 +271,11 @@ public final class Atom
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
-        return String.format("Atom ID: %d, input ID: %d, element: %s", _id,
-                _inputId, _element.symbol);
-    }
-
     /**
-     * Note that two atoms are considered equal only if their IDs are the same
-     * AND they reside in the same molecule. Effectively, a free (unbound) atom
-     * <b>cannot</b> be compared.
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
+     * @return Current unsaturation of this atom.
      */
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof Atom)) {
-            return false;
-        }
-
-        Atom other = (Atom) obj;
-        if ((null == _mol) || (null == other.molecule())) {
-            return false;
-        }
-        if ((_id != other._id) || (_mol.id() != other.molecule().id())) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * A free (unbound) atom has a hash code of 0. The hash code of a bound atom
-     * depends on its molecule's globally unique ID as well as its own
-     * normalised ID in that molecule.
-     * 
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
-        if (null == _mol) {
-            return 0;
-        }
-
-        return _id + 10000 * (int) _mol.id();
+    public Unsaturation unsaturation() {
+        return _unsaturation;
     }
 
     /**
@@ -388,6 +341,14 @@ public final class Atom
         }
 
         return null;
+    }
+
+    /**
+     * @return {@code true} if this atom participates in at least one ring;
+     *         {@code false} otherwise.
+     */
+    public boolean isCyclic() {
+        return _rings.size() > 0;
     }
 
     /**
@@ -633,5 +594,62 @@ public final class Atom
      */
     void markAsSpiro(boolean mark) {
         _isSpiro = mark;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return String.format("Atom ID: %d, input ID: %d, element: %s", _id,
+                _inputId, _element.symbol);
+    }
+
+    /**
+     * Note that two atoms are considered equal only if their IDs are the same
+     * AND they reside in the same molecule. Effectively, a free (unbound) atom
+     * <b>cannot</b> be compared.
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof Atom)) {
+            return false;
+        }
+
+        Atom other = (Atom) obj;
+        if ((null == _mol) || (null == other.molecule())) {
+            return false;
+        }
+        if ((_id != other._id) || (_mol.id() != other.molecule().id())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * A free (unbound) atom has a hash code of 0. The hash code of a bound atom
+     * depends on its molecule's globally unique ID as well as its own
+     * normalised ID in that molecule.
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        if (null == _mol) {
+            return 0;
+        }
+
+        return _id + 10000 * (int) _mol.id();
     }
 }

@@ -12,15 +12,21 @@ public enum Unsaturation
     /** All bonds are single. */
     NONE(0),
     /** Atom is part of an aromatic ring. */
-    ARO_RING(1),
-    /** C=C bond. */
-    CC_DBOND(2),
+    AROMATIC(1),
+    /** Double bond with a carbon atom. */
+    DBOND_C(2),
     /** Double bond with a hetero atom. */
-    HET_DBOND(3),
-    /** Two double bonds, possibly with hetero atoms. */
-    TWO_DBONDS(4),
-    /** Triple bond, possibly with a hetero atom. */
-    TBOND(5);
+    DBOND_X(3),
+    /** Two double bonds, both with carbon atoms. */
+    DBOND_C_C(4),
+    /** Two double bonds, one with a hetero atom. */
+    DBOND_C_X(5),
+    /** Two double bonds, both with hetero atoms. */
+    DBOND_X_X(6),
+    /** Triple bond with a carbon atom. */
+    TBOND_C(7),
+    /** Triple bond with a hetero atom. */
+    TBOND_X(8);
 
     private final int _unsaturation;
 
