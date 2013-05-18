@@ -44,6 +44,8 @@ public final class LeavingGroup extends Molecule {
      * @param id
      *            The unique ID of this leaving group. This is obtained from the
      *            database of leaving groups.
+     * @throws IllegalArgumentException
+     *             if the given ID is not a positive integer.
      */
     public void setLeavingGroupId(int id) {
         if (id <= 0) {

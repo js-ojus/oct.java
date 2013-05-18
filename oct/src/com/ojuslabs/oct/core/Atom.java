@@ -51,6 +51,9 @@ public final class Atom
     // Current `unsaturation' value of this atom.
     private Unsaturation     _unsaturation;
 
+    // A partial reflection of this atom for quick comparisons.
+    private int              _hash;
+
     // Bonds this atom is a member of.
     private final List<Bond> _bonds;
     // This list in-line expands `_bonds` with repetitions for double/triple
@@ -68,6 +71,17 @@ public final class Atom
     private boolean          _isBridgeHead;
     // Is this atom the sole common atom of all of its rings?
     private boolean          _isSpiro;
+
+    // The functional groups of this atom. These are in the descending order of
+    // importance, i.e., the first feature is the primary functional group.
+    private List<Integer>    _features;
+
+    // The number of electron-donating neighbours.
+    int                      _numEDNbrs;
+    // The number of unsaturated electron-withdrawing neighbours.
+    int                      _numUnsatEWNbrs;
+    // The number of saturated electron-withdrawing neighbours.
+    int                      _numSatEWNbrs;
 
     /**
      * Initialisation of a new atom.
@@ -95,6 +109,7 @@ public final class Atom
      * <b>N.B.</b> This method is package-internal.
      */
     void reset() {
+        _hash = 0;
         _chirality = Chirality.NONE;
         _radical = Radical.NONE;
 
@@ -432,8 +447,12 @@ public final class Atom
     }
 
     /**
-     * @return True if this atom participates in an aromatic ring, with or
-     *         without a hetero atom; false otherwise.
+     * <b>N.B.</b> This method does <b><i>not</i></b> compute this property. The
+     * said computation is expected to have been already performed. It answers
+     * the state of the internal flag.
+     * 
+     * @return {@code true} if this atom participates in an aromatic ring, with
+     *         or without a hetero atom; {@code false} otherwise.
      */
     public boolean isAromatic() {
         if (_inAroRing || _inHetAroRing) {
@@ -441,6 +460,18 @@ public final class Atom
         }
 
         return false;
+    }
+
+    /**
+     * <b>N.B.</b> This method does <b><i>not</i></b> compute this property. The
+     * said computation is expected to have been already performed. It answers
+     * the state of the internal flag.
+     * 
+     * @return {@code true} if this atom participates in a hetero aromatic ring;
+     *         {@code false} otherwise.
+     */
+    public boolean inHeteroAromaticRing() {
+        return _inHetAroRing;
     }
 
     /**
@@ -594,6 +625,81 @@ public final class Atom
      */
     void markAsSpiro(boolean mark) {
         _isSpiro = mark;
+    }
+
+    /**
+     * <b>N.B.</b> This method answers {@code 0} when no features are defined
+     * (yet) for this atom. It is mandatory to check this return value before
+     * using it.
+     * 
+     * @return The primary functional group of this atom, if one such exists;
+     *         {@code 0} otherwise.
+     */
+    public Integer funGroup() {
+        return _features.size() > 0 ? _features.get(0) : new Integer(0);
+    }
+
+    /**
+     * Adds the given feature, if it does not already exist.
+     * 
+     * @param f
+     *            The new feature to add to this atom.
+     */
+    void addFeature(Integer f) {
+        if (!_features.contains(f)) {
+            _features.add(f);
+        }
+    }
+
+    /**
+     * @return The total number of features, including the primary functional
+     *         group, defined for this atom.
+     */
+    public int numberOfFeatures() {
+        return _features.size();
+    }
+
+    /**
+     * This method does <b><i>not</i></b> perform any checks on the range of the
+     * given index. It is the caller's responsibility to provide a valid index.
+     * 
+     * @param idx
+     *            The index the feature at which is requested.
+     * @return The requested feature number.
+     */
+    public Integer feature(int idx) {
+        return _features.get(idx);
+    }
+
+    /**
+     * @return The number of electron-donating neighbours of this atom.
+     */
+    public int numberOfEDNeighbours() {
+        return _numEDNbrs;
+    }
+
+    /**
+     * @return The total number of electron-withdrawing neighbours of this atom.
+     */
+    public int numberOfEWNeighbours() {
+        return _numUnsatEWNbrs + _numSatEWNbrs;
+    }
+
+    /**
+     * A partial reflection of this atom for quick comparisons.
+     * 
+     * @return A compound value that is computed using the formula
+     *         <code>100 * atomic_number + 10 * unsaturation + number_of_hydrogens</code>
+     *         .
+     */
+    public int hashValue() {
+        if (0 == _hash) {
+            _hash = 100 * _element.number +
+                    10 * _unsaturation.value() +
+                    _numH;
+        }
+
+        return _hash;
     }
 
     /*

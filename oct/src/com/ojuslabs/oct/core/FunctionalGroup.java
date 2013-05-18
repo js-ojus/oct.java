@@ -44,6 +44,8 @@ public final class FunctionalGroup extends Molecule {
      * @param id
      *            The unique ID of this functional group. This is obtained from
      *            the database of functional groups.
+     * @throws IllegalArgumentException
+     *             if the given ID is not a positive integer.
      */
     public void setFunGroupId(int id) {
         if (id <= 0) {
