@@ -14,6 +14,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.ojuslabs.oct.common.BondOrder;
 import com.ojuslabs.oct.common.Chirality;
 import com.ojuslabs.oct.common.Element;
 import com.ojuslabs.oct.common.PeriodicTable;
@@ -359,6 +360,51 @@ public final class Atom
     }
 
     /**
+     * <b>N.B.</b> This method assumes that the molecule is in a normalised
+     * state. Otherwise, the results are undefined!
+     * 
+     * @return The doubly-bonded neighbour atom with the lowest normalised ID,
+     *         if one such exists; {@code null} otherwise.
+     */
+    public Atom firstDoublyBondedNeighbour() {
+        if ((_unsaturation.compareTo(Unsaturation.DBOND_C) < 0) ||
+                (_unsaturation.compareTo(Unsaturation.DBOND_X_X) > 0)) {
+            return null; // No double bond(s).
+        }
+
+        for (Bond b : _bonds) {
+            if (BondOrder.DOUBLE == b.order()) {
+                return b.otherAtom(_id);
+            }
+        }
+
+        // Should be dead code!
+        return null;
+    }
+
+    /**
+     * <b>N.B.</b> This method assumes that the molecule is in a normalised
+     * state. Otherwise, the results are undefined!
+     * 
+     * @return The multiply-bonded neighbour atom with the lowest normalised ID,
+     *         if one such exists; {@code null} otherwise.
+     */
+    public Atom firstMultiplyBondedNeighbour() {
+        if (_unsaturation.compareTo(Unsaturation.DBOND_C) < 0) {
+            return null; // No multiply-bonded neighbour(s).
+        }
+
+        for (Bond b : _bonds) {
+            if (b.order().compareTo(BondOrder.SINGLE) > 0) {
+                return b.otherAtom(_id);
+            }
+        }
+
+        // Should be dead code!
+        return null;
+    }
+
+    /**
      * @return {@code true} if this atom participates in at least one ring;
      *         {@code false} otherwise.
      */
@@ -376,27 +422,44 @@ public final class Atom
     /**
      * @param r
      *            Ring in which we check this atom's membership.
-     * @return True if this atom participates in the given ring; false
-     *         otherwise.
+     * @return {@code true} if this atom participates in the given ring;
+     *         {@code false} otherwise.
      */
     public boolean inRing(Ring r) {
-        if (null == r.atom(_id)) {
-            return false;
+        if (_rings.contains(r)) {
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     /**
      * @param n
      *            Required size of the ring in which this atom has to
      *            participate.
-     * @return True if this atom participates in at least one ring of the given
-     *         size; false otherwise.
+     * @return {@code true} if this atom participates in at least one ring of
+     *         the given size; {@code false} otherwise.
      */
     public boolean inRingOfSize(int n) {
         for (Ring r : _rings) {
-            if ((r.size() == n) && (null != r.atom(_id))) {
+            if (r.size() == n) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param n
+     *            Required minimum size of the ring in which this atom has to
+     *            participate.
+     * @return {@code true} if this atom participates in at least one ring of at
+     *         least the given size; {@code false} otherwise.
+     */
+    public boolean inRingOfSizeAtLeast(int n) {
+        for (Ring r : _rings) {
+            if (r.size() > n) {
                 return true;
             }
         }
@@ -472,6 +535,18 @@ public final class Atom
      */
     public boolean inHeteroAromaticRing() {
         return _inHetAroRing;
+    }
+
+    /**
+     * <b>N.B.</b> This condition has to be used carefully, because we are
+     * imposing a heuristic limit of 8 member atoms for a useful ring.
+     * 
+     * @return {@code true} if the current atom does not participate in any
+     *         ring, or if it participates in at least one ring of size 9 or
+     *         more.
+     */
+    public boolean isMechanisticallyAcyclic() {
+        return (0 == _rings.size()) || inRingOfSizeAtLeast(9);
     }
 
     /**
@@ -632,7 +707,7 @@ public final class Atom
      * (yet) for this atom. It is mandatory to check this return value before
      * using it.
      * 
-     * @return The primary functional group of this atom, if one such exists;
+     * @return The primary functional group ID of this atom, if one such exists;
      *         {@code 0} otherwise.
      */
     public Integer funGroup() {
@@ -672,6 +747,30 @@ public final class Atom
     }
 
     /**
+     * @param f
+     *            The feature ID whose presence has to be checked.
+     * @return {@code true} if the current atom has the given feature;
+     *         {@code false} otherwise.
+     */
+    public boolean hasFeature(Integer f) {
+        return _features.contains(f);
+    }
+
+    /**
+     * Answers whether this atom can play an active role in a reaction. Note
+     * that the atom may yet play an active role in a reaction, as a reaction
+     * centre.
+     * 
+     * @return {@code true} if this atom has at least one feature defined, or is
+     *         unsaturated or is not a carbon atom; {@code false} otherwise.
+     */
+    public boolean isFunctional() {
+        return (_features.size() > 0) ||
+                (_unsaturation.compareTo(Unsaturation.NONE) > 0) ||
+                (6 != _element.number);
+    }
+
+    /**
      * @return The number of electron-donating neighbours of this atom.
      */
     public int numberOfEDNeighbours() {
@@ -683,6 +782,40 @@ public final class Atom
      */
     public int numberOfEWNeighbours() {
         return _numUnsatEWNbrs + _numSatEWNbrs;
+    }
+
+    /**
+     * Answers whether this atom by itself can act as a leaving group.
+     * 
+     * @return {@code true} if this atom is terminal, and is not a carbon atom;
+     *         {@code false} otherwise.
+     */
+    public boolean isAtomicLeavingGroup() {
+        return (1 == _bonds.size()) && (6 != _element.number);
+    }
+
+    /**
+     * @return {@code true} if the current atom is a carbon with exactly two
+     *         hydrogen atoms bound to it; {@code false} otherwise.
+     */
+    public boolean isCh2() {
+        return (6 == _element.number) && (2 == _numH);
+    }
+
+    /**
+     * @return {@code true} if the current atom is a carbon with exactly three
+     *         hydrogen atoms bound to it; {@code false} otherwise.
+     */
+    public boolean isCh3() {
+        return (6 == _element.number) && (3 == _numH);
+    }
+
+    /**
+     * @return {@code true} if the current atom is an oxygen with one hydrogen
+     *         atom bound to it; {@code false} otherwise.
+     */
+    public boolean isHydroxyl() {
+        return (8 == _element.number) && (1 == _numH);
     }
 
     /**

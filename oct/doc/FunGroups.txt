@@ -1,0 +1,7 @@
+1: Generic electron-withdrawing group
+2: Generic electron-withdrawing neighbour
+3: Generic electron-donating neighbour
+
+10001: Generic electron-withdrawing groups
+10002: Generic electron-withdrawing neighbours
+10003: Generic electron-donating neighbours
