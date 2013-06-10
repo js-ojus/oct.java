@@ -1,13 +1,15 @@
-.metadata
+.metadata/
 .classpath
 .project
-.settings
+.settings/
 .pmd
+.idea/
 
 *.class
 *.jar
-bin
-build
+*.iml
+bin/
+build/
 
 *.tar
 *.gz
