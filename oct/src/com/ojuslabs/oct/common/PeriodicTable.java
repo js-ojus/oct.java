@@ -20,21 +20,21 @@ public final class PeriodicTable
 {
     // Number of elements. This should be adjusted when adding or removing
     // elements from the list and the map.
-    static final int                      _NUM_ELEMENTS = 328;
+    private static final int              _NUM_ELEMENTS = 328;
 
     // Singleton instance.
-    static PeriodicTable                  _instance;
+    private static PeriodicTable          _instance;
 
     // Collections for ready reference.
     private ImmutableList<Element>        _elements;
     private ImmutableMap<String, Element> _symbolMap;
 
     /**
-     * A single instance of <code>PeriodicTable</code> is ever present in the
+     * A single instance of {@code PeriodicTable} is ever present in the
      * program. This method ensures that, and always answers the same singleton
      * instance.
      * 
-     * @return The singleton instance of <code>PeriodicTable</code>.
+     * @return The singleton instance of {@code PeriodicTable}.
      */
     public static PeriodicTable instance() {
         if (null != _instance) {

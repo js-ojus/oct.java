@@ -47,5 +47,4 @@ public abstract class AbstractGroup {
     public String description() {
         return _desc;
     }
-
 }
