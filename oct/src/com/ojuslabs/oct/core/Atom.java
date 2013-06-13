@@ -459,7 +459,7 @@ public final class Atom
      */
     public boolean inRingOfSizeAtLeast(int n) {
         for (Ring r : _rings) {
-            if (r.size() > n) {
+            if (r.size() >= n) {
                 return true;
             }
         }
