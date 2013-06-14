@@ -12,6 +12,7 @@ import static com.ojuslabs.oct.common.Constants.LIST_SIZE_S;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.ojuslabs.oct.common.BondOrder;
@@ -68,6 +69,7 @@ public final class Atom
     private final List<Ring> _rings;
     private boolean          _inAroRing;
     private boolean          _inHetAroRing;
+    private boolean          _isBenzylic;
     // Is this atom a bridgehead of a bicyclic system of rings?
     private boolean          _isBridgeHead;
     // Is this atom the sole common atom of all of its rings?
@@ -550,6 +552,27 @@ public final class Atom
     }
 
     /**
+     * @param b
+     *            The state to set this atom to. This method is invoked by one
+     *            of the containing rings or the containing molecule during
+     *            normalisation or later.
+     */
+    void setBenzylic(boolean b) {
+        _isBenzylic = b;
+    }
+
+    /**
+     * <b>N.B.</b> This method could answer different values at different points
+     * of time, depending on the changes to the containing molecule.
+     * 
+     * @return {@code true} if this atom is currently in a benzylic position;
+     *         {@code false} otherwise.
+     */
+    public boolean isBenzylic() {
+        return _isBenzylic;
+    }
+
+    /**
      * Checks to see that the proposed +ve or -ve change in the number of
      * neighbours is valid for this atom's current valence configuration. This
      * method is package-internal currently.
@@ -643,6 +666,40 @@ public final class Atom
     }
 
     /**
+     * @param al
+     *            A list of atom IDs in which we desire to find if any of this
+     *            atom's neighbours is present.
+     * @return The first such neighbour found in the given list, if one such
+     *         exists; {@code null} otherwise.
+     */
+    public Atom firstNeighbourInList(List<Integer> al) {
+        for (Atom a : _nbrs) {
+            if (al.contains(a._id)) {
+                return a;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param al
+     *            A list of atom IDs in which we desire to see if all of this
+     *            atom's neighbours are present.
+     * @return {@code true} if all of this atom's neighbours are found in the
+     *         given list; {@code false} otherwise.
+     */
+    public boolean areAllNeighboursInList(List<Integer> al) {
+        for (Atom a : _nbrs) {
+            if (!al.contains(a._id)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * @param r
      *            The ring to add to this atom. <b>N.B.</b> The current atom
      *            must participate in the given ring; however, this is assumed
@@ -710,7 +767,7 @@ public final class Atom
      * @return The primary functional group ID of this atom, if one such exists;
      *         {@code 0} otherwise.
      */
-    public Integer funGroup() {
+    public Integer functionalGroup() {
         return _features.size() > 0 ? _features.get(0) : new Integer(0);
     }
 
@@ -757,6 +814,14 @@ public final class Atom
     }
 
     /**
+     * @return A JSON string representation of the list of this atom's features.
+     */
+    public String featuresAsJson() {
+        Joiner j = Joiner.on(", ");
+        return String.format("{ features: [%s] }", j.join(_features));
+    }
+
+    /**
      * Answers whether this atom can play an active role in a reaction. Note
      * that the atom may yet play an active role in a reaction, as a reaction
      * centre.
@@ -782,6 +847,22 @@ public final class Atom
      */
     public int numberOfEWNeighbours() {
         return _numUnsatEWNbrs + _numSatEWNbrs;
+    }
+
+    /**
+     * An atom has enolic hydrogens if it is a carbon atom, is saturated, has at
+     * least one electron-withdrawing neighbour, and is not a bridgehead.
+     * 
+     * @return The number of bonded hydrogen atoms, if the atom satisfies the
+     *         above criteria; {@code 0} otherwise.
+     */
+    public int numberOfEnolicHydrogens() {
+        // TODO(js): replace `-1` with the actual functional group number.
+        if ((Unsaturation.NONE == _unsaturation) && _features.contains(-1)) {
+            return _numH;
+        }
+
+        return 0;
     }
 
     /**
@@ -819,19 +900,112 @@ public final class Atom
     }
 
     /**
-     * A partial reflection of this atom for quick comparisons.
+     * @return {@code true} if the current atom is either a nitrogen, an oxygen,
+     *         a phosphorous or a sulfur atom; {@code false} otherwise.
+     */
+    public boolean isOneOfNOPS() {
+        return (7 == _element.number) || (8 == _element.number)
+                || (15 == _element.number) || (16 == _element.number);
+    }
+
+    /**
+     * @return {@code true} if the current atom is a carbon with four single
+     *         bonds; {@code false} otherwise.
+     */
+    public boolean isSaturatedC() {
+        return (60 == _hash / 10);
+    }
+
+    /**
+     * @return {@code true} if the current atom is a carbon with four single
+     *         bonds, two of which are to hydrogen atoms; {@code false}
+     *         otherwise.
+     */
+    public boolean isSaturatedCh2() {
+        return (602 == _hash);
+    }
+
+    /**
+     * @return {@code true} if the current atom is a carbon with four single
+     *         bonds, at least one of which is to a hydrogen; {@code false}
+     *         otherwise.
+     */
+    public boolean isSaturatedCHavingH() {
+        return (60 == _hash / 10) && (_numH > 0);
+    }
+
+    /**
+     * @return {@code true} if the current atom has four single bonds, at least
+     *         one of which is to a hydrogen; {@code false} otherwise.
+     */
+    public boolean isSaturatedHavingH() {
+        return (Unsaturation.NONE == _unsaturation) && (_numH > 0);
+    }
+
+    /**
+     * @return {@code true} if the current atom has only one neighbour;
+     *         {@code false} otherwise.
+     */
+    public boolean isTerminal() {
+        return (1 == _bonds.size());
+    }
+
+    /**
+     * @return {@code true} if the current atom is not a carbon, and has only
+     *         one neighbour; {@code false} otherwise.
+     */
+    public boolean isTerminalHeteroAtom() {
+        return (6 != _element.number) && (1 == _bonds.size());
+    }
+
+    /**
+     * @return {@code true} if the current atom is an oxygen, and has only one
+     *         neighbour; {@code false} otherwise.
+     */
+    public boolean isTerminalO() {
+        return (8 == _element.number) && (1 == _bonds.size());
+    }
+
+    /**
+     * @return {@code true} if the current atom is a nitrogen, and currently has
+     *         a valence of 3; {@code false} otherwise.
+     */
+    public boolean isTrivalentN() {
+        return (7 == _element.number) && (3 == _valence);
+    }
+
+    /**
+     * @return {@code true} if the current atom is a saturated benzylic carbon
+     *         with at least one hydrogen atom bound to it.
+     */
+    public boolean isBenzylicCh() {
+        return _isBenzylic && (6 == _element.number)
+                && (Unsaturation.NONE == _unsaturation) && (_numH > 0);
+    }
+
+    /**
+     * This method computes an internal compound hash value that is computed
+     * using the formula
+     * {@code 100 * atomic_number + 10 * unsaturation + number_of_hydrogens}.
+     * This method is invoked by the containing molecule during normalisation.
+     */
+    void computeHashValue() {
+        _hash = 100 * _element.number +
+                10 * _unsaturation.value() +
+                _numH;
+    }
+
+    /**
+     * A partial reflection of this atom for quick comparisons. <b>N.B.</b> This
+     * value is computed during the process of normalisation of the containing
+     * molecule. Subsequent changes to the molecule could potentially invalidate
+     * this.
      * 
      * @return A compound value that is computed using the formula
-     *         <code>100 * atomic_number + 10 * unsaturation + number_of_hydrogens</code>
+     *         {@code 100 * atomic_number + 10 * unsaturation + number_of_hydrogens}
      *         .
      */
     public int hashValue() {
-        if (0 == _hash) {
-            _hash = 100 * _element.number +
-                    10 * _unsaturation.value() +
-                    _numH;
-        }
-
         return _hash;
     }
 

@@ -48,6 +48,8 @@ public final class FunctionalGroups {
         ImmutableMap.Builder<Integer, FunctionalGroup> builder = ImmutableMap
                 .builder();
 
+        // TODO(js): fill functional group values.
+
         _groups = builder.build();
     }
 
