@@ -51,7 +51,7 @@ public final class Atom
     // Current valence configuration of this atom.
     private byte             _valence;
     // Current `unsaturation' value of this atom.
-    private Unsaturation     _unsaturation;
+    private Unsaturation     _unsat;
 
     // A partial reflection of this atom for quick comparisons.
     private int              _hash;
@@ -293,7 +293,7 @@ public final class Atom
      * @return Current unsaturation of this atom.
      */
     public Unsaturation unsaturation() {
-        return _unsaturation;
+        return _unsat;
     }
 
     /**
@@ -369,8 +369,8 @@ public final class Atom
      *         if one such exists; {@code null} otherwise.
      */
     public Atom firstDoublyBondedNeighbour() {
-        if ((_unsaturation.compareTo(Unsaturation.DBOND_C) < 0) ||
-                (_unsaturation.compareTo(Unsaturation.DBOND_X_X) > 0)) {
+        if ((_unsat.compareTo(Unsaturation.DBOND_C) < 0) ||
+                (_unsat.compareTo(Unsaturation.DBOND_X_X) > 0)) {
             return null; // No double bond(s).
         }
 
@@ -392,7 +392,7 @@ public final class Atom
      *         if one such exists; {@code null} otherwise.
      */
     public Atom firstMultiplyBondedNeighbour() {
-        if (_unsaturation.compareTo(Unsaturation.DBOND_C) < 0) {
+        if (_unsat.compareTo(Unsaturation.DBOND_C) < 0) {
             return null; // No multiply-bonded neighbour(s).
         }
 
@@ -831,7 +831,7 @@ public final class Atom
      */
     public boolean isFunctional() {
         return (_features.size() > 0) ||
-                (_unsaturation.compareTo(Unsaturation.NONE) > 0) ||
+                (_unsat.compareTo(Unsaturation.NONE) > 0) ||
                 (6 != _element.number);
     }
 
@@ -858,7 +858,7 @@ public final class Atom
      */
     public int numberOfEnolicHydrogens() {
         // TODO(js): replace `-1` with the actual functional group number.
-        if ((Unsaturation.NONE == _unsaturation) && _features.contains(-1)) {
+        if ((Unsaturation.NONE == _unsat) && _features.contains(-1)) {
             return _numH;
         }
 
@@ -879,7 +879,7 @@ public final class Atom
      * @return {@code true} if the current atom is a carbon with exactly two
      *         hydrogen atoms bound to it; {@code false} otherwise.
      */
-    public boolean isCh2() {
+    public boolean isCH2() {
         return (6 == _element.number) && (2 == _numH);
     }
 
@@ -887,7 +887,7 @@ public final class Atom
      * @return {@code true} if the current atom is a carbon with exactly three
      *         hydrogen atoms bound to it; {@code false} otherwise.
      */
-    public boolean isCh3() {
+    public boolean isCH3() {
         return (6 == _element.number) && (3 == _numH);
     }
 
@@ -897,6 +897,15 @@ public final class Atom
      */
     public boolean isHydroxyl() {
         return (8 == _element.number) && (1 == _numH);
+    }
+
+    /**
+     * @return {@code true} if the current atom is either a nitrogen, an oxygen
+     *         or a sulfur atom; {@code false} otherwise.
+     */
+    public boolean isOneOfNOS() {
+        return (7 == _element.number) || (8 == _element.number)
+                || (16 == _element.number);
     }
 
     /**
@@ -921,7 +930,7 @@ public final class Atom
      *         bonds, two of which are to hydrogen atoms; {@code false}
      *         otherwise.
      */
-    public boolean isSaturatedCh2() {
+    public boolean isSaturatedCH2() {
         return (602 == _hash);
     }
 
@@ -939,7 +948,7 @@ public final class Atom
      *         one of which is to a hydrogen; {@code false} otherwise.
      */
     public boolean isSaturatedHavingH() {
-        return (Unsaturation.NONE == _unsaturation) && (_numH > 0);
+        return (Unsaturation.NONE == _unsat) && (_numH > 0);
     }
 
     /**
@@ -978,9 +987,95 @@ public final class Atom
      * @return {@code true} if the current atom is a saturated benzylic carbon
      *         with at least one hydrogen atom bound to it.
      */
-    public boolean isBenzylicCh() {
+    public boolean isBenzylicCH() {
         return _isBenzylic && (6 == _element.number)
-                && (Unsaturation.NONE == _unsaturation) && (_numH > 0);
+                && (Unsaturation.NONE == _unsat) && (_numH > 0);
+    }
+
+    /**
+     * An atom donates electrons if it is saturated, has no withdrawing
+     * neighbours, and has its natural valence.
+     * 
+     * @return {@code true} if the above criteria are met for this atom;
+     *         {@code false} otherwise.
+     */
+    public boolean isElectronDonating() {
+        if ((_numSatEWNbrs > 0) || (_numUnsatEWNbrs > 0)
+                || (Unsaturation.NONE != _unsat)) {
+            return false;
+        }
+
+        switch (_element.number) {
+        case 7:
+        case 15:
+            return (_bonds.size() <= 3);
+
+        case 8:
+        case 16:
+            return (_bonds.size() <= 2);
+        }
+
+        return false;
+    }
+
+    /**
+     * Halogens elements are: fluorine, chlorine, bromine and iodine.
+     * 
+     * @return {@code true} if the current atom is one of the above;
+     *         {@code false} otherwise.
+     */
+    public boolean isHalogen() {
+        switch (_element.number) {
+        case 9:
+        case 17:
+        case 35:
+        case 53:
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return {@code true} if the current atom is a nitrogen with two attached
+     *         hydrogens, or an oxygen with one attached hydrogen, or a sulfur
+     *         with one attached hydrogen; {@code false} otherwise.
+     */
+    public boolean isNH2orOHorSH() {
+        if ((0 == _numH) || (Unsaturation.NONE != _unsat)) {
+            return false;
+        }
+
+        switch (_element.number) {
+        case 7:
+            return (2 == _numH);
+        case 8:
+        case 16:
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * This method answers the electron withdrawing strength of the current
+     * atom's functional group (i.e., its primary feature).
+     * 
+     * @return A functional group-dependent number, if the atom does have a
+     *         functional group; {@code 27.0} for unknown groups; {@code 0.0} if
+     *         the atom has no functional group.
+     */
+    public double withdrawingGroupStrength() {
+        if (0 == _features.size()) {
+            return 0.0;
+        }
+
+        switch (_features.get(0)) {
+        // TODO(js): fill appropriate case statements.
+        }
+
+        // Unknown group.
+        return 27.0;
     }
 
     /**
@@ -991,7 +1086,7 @@ public final class Atom
      */
     void computeHashValue() {
         _hash = 100 * _element.number +
-                10 * _unsaturation.value() +
+                10 * _unsat.value() +
                 _numH;
     }
 
@@ -1016,7 +1111,7 @@ public final class Atom
      */
     @Override
     public String toString() {
-        return String.format("Atom ID: %d, input ID: %d, element: %s", _id,
+        return String.format("{ id: %d, inputId: %d, element: %s }", _id,
                 _inputId, _element.symbol);
     }
 
