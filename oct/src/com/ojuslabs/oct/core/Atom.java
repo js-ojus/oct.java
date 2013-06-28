@@ -297,6 +297,14 @@ public final class Atom
     }
 
     /**
+     * @return {@code true} if the current atom cannot form any more bonds;
+     *         {@code false} otherwise.
+     */
+    public boolean isSaturated() {
+        return (Unsaturation.NONE == _unsat);
+    }
+
+    /**
      * This method answers the number of distinct neighbours of this atom. It is
      * the same as the number of bonds in which this atom participates.
      * 
@@ -528,6 +536,19 @@ public final class Atom
     }
 
     /**
+     * @param aro
+     *            The new aromaticity of this atom. This computation is usually
+     *            performed by a ring in which this atom participates.
+     */
+    void setAromatic(boolean aro) {
+        _inAroRing = aro;
+
+        if (aro) {
+            _unsat = Unsaturation.AROMATIC;
+        }
+    }
+
+    /**
      * <b>N.B.</b> This method does <b><i>not</i></b> compute this property. The
      * said computation is expected to have been already performed. It answers
      * the state of the internal flag.
@@ -537,6 +558,21 @@ public final class Atom
      */
     public boolean inHeteroAromaticRing() {
         return _inHetAroRing;
+    }
+
+    /**
+     * @param aro
+     *            The new aromaticity of this atom, explicitly involing a ring
+     *            with at least one hetero atom. This computation is usually
+     *            performed by such a ring in which this atom participates.
+     */
+    void setHeteroAromatic(boolean aro) {
+        _inHetAroRing = aro;
+
+        if (aro) {
+            _inAroRing = true;
+            _unsat = Unsaturation.AROMATIC;
+        }
     }
 
     /**
@@ -889,6 +925,30 @@ public final class Atom
      */
     public boolean isCH3() {
         return (6 == _element.number) && (3 == _numH);
+    }
+
+    /**
+     * @return {@code true} if the current atom is a carbon, has a double bond
+     *         with only one other atom, and that other atom is an oxygen;
+     *         {@code false} otherwise.
+     */
+    public boolean isCarbonylC() {
+        if (6 != _element.number) {
+            return false;
+        }
+        if (Unsaturation.DBOND_X != _unsat) {
+            return false;
+        }
+
+        for (Bond b : _bonds) {
+            if (BondOrder.DOUBLE == b.order()) {
+                if (8 == b.otherAtom(_id).element().number) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

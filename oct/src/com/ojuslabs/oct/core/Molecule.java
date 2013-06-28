@@ -36,8 +36,6 @@ public class Molecule
     private int                _peakAId;
     // Keeps track of running IDs of bonds.
     private int                _peakBId;
-    // Keeps track of running IDs of rings.
-    private int                _peakRId;
 
     // Vendor-assigned unique ID of this molecule.
     public String              vendorMoleculeId;
