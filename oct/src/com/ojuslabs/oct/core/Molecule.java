@@ -10,6 +10,7 @@ package com.ojuslabs.oct.core;
 import static com.ojuslabs.oct.common.Constants.LIST_SIZE_L;
 import static com.ojuslabs.oct.common.Constants.LIST_SIZE_S;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -36,6 +37,8 @@ public class Molecule
     private int                _peakAId;
     // Keeps track of running IDs of bonds.
     private int                _peakBId;
+    // Keeps track of running IDs of rings.
+    private int                _peakRId;
 
     // Vendor-assigned unique ID of this molecule.
     public String              vendorMoleculeId;
@@ -51,6 +54,14 @@ public class Molecule
     private final List<String> _attrNames;
     // Corresponding attribute values.
     private final List<String> _attrValues;
+
+    // A matrix with inter-atomic distances (in hops). This matrix uses input
+    // IDs, since only those are available when this computation takes place.
+    private int[][]            _dists;
+
+    // A matrix used in (re)constructing shortest paths between any two atoms.
+    // Like the above, this too employs input IDs.
+    private int[][]            _paths;
 
     /**
      * Factory method for creating molecules with unique IDs.
@@ -595,6 +606,102 @@ public class Molecule
      */
     public List<String> attributes() {
         return ImmutableList.copyOf(_attrNames);
+    }
+
+    /**
+     * This computation utilises the famous Floyd-Warshall algorithm to compute
+     * the shortest pair-wise distances in the molecule (graph).
+     */
+    void computeAtomicDistances() {
+        int size = _atoms.size() + 1; // IDs start with 1, not 0!
+
+        // Allocate and initialise the distance matrix.
+        _dists = new int[size][size];
+        for (int i = 1; i < size; i++) {
+            for (int j = 1; j < size; j++) {
+                if (i == j) {
+                    _dists[i][i] = 0;
+                }
+                else {
+                    _dists[i][j] = Integer.MAX_VALUE;
+                }
+            }
+        }
+        // Allocate the paths matrix. Defaults of 0 are intended and fine.
+        _paths = new int[size][size];
+
+        // Distances between immediate neighbours are always 1.
+        for (Bond b : _bonds) {
+            int id1 = b.atom1().id();
+            int id2 = b.atom2().id();
+            _dists[id1][id2] = _dists[id2][id1] = 1;
+        }
+
+        // For distinct x, y and z, given x and z are NOT neighbours, d(x, z) =
+        // min({d(x, y) + d(y, z) for all y}).
+        for (int k = 1; k < size; k++) {
+            for (int i = 1; i < size; i++) {
+                for (int j = 1; j < size; j++) {
+                    if ((Integer.MAX_VALUE != _dists[i][k])
+                            && (Integer.MAX_VALUE != _dists[k][j])) {
+                        if (_dists[i][k] + _dists[k][j] < _dists[i][j]) {
+                            _dists[i][j] = _dists[j][i] = _dists[i][k]
+                                    + _dists[k][j];
+                            _paths[i][j] = _paths[j][i] = k;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @param inputId1
+     *            Input ID of the first atom of the pair.
+     * @param inputId2
+     *            Input ID of the second atom of the pair.
+     * @return {@code 0} if the two given IDs correspond to the same atom;
+     *         {@code Integer.MAX_VALUE} if the two atoms are not connected; the
+     *         length of the shortest path between the two given atoms,
+     *         otherwise.
+     */
+    public int distanceBetween(int inputId1, int inputId2) {
+        return _dists[inputId1][inputId2];
+    }
+
+    /**
+     * <b>N.B.</b> This method answers a path of only intermediate nodes
+     * (atoms). It does <b><i>not</i></b> include the end atoms.
+     * 
+     * @param inputId1
+     *            The atom where the path should begin.
+     * @param inputId2
+     *            The atom where the path should end.
+     * @return {@code null} if the two given atoms are not connected; an empty
+     *         list if the two given atoms are directly connected; a list of
+     *         intermediate nodes along the shortest path connecting the two
+     *         given atoms, otherwise.
+     */
+    public List<Integer> shortestPathBetween(int inputId1, int inputId2) {
+        if (Integer.MAX_VALUE == _dists[inputId1][inputId2]) {
+            return null;
+        }
+
+        int i = _paths[inputId1][inputId2];
+        if (0 == i) { // The two given atoms are directly connected.
+            return new ArrayList<Integer>();
+        }
+        else {
+            List<Integer> path = new ArrayList<Integer>();
+            path.addAll(shortestPathBetween(inputId1, i));
+            path.add(i);
+            path.addAll(shortestPathBetween(i, inputId2));
+            return path;
+        }
+    }
+
+    public void normalise() {
+        computeAtomicDistances();
     }
 
     /*

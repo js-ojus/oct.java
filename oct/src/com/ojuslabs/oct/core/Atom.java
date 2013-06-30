@@ -9,6 +9,8 @@ package com.ojuslabs.oct.core;
 
 import static com.ojuslabs.oct.common.Constants.LIST_SIZE_S;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -112,6 +114,9 @@ public final class Atom
      * <b>N.B.</b> This method is package-internal.
      */
     void reset() {
+        _id = 0;
+        _inputId = 0;
+
         _hash = 0;
         _chirality = Chirality.NONE;
         _radical = Radical.NONE;
@@ -588,6 +593,41 @@ public final class Atom
     }
 
     /**
+     * @param o
+     *            the other atom with which to compare rings.
+     * @return {@code true} if the current atom participates in all the rings in
+     *         which the given atom does; {@code false} if the given atom
+     *         participates in at least one ring in which the current atom does
+     *         not.
+     */
+    public boolean inAllRingsOf(Atom o) {
+        for (Ring r : o.rings()) {
+            if (!_rings.contains(r)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Two atoms A and B are in the same rings iff the set of rings R(A) and
+     * R(B) are subsets of each the other.
+     * 
+     * @param o
+     *            The other atom with which to compare rings.
+     * @return {@code true} if the current atom and the given participate in
+     *         exactly the same set of rings; {@code false} otherwise.
+     */
+    public boolean inSameRingsAs(Atom o) {
+        if (this.inAllRingsOf(o) && o.inAllRingsOf(this)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @param b
      *            The state to set this atom to. This method is invoked by one
      *            of the containing rings or the containing molecule during
@@ -733,6 +773,31 @@ public final class Atom
         }
 
         return true;
+    }
+
+    /**
+     * <b>N.B.</b> This method should be invoked <b>only after</b> the molecule
+     * is normalised, since it relies completely on the normalised IDs of the
+     * atoms!
+     */
+    void sortNeighbours() {
+        Comparator<Bond> c1 = new Comparator<Bond>() {
+            @Override
+            public int compare(Bond b1, Bond b2) {
+                int i1 = b1.otherAtom(_id).id();
+                int i2 = b2.otherAtom(_id).id();
+                return (i1 < i2) ? -1 : (i1 == i2 ? 0 : 1);
+            }
+        };
+        Collections.sort(_bonds, c1);
+
+        Comparator<Atom> c2 = new Comparator<Atom>() {
+            @Override
+            public int compare(Atom a1, Atom a2) {
+                return (a1.id() < a2.id()) ? -1 : (a1.id() == a2.id() ? 0 : 1);
+            }
+        };
+        Collections.sort(_nbrs, c2);
     }
 
     /**

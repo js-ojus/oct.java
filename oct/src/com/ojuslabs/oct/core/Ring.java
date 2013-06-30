@@ -27,7 +27,7 @@ public final class Ring
     // Containing molecule of this ring.
     private final Molecule         _mol;
     // Index of this ring in its molecule.
-    private int                    _id;
+    private final int              _id;
 
     // The atoms in this ring. Atoms occur in order.
     private final LinkedList<Atom> _atoms;
@@ -71,10 +71,6 @@ public final class Ring
      */
     public int id() {
         return _id;
-    }
-
-    void setId(int id) {
-        _id = id;
     }
 
     /**
@@ -231,7 +227,7 @@ public final class Ring
     void determineAromaticity() {
         // TODO(js): Implement aromaticity determination.
         // This should set both `_isAro` and `_isHetAro`, as applicable. It
-        // should also set the applicable aromaticity values for all of its
+        // should also set the applicable aromaticity flags for all of its
         // atoms.
     }
 
@@ -512,6 +508,10 @@ public final class Ring
         if (_mol.id() != other.molecule().id()) {
             return false;
         }
+        if (other.id() == _id) { // Same ring.
+            return true;
+        }
+
         if (_atoms.size() != other.size()) {
             return false;
         }
