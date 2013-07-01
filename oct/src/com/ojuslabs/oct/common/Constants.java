@@ -26,6 +26,9 @@ public final class Constants
     /** Initial size of large lists such as atom and bond lists. */
     public static final int LIST_SIZE_L        = 64;
 
+    /** The maximum number of rings allowed in <i>normal</i> molecules. */
+    public static final int MAX_RINGS          = 15;
+
     private Constants() {
         // Intentionally left blank.
     }

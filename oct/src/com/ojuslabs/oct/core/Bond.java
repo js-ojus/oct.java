@@ -340,6 +340,15 @@ public final class Bond
         return ImmutableList.copyOf(_rings);
     }
 
+    /**
+     * Resets this bond's ring information, as well as its aromaticity status.
+     */
+    void resetRings() {
+        _rings.clear();
+
+        _isAro = false;
+    }
+
     /*
      * (non-Javadoc)
      * 

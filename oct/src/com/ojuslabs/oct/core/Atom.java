@@ -121,12 +121,31 @@ public final class Atom
         _chirality = Chirality.NONE;
         _radical = Radical.NONE;
 
+        resetBonds();
+        resetRings();
+    }
+
+    /**
+     * Resets this atom's bond information.
+     */
+    void resetBonds() {
         _bonds.clear();
         _nbrs.clear();
+
+        _numH = 0;
+        _charge = 0;
+        _unsat = Unsaturation.NONE;
+    }
+
+    /**
+     * Resets this atom's ring information, including associated flags.
+     */
+    void resetRings() {
         _rings.clear();
 
         _inAroRing = false;
         _inHetAroRing = false;
+        _isBenzylic = false;
         _isBridgeHead = false;
         _isSpiro = false;
     }
@@ -780,7 +799,7 @@ public final class Atom
      * is normalised, since it relies completely on the normalised IDs of the
      * atoms!
      */
-    void sortNeighbours() {
+    void normalise() {
         Comparator<Bond> c1 = new Comparator<Bond>() {
             @Override
             public int compare(Bond b1, Bond b2) {

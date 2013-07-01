@@ -7,6 +7,7 @@
 
 package com.ojuslabs.oct.core;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public final class Ring
     // Containing molecule of this ring.
     private final Molecule         _mol;
     // Index of this ring in its molecule.
-    private final int              _id;
+    private int                    _id;
 
     // The atoms in this ring. Atoms occur in order.
     private final LinkedList<Atom> _atoms;
@@ -50,13 +51,26 @@ public final class Ring
      * @param id
      *            The unique ID of this ring in its molecule.
      */
-    Ring(Molecule mol, int id) {
+    Ring(Molecule mol) {
         _mol = mol;
-        _id = id;
 
         _atoms = Lists.newLinkedList();
         _bonds = Lists.newLinkedList();
         _nbrs = Lists.newLinkedList();
+    }
+
+    /**
+     * Resets the entire state of this ring. This method is useful when a ring
+     * is used as a candidate path, where frequent backtracking may be needed.
+     */
+    void reset() {
+        _atoms.clear();
+        _bonds.clear();
+        _nbrs.clear();
+
+        _isAro = false;
+        _isHetAro = false;
+        _completed = false;
     }
 
     /**
@@ -71,6 +85,16 @@ public final class Ring
      */
     public int id() {
         return _id;
+    }
+
+    /**
+     * This is used by the containing molecule when parenting the ring.
+     * 
+     * @param id
+     *            The unique ID of this ring in its molecule.
+     */
+    void setId(int id) {
+        _id = id;
     }
 
     /**
@@ -97,6 +121,13 @@ public final class Ring
      */
     public boolean isHeteroAromatic() {
         return _isHetAro;
+    }
+
+    /**
+     * @return True if this ring is complete; false otherwise.
+     */
+    public boolean isCompleted() {
+        return _completed;
     }
 
     /**
@@ -189,10 +220,6 @@ public final class Ring
         }
 
         _bonds.add(b);
-        normalise();
-
-        // Determine the ring's aromaticity.
-        determineAromaticity();
 
         _completed = true;
     }
@@ -215,10 +242,10 @@ public final class Ring
         }
 
         // Rotate the list so that the atom with the minimum ID comes first.
-        for (int i = 0; i < idx; i++) {
-            _atoms.add(_atoms.removeFirst());
-            _bonds.add(_bonds.removeFirst());
-        }
+        Collections.rotate(_atoms, idx);
+
+        // Determine the ring's aromaticity.
+        determineAromaticity();
     }
 
     /**
@@ -229,24 +256,6 @@ public final class Ring
         // This should set both `_isAro` and `_isHetAro`, as applicable. It
         // should also set the applicable aromaticity flags for all of its
         // atoms.
-    }
-
-    /**
-     * @return True if this ring is complete; false otherwise.
-     */
-    public boolean isCompleted() {
-        return _completed;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
-        return String
-                .format("Ring %d: [%s]", _id, Joiner.on(", ").join(_atoms));
     }
 
     /**
@@ -524,6 +533,17 @@ public final class Ring
         }
 
         return true;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return String
+                .format("Ring %d: [%s]", _id, Joiner.on(", ").join(_atoms));
     }
 
     /*

@@ -11,13 +11,22 @@ import static com.ojuslabs.oct.common.Constants.LIST_SIZE_L;
 import static com.ojuslabs.oct.common.Constants.LIST_SIZE_S;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.ojuslabs.oct.common.BondOrder;
+import com.ojuslabs.oct.common.Constants;
+import com.ojuslabs.oct.lib.IRingDetector;
+import com.ojuslabs.oct.lib.RingDetectors;
 
+/**
+ * Molecule represents a chemical molecule. It holds information concerning its
+ * atoms, bonds, rings, <i>etc.</i> <b>N.B.</b> A molecule is expected to be
+ * connected, <i>i.e.,</i> it cannot have more than a single component.
+ */
 public class Molecule
 {
     // A running serial unique identifier for molecules.
@@ -618,14 +627,8 @@ public class Molecule
         // Allocate and initialise the distance matrix.
         _dists = new int[size][size];
         for (int i = 1; i < size; i++) {
-            for (int j = 1; j < size; j++) {
-                if (i == j) {
-                    _dists[i][i] = 0;
-                }
-                else {
-                    _dists[i][j] = Integer.MAX_VALUE;
-                }
-            }
+            Arrays.fill(_dists[i], Integer.MAX_VALUE);
+            _dists[i][i] = 0;
         }
         // Allocate the paths matrix. Defaults of 0 are intended and fine.
         _paths = new int[size][size];
@@ -642,13 +645,18 @@ public class Molecule
         for (int k = 1; k < size; k++) {
             for (int i = 1; i < size; i++) {
                 for (int j = 1; j < size; j++) {
-                    if ((Integer.MAX_VALUE != _dists[i][k])
-                            && (Integer.MAX_VALUE != _dists[k][j])) {
-                        if (_dists[i][k] + _dists[k][j] < _dists[i][j]) {
-                            _dists[i][j] = _dists[j][i] = _dists[i][k]
-                                    + _dists[k][j];
-                            _paths[i][j] = _paths[j][i] = k;
-                        }
+                    if ((k == i) || (k == j) || (i == j)) {
+                        continue;
+                    }
+                    if ((Integer.MAX_VALUE == _dists[i][k])
+                            && (Integer.MAX_VALUE == _dists[k][j])) {
+                        continue;
+                    }
+
+                    if (_dists[i][k] + _dists[k][j] < _dists[i][j]) {
+                        _dists[i][j] = _dists[j][i] = _dists[i][k]
+                                + _dists[k][j];
+                        _paths[i][j] = _paths[j][i] = k;
                     }
                 }
             }
@@ -700,8 +708,70 @@ public class Molecule
         }
     }
 
+    /**
+     * This method converts the molecule into a standard, normalised internal
+     * representation. Such a normalised representation enables a simple
+     * mechanism for reasoning about the state of the molecule at any given
+     * instant.
+     * <p>
+     * This method is idempotent.
+     */
     public void normalise() {
         computeAtomicDistances();
+        detectRings();
+    }
+
+    /**
+     * Detects the rings in this molecule, and stores information regarding the
+     * same appropriately.
+     */
+    void detectRings() {
+        resetRingInformation();
+
+        int f = frerejacque();
+        // Check to see if the molecule is acyclic (or disconnected).
+        if (f <= 0) {
+            return;
+        }
+        // We don't deal with molecules having too many rings.
+        if (f > Constants.MAX_RINGS) {
+            return;
+        }
+
+        // Delegate detection to an appropriate detector.
+        IRingDetector rd = RingDetectors.newInstance(RingDetectors.EXHAUSTIVE);
+        rd.initialise(this);
+        rd.detectRings();
+
+    }
+
+    /**
+     * Resets all the ring information in this molecule, and removes the rings
+     * themselves.
+     */
+    void resetRingInformation() {
+        for (Atom a : _atoms) {
+            a.resetRings();
+        }
+        for (Bond b : _bonds) {
+            b.resetRings();
+        }
+
+        _rings.clear();
+        _peakRId = 0;
+    }
+
+    /**
+     * Frerejacque property is used to determine if a molecule (graph) is cyclic
+     * or acyclic. A frerejacque value less than {@code 0} means that the
+     * molecule has disconnected components. A frerejacque value of {@code 0}
+     * means that the molecule is a single component, but is acyclic. A positive
+     * frerejacque number is the number of rings in the molecule.
+     * 
+     * @return {@code num_bonds - num_atoms + 1}.
+     */
+    public int frerejacque() {
+        return _bonds.size() - _atoms.size() + 1;
     }
 
     /*
