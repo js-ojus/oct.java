@@ -51,7 +51,7 @@ public final class Ring
      * @param id
      *            The unique ID of this ring in its molecule.
      */
-    Ring(Molecule mol) {
+    public Ring(Molecule mol) {
         _mol = mol;
 
         _atoms = Lists.newLinkedList();

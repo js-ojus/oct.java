@@ -294,13 +294,8 @@ public class Molecule
      * 
      * @param a
      *            The atom to be added to this molecule.
-     * @throws IllegalArgumentException
-     *             if the given atom is {@code null}.
      */
     public void addAtom(Atom a) {
-        if (null == a) {
-            throw new IllegalArgumentException("Null atom given.");
-        }
         if (this == a.molecule()) {
             return;
         }
@@ -318,15 +313,9 @@ public class Molecule
      * 
      * @param a
      *            The atom to be added to this molecule.
-     * @throws IllegalArgumentException
-     *             if the given atom is {@code null}.
      * @see #addAtom(Atom)
      */
     public void addNewAtom(Atom a) {
-        if (null == a) {
-            throw new IllegalArgumentException("Null atom given.");
-        }
-
         a.setMolecule(this, false);
         a.setInputId(++_peakAId);
         _atoms.add(a);
@@ -486,6 +475,38 @@ public class Molecule
         else {
             _atoms.remove(idx);
         }
+    }
+
+    /**
+     * Adds an externally constructed ring to this molecule.
+     * 
+     * @param r
+     *            The ring constructed using this molecule's atoms (and bonds).
+     * @throws IllegalArgumentException
+     *             if the given ring has a different containing molecule, or if
+     *             the ring has not been completed.
+     */
+    public void addRing(Ring r) {
+        if (this != r.molecule()) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            "The given ring has a different parent.  Current molecule: %d, ring's molecule: %d.",
+                            _id, r.molecule().id()));
+        }
+
+        if (!r.isCompleted()) {
+            throw new IllegalArgumentException(
+                    "Given ring is not a closed graph.");
+        }
+
+        r.setId(++_peakRId);
+        for (Atom a : r.atoms()) {
+            a.addRing(r);
+        }
+        for (Bond b : r.bonds()) {
+            b.addRing(r);
+        }
+        _rings.add(r);
     }
 
     /**

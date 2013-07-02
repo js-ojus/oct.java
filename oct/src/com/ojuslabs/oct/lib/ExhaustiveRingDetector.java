@@ -70,6 +70,14 @@ public final class ExhaustiveRingDetector implements IRingDetector {
     public void detectRings() {
         // First, remove all terminal chains.
         pruneTerminalChains();
+
+        // At this point, if all atoms have exactly two neighbours, there can be
+        // only one ring.
+        if (noAtomsWithGT2Bonds()) {
+            detectTheOnlyRing();
+            return;
+        }
+
     }
 
     /**
@@ -118,6 +126,52 @@ public final class ExhaustiveRingDetector implements IRingDetector {
 
         // Now, we remove this atom itself.
         _atoms.remove(i);
+    }
+
+    /**
+     * @return {@code true} if there are no atoms having more than two
+     *         neighbours; {@code false} otherwise.
+     */
+    boolean noAtomsWithGT2Bonds() {
+        for (List<Atom> l : _atomNbrs) {
+            if (l.size() > 2) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Forms a ring out of the remaining atoms, and adds it to the molecule.
+     */
+    void detectTheOnlyRing() {
+        Ring r = new Ring(_mol);
+        Atom start = _atoms.get(0);
+        r.addAtom(start);
+
+        int i = 0;
+        Atom prev = start;
+        Atom curr = start;
+        Atom next = null;
+        while (true) {
+            i = _atoms.indexOf(curr);
+            List<Atom> nbrs = _atomNbrs.get(i);
+            next = nbrs.get(0);
+            if (next == prev) { // We don't want to turn around!
+                next = nbrs.get(1);
+            }
+            if (next == start) { // We have completed the ring.
+                break;
+            }
+
+            r.addAtom(next);
+            prev = curr;
+            curr = next;
+        }
+
+        r.complete();
+        _mol.addRing(r);
     }
 
     /*
