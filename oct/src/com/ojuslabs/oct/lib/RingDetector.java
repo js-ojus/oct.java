@@ -7,10 +7,12 @@
 
 package com.ojuslabs.oct.lib;
 
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Queues;
 import com.ojuslabs.oct.common.Constants;
 import com.ojuslabs.oct.core.Atom;
 import com.ojuslabs.oct.core.Bond;
@@ -18,18 +20,49 @@ import com.ojuslabs.oct.core.Molecule;
 import com.ojuslabs.oct.core.Ring;
 
 /**
- * This ring detector detects all the rings in the given molecule, not just
- * SSSR, <i>etc.</i>
+ * The default ring detector.
  */
-public final class ExhaustiveRingDetector implements IRingDetector {
+public final class RingDetector implements IRingDetector {
 
     // The molecule to analyse.
-    private Molecule         _mol;
+    private Molecule             _mol;
 
     // Internal data holders for analysis and detection.
-    private List<Atom>       _atoms;
-    private List<List<Atom>> _atomNbrs;
-    private List<Ring>       _rings;
+    private List<Atom>           _atoms;
+    private List<List<Atom>>     _nbrs;
+    private Deque<List<Atom>>    _candidates;
+
+    // The validators to employ before approving a candidate path as a ring.
+    private List<IRingValidator> _validators;
+
+    public RingDetector() {
+        // Intentionally left blank.
+    }
+
+    /**
+     * <b>N.B.</b> <b><i>This method answers the live internal list of atoms,
+     * only for efficiency reasons. Modification of this list leads to undefined
+     * results.</i></b>
+     * 
+     * @return The internal list of atoms in this molecule. During ring
+     *         detection, this list contains only non-terminal atoms.
+     */
+    List<Atom> atoms() {
+        return _atoms;
+    }
+
+    /**
+     * <b>N.B.</b> <b><i>This method answers the live internal list of atom
+     * neighbours, only for efficiency reasons. Modification of this list leads
+     * to undefined results.</i></b>
+     * 
+     * @return The internal list of neighbour lists of atoms in this molecule.
+     *         During ring detection, this list of lists contains those only for
+     *         non-terminal atoms.
+     */
+    List<List<Atom>> neighbours() {
+        return _nbrs;
+    }
 
     /*
      * (non-Javadoc)
@@ -46,15 +79,15 @@ public final class ExhaustiveRingDetector implements IRingDetector {
 
         _mol = mol;
         _atoms = Lists.newArrayListWithCapacity(_mol.numberOfAtoms());
-        _atomNbrs = Lists.newArrayListWithCapacity(_mol.numberOfAtoms());
-        _rings = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_S);
+        _nbrs = Lists.newArrayListWithCapacity(_mol.numberOfAtoms());
+        _candidates = Queues.newArrayDeque();
 
         // Initialise the atoms and their neighbours.
         for (Atom a : _mol.atoms()) {
             _atoms.add(a);
             List<Atom> nbrs = Lists
                     .newArrayListWithCapacity(Constants.LIST_SIZE_S);
-            _atomNbrs.add(nbrs);
+            _nbrs.add(nbrs);
             for (Bond b : a.bonds()) {
                 nbrs.add(b.otherAtom(a.id()));
             }
@@ -78,6 +111,7 @@ public final class ExhaustiveRingDetector implements IRingDetector {
             return;
         }
 
+        detectMultipleRings();
     }
 
     /**
@@ -93,7 +127,7 @@ public final class ExhaustiveRingDetector implements IRingDetector {
             running = false;
 
             for (int i = 0; i < _atoms.size(); i++) {
-                if (1 == _atomNbrs.get(i).size()) {
+                if (1 == _nbrs.get(i).size()) {
                     pruneTerminalAtom(i);
                     running = true; // An atom has been pruned.
                     continue outer; // We should now check for cascades.
@@ -112,9 +146,9 @@ public final class ExhaustiveRingDetector implements IRingDetector {
         // Remove references to this atom from the neighbour lists of its own
         // neighbours.
         outer:
-        for (Atom nbr : _atomNbrs.get(i)) {
+        for (Atom nbr : _nbrs.get(i)) {
             int nbrIdx = _atoms.indexOf(nbr);
-            Iterator<Atom> nit = _atomNbrs.get(nbrIdx).iterator();
+            Iterator<Atom> nit = _nbrs.get(nbrIdx).iterator();
             while (nit.hasNext()) {
                 Atom nbrNbr = nit.next();
                 if (a == nbrNbr) {
@@ -133,7 +167,7 @@ public final class ExhaustiveRingDetector implements IRingDetector {
      *         neighbours; {@code false} otherwise.
      */
     boolean noAtomsWithGT2Bonds() {
-        for (List<Atom> l : _atomNbrs) {
+        for (List<Atom> l : _nbrs) {
             if (l.size() > 2) {
                 return false;
             }
@@ -156,7 +190,7 @@ public final class ExhaustiveRingDetector implements IRingDetector {
         Atom next = null;
         while (true) {
             i = _atoms.indexOf(curr);
-            List<Atom> nbrs = _atomNbrs.get(i);
+            List<Atom> nbrs = _nbrs.get(i);
             next = nbrs.get(0);
             if (next == prev) { // We don't want to turn around!
                 next = nbrs.get(1);
@@ -174,26 +208,66 @@ public final class ExhaustiveRingDetector implements IRingDetector {
         _mol.addRing(r);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.ojuslabs.oct.lib.IRingDetector#numberOfRings()
+    /**
+     * Detects the multitude of rings in the given molecule.
      */
-    @Override
-    public int numberOfRings() {
-        // TODO Auto-generated method stub
-        return 0;
+    void detectMultipleRings() {
+        for (Atom a : _atoms) {
+            List<Atom> path = Lists
+                    .newArrayListWithCapacity(Constants.LIST_SIZE_S);
+            path.add(a);
+            _candidates.add(path);
+        }
+
+        while (!_candidates.isEmpty()) {
+            tryPath(_candidates.remove());
+        }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.ojuslabs.oct.lib.IRingDetector#rings()
+    /**
+     * @param path
+     *            A list of atoms potentially forming a candidate ring.
      */
-    @Override
-    public List<Ring> rings() {
-        // TODO Auto-generated method stub
-        return null;
+    void tryPath(List<Atom> path) {
+        int size = path.size();
+        Atom start = path.get(0);
+        Atom curr = path.get(size - 1);
+        Atom prev = (size > 1) ? path.get(size - 2) : curr;
+
+        int i = _atoms.indexOf(curr);
+        for (Atom next : _nbrs.get(i)) {
+            if (next == prev) { // We don't want to turn around!
+                continue;
+            }
+            if (next == start) { // We have a candidate.
+                if (validatePath(path)) { // We have a valid ring.
+                    makeRingFrom(path);
+                    continue;
+                }
+            }
+
+            List<Atom> newPath = Lists.newArrayList(path);
+            newPath.add(next);
+            _candidates.add(newPath);
+        }
     }
 
+    /**
+     * @param path
+     *            A list of atoms potentially forming a candidate ring.
+     * @return {@code true} if the path passes all tests to become a valid ring;
+     *         {@code false} otherwise.
+     */
+    boolean validatePath(List<Atom> path) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    /**
+     * @param path
+     */
+    void makeRingFrom(List<Atom> path) {
+        // TODO Auto-generated method stub
+
+    }
 }

@@ -11,8 +11,8 @@ package com.ojuslabs.oct.lib;
  * A factory class for creating ring detectors.
  */
 public final class RingDetectors {
-    /** An exhaustive ring detector. */
-    public static final int EXHAUSTIVE = 1;
+    /** The default ring detector. */
+    public static final int DEFAULT = 1;
 
     private RingDetectors() {
         // Intentionally left blank.
@@ -24,14 +24,14 @@ public final class RingDetectors {
      * 
      * @param type
      *            The type of detector desired. Currently available:
-     *            {@code EXHAUSTIVE}.
+     *            {@code DEFAULT}.
      * @return The desired type of detector if available; {@code null}
      *         otherwise.
      */
     public static IRingDetector newInstance(int type) {
         switch (type) {
-        case EXHAUSTIVE:
-            return new ExhaustiveRingDetector();
+        case DEFAULT:
+            return new RingDetector();
         }
 
         return null;

@@ -7,10 +7,7 @@
 
 package com.ojuslabs.oct.lib;
 
-import java.util.List;
-
 import com.ojuslabs.oct.core.Molecule;
-import com.ojuslabs.oct.core.Ring;
 
 /**
  * An interface satisfied by all ring detectors. <b>N.B.</b> The detector does
@@ -31,14 +28,4 @@ public interface IRingDetector {
      * The work-horse method that detects all the rings in the molecule.
      */
     void detectRings();
-
-    /**
-     * @return The total number of rings detected in the given molecule.
-     */
-    int numberOfRings();
-
-    /**
-     * @return The list of the detected rings.
-     */
-    List<Ring> rings();
 }
