@@ -20,7 +20,6 @@ import com.google.common.collect.Lists;
 import com.ojuslabs.oct.common.BondOrder;
 import com.ojuslabs.oct.common.Constants;
 import com.ojuslabs.oct.lib.IRingDetector;
-import com.ojuslabs.oct.lib.RingDetectors;
 
 /**
  * Molecule represents a chemical molecule. It holds information concerning its
@@ -736,17 +735,25 @@ public class Molecule
      * instant.
      * <p>
      * This method is idempotent.
+     * 
+     * @param rd
+     *            The specific ring detector to employ for detecting the rings
+     *            in this molecule.
      */
-    public void normalise() {
+    public void normalise(IRingDetector rd) {
         computeAtomicDistances();
-        detectRings();
+        detectRings(rd);
     }
 
     /**
      * Detects the rings in this molecule, and stores information regarding the
      * same appropriately.
+     * 
+     * @param rd
+     *            The specific ring detector to employ for detecting the rings
+     *            in this molecule.
      */
-    void detectRings() {
+    void detectRings(IRingDetector rd) {
         resetRingInformation();
 
         int f = frerejacque();
@@ -760,10 +767,8 @@ public class Molecule
         }
 
         // Delegate detection to an appropriate detector.
-        IRingDetector rd = RingDetectors.newInstance(RingDetectors.EXHAUSTIVE);
         rd.initialise(this);
         rd.detectRings();
-
     }
 
     /**
