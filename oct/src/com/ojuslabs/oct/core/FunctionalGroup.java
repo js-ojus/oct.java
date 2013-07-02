@@ -7,6 +7,8 @@
 
 package com.ojuslabs.oct.core;
 
+import com.ojuslabs.oct.util.AbstractGroup;
+
 /**
  * FunctionalGroup represents a chemical group that is attached to a reaction
  * centre. Accordingly, it is an active participant in a reaction.

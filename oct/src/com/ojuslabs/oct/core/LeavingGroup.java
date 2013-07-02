@@ -7,6 +7,8 @@
 
 package com.ojuslabs.oct.core;
 
+import com.ojuslabs.oct.util.AbstractGroup;
+
 /**
  * LeavingGroup represents a chemical group that is liable to get detached from
  * its molecule during a reaction.

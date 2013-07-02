@@ -5,7 +5,7 @@
  * for details.
  */
 
-package com.ojuslabs.oct.core;
+package com.ojuslabs.oct.util;
 
 /**
  * AbstractGroup is an abstract base class for groups such as functional groups
