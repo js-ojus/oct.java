@@ -5,7 +5,7 @@
  * for details.
  */
 
-package com.ojuslabs.oct.data;
+package com.ojuslabs.oct.core;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -16,12 +16,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.ojuslabs.oct.core.Molecule;
 import com.ojuslabs.oct.xlate.mdl.MolReader;
 import com.ojuslabs.oct.xlate.mdl.MolReaderV2k;
 import com.ojuslabs.oct.xlate.mdl.SdfFile;
 import com.ojuslabs.oct.xlate.mdl.SdfIterator;
 
+/**
+ * A set of tests for parsing an external molecule in MDL format, and performing
+ * simple operations on it.
+ */
 public class MoleculeTest
 {
     static Molecule _m;

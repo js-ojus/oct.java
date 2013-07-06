@@ -40,19 +40,25 @@ public final class RingDetector implements IRingDetector {
      * as a ring, with this detector.
      */
     public RingDetector() {
+        _validators = Lists.newArrayList();
+
         // A junction atom cannot have _all_ of its neighbours in any one ring!
         _validators.add(new IRingValidator() {
             @Override
             public boolean validate(Molecule mol, List<Atom> atoms,
                     List<List<Atom>> nbrs, List<Atom> path) {
+                // System.out.println("-- Validating path: "
+                // + Joiner.on(", ").join(path));
+
                 for (Atom a : path) {
-                    if (!a.isJunction()) {
+                    int idx = atoms.indexOf(a);
+                    List<Atom> anbrs = nbrs.get(idx);
+                    if (anbrs.size() < 3) {
                         continue;
                     }
 
-                    int idx = atoms.indexOf(a);
                     boolean allFound = true;
-                    for (Atom n : nbrs.get(idx)) {
+                    for (Atom n : anbrs) {
                         if (-1 == path.indexOf(n)) {
                             allFound = false;
                             break;
@@ -174,24 +180,24 @@ public final class RingDetector implements IRingDetector {
      */
     void pruneTerminalAtom(int i) {
         Atom a = _atoms.get(i);
+        // System.out.println("-- Pruning atom: " + a.inputId());
 
         // Remove references to this atom from the neighbour lists of its own
         // neighbours.
-        outer:
-        for (Atom nbr : _nbrs.get(i)) {
-            int nbrIdx = _atoms.indexOf(nbr);
-            Iterator<Atom> nit = _nbrs.get(nbrIdx).iterator();
-            while (nit.hasNext()) {
-                Atom nbrNbr = nit.next();
-                if (a == nbrNbr) {
-                    nit.remove();
-                    continue outer;
-                }
+        Atom nbr = _nbrs.get(i).get(0);
+        int nbrIdx = _atoms.indexOf(nbr);
+        Iterator<Atom> nit = _nbrs.get(nbrIdx).iterator();
+        while (nit.hasNext()) {
+            Atom nbrNbr = nit.next();
+            if (a == nbrNbr) {
+                nit.remove();
+                break;
             }
         }
 
         // Now, we remove this atom itself.
         _atoms.remove(i);
+        _nbrs.remove(i);
     }
 
     /**
@@ -266,23 +272,22 @@ public final class RingDetector implements IRingDetector {
      *            ring.
      */
     void tryPath(List<Atom> path) {
+        // System.out.println(Joiner.on(", ").join(path));
+
         int size = path.size();
         Atom start = path.get(0);
         Atom curr = path.get(size - 1);
         Atom prev = (size > 1) ? path.get(size - 2) : curr;
 
         int i = _atoms.indexOf(curr);
-        int inbrs = _nbrs.size();
         for (Atom next : _nbrs.get(i)) {
-            inbrs--;
-
+            if (next == prev) { // We don't want to traverse backwards!
+                continue;
+            }
             if (next == start) { // We have a candidate.
                 if (validatePath(path)) {
                     makeRingFrom(path);
-                    continue;
                 }
-            }
-            if (next == prev) { // We don't want to traverse backwards!
                 continue;
             }
 
@@ -293,19 +298,13 @@ public final class RingDetector implements IRingDetector {
                 List<Atom> tpath = path.subList(idx, path.size());
                 if (validatePath(tpath)) {
                     makeRingFrom(tpath);
-                    continue;
                 }
+                continue;
             }
 
-            if (inbrs > 0) {
-                List<Atom> newPath = Lists.newArrayList(path);
-                newPath.add(next);
-                _candidates.add(newPath);
-            }
-            else { // Last neighbour; extend the in-coming path.
-                path.add(next);
-                _candidates.add(path);
-            }
+            List<Atom> newPath = Lists.newArrayList(path);
+            newPath.add(next);
+            _candidates.add(newPath);
         }
     }
 

@@ -498,6 +498,10 @@ public class Molecule
                     "Given ring is not a closed graph.");
         }
 
+        if (_rings.contains(r)) {
+            return;
+        }
+
         r.setId(++_peakRId);
         for (Atom a : r.atoms()) {
             a.addRing(r);
@@ -669,7 +673,7 @@ public class Molecule
                         continue;
                     }
                     if ((Integer.MAX_VALUE == _dists[i][k])
-                            && (Integer.MAX_VALUE == _dists[k][j])) {
+                            || (Integer.MAX_VALUE == _dists[k][j])) {
                         continue;
                     }
 
@@ -742,7 +746,23 @@ public class Molecule
      */
     public void normalise(IRingDetector rd) {
         computeAtomicDistances();
+
         detectRings(rd);
+    }
+
+    /**
+     * Prints the atomic distances matrix to standard out.
+     */
+    public void dumpAtomicDistances() {
+        int na = _atoms.size() + 1;
+        for (int i = 1; i < na; i++) {
+            System.out.println(String.format("Atom input ID: %d", i));
+            for (int j = 1; j < na; j++) {
+                System.out.println(String.format("\t(%d, %d): %d", i, j,
+                        _dists[i][j]));
+            }
+            System.out.println();
+        }
     }
 
     /**

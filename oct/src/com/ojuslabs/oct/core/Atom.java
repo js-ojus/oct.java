@@ -1342,8 +1342,9 @@ public final class Atom
      */
     @Override
     public String toString() {
-        return String.format("{ id: %d, inputId: %d, element: %s }", _id,
-                _inputId, _element.symbol);
+        return String.format("%d", _inputId);
+        // return String.format("{ id: %d, inputId: %d, element: %s }", _id,
+        // _inputId, _element.symbol);
     }
 
     /**
