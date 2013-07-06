@@ -319,7 +319,7 @@ public final class Atom
      * this for whatever purposes.</b>
      * 
      * @throws IllegalStateException
-     *             if valence calculation do not match current bond structure.
+     *             if valence calculations do not match current bond structure.
      * 
      * @see com.ojuslabs.oct.common.BondOrder
      * @see com.ojuslabs.oct.common.Unsaturation

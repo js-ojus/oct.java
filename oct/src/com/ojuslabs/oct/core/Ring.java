@@ -7,6 +7,7 @@
 
 package com.ojuslabs.oct.core;
 
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,6 +45,8 @@ public final class Ring
 
     // Is this ring completed and finalised?
     private boolean                _completed;
+    // A bit set for efficiently comparing two rings for equality.
+    private final BitSet           _atomBitSet;
 
     /**
      * @param mol
@@ -57,6 +60,8 @@ public final class Ring
         _atoms = Lists.newLinkedList();
         _bonds = Lists.newLinkedList();
         _nbrs = Lists.newLinkedList();
+
+        _atomBitSet = new BitSet(_mol.numberOfAtoms());
     }
 
     /**
@@ -221,6 +226,9 @@ public final class Ring
 
         _bonds.add(b);
 
+        for (Atom a : _atoms) {
+            _atomBitSet.set(a.inputId());
+        }
         _completed = true;
     }
 
@@ -301,6 +309,14 @@ public final class Ring
      */
     public int numberOfNeighbours() {
         return _nbrs.size();
+    }
+
+    /**
+     * @return A clone of the bit set of the input IDs of the atoms in this
+     *         ring.
+     */
+    BitSet atomBitSet() {
+        return (BitSet) _atomBitSet.clone();
     }
 
     /**
@@ -493,7 +509,7 @@ public final class Ring
 
     /**
      * A ring cannot be compared until it is `completed'. Two `completed' rings
-     * are equal iff they have the same participating atoms, in the same order.
+     * are equal iff they have the same participating atoms.
      * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
@@ -521,18 +537,13 @@ public final class Ring
             return true;
         }
 
-        if (_atoms.size() != other.size()) {
-            return false;
+        BitSet t = other.atomBitSet();
+        t.xor(_atomBitSet);
+        if (0 == t.cardinality()) { // Exactly same atoms!
+            return true;
         }
 
-        LinkedList<Atom> l = other._atoms;
-        for (int i = 0; i < _atoms.size(); i++) {
-            if (_atoms.get(i).id() != l.get(i).id()) {
-                return false;
-            }
-        }
-
-        return true;
+        return false;
     }
 
     /*
@@ -543,7 +554,8 @@ public final class Ring
     @Override
     public String toString() {
         return String
-                .format("Ring %d: [%s]", _id, Joiner.on(", ").join(_atoms));
+                .format("{\"id\": %d, \"atoms\": [%s]}", _id, Joiner.on(", ")
+                        .join(_atoms));
     }
 
     /*

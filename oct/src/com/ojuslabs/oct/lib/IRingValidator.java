@@ -17,6 +17,21 @@ import com.ojuslabs.oct.core.Molecule;
  * either accepting it or rejecting.
  */
 public interface IRingValidator {
+    /**
+     * Either approves or rejects as a valid ring, the given candidate path,
+     * subject to the specific logic in each instance.
+     * 
+     * @param mol
+     *            The containing molecule of the candidate path.
+     * @param atoms
+     *            The list of non-terminal atoms of the molecule.
+     * @param nbrs
+     *            A list of lists of neighbours of the above atoms.
+     * @param path
+     *            The candidate path that aspires to become a ring.
+     * @return {@code true} if the path satisfies the criteria in the specific
+     *         instance; {@code false} otherwise.
+     */
     boolean validate(Molecule mol, List<Atom> atoms, List<List<Atom>> nbrs,
             List<Atom> path);
 }

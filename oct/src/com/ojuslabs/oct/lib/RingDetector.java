@@ -35,8 +35,40 @@ public final class RingDetector implements IRingDetector {
     // The validators to employ before approving a candidate path as a ring.
     private List<IRingValidator> _validators;
 
+    /**
+     * Registers a set of validators that each has to approve the candidate path
+     * as a ring, with this detector.
+     */
     public RingDetector() {
-        // Intentionally left blank.
+        // A junction atom cannot have _all_ of its neighbours in any one ring!
+        _validators.add(new IRingValidator() {
+            @Override
+            public boolean validate(Molecule mol, List<Atom> atoms,
+                    List<List<Atom>> nbrs, List<Atom> path) {
+                for (Atom a : path) {
+                    if (!a.isJunction()) {
+                        continue;
+                    }
+
+                    int idx = atoms.indexOf(a);
+                    boolean allFound = true;
+                    for (Atom n : nbrs.get(idx)) {
+                        if (-1 == path.indexOf(n)) {
+                            allFound = false;
+                            break;
+                        }
+                    }
+
+                    // If all neighbours exist in this path, then it is a
+                    // spurious outer shell path, not a genuine ring.
+                    if (allFound) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        });
     }
 
     /**
@@ -180,9 +212,9 @@ public final class RingDetector implements IRingDetector {
      * Forms a ring out of the remaining atoms, and adds it to the molecule.
      */
     void detectTheOnlyRing() {
-        Ring r = new Ring(_mol);
+        List<Atom> path = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_S);
         Atom start = _atoms.get(0);
-        r.addAtom(start);
+        path.add(start);
 
         int i = 0;
         Atom prev = start;
@@ -199,13 +231,12 @@ public final class RingDetector implements IRingDetector {
                 break;
             }
 
-            r.addAtom(next);
+            path.add(next);
             prev = curr;
             curr = next;
         }
 
-        r.complete();
-        _mol.addRing(r);
+        makeRingFrom(path);
     }
 
     /**
@@ -213,10 +244,15 @@ public final class RingDetector implements IRingDetector {
      */
     void detectMultipleRings() {
         for (Atom a : _atoms) {
+            if (a.isJunction()) {
+                continue;
+            }
+
             List<Atom> path = Lists
                     .newArrayListWithCapacity(Constants.LIST_SIZE_S);
             path.add(a);
             _candidates.add(path);
+            break;
         }
 
         while (!_candidates.isEmpty()) {
@@ -226,7 +262,8 @@ public final class RingDetector implements IRingDetector {
 
     /**
      * @param path
-     *            A list of atoms potentially forming a candidate ring.
+     *            A list of atoms potentially forming a part of a candidate
+     *            ring.
      */
     void tryPath(List<Atom> path) {
         int size = path.size();
@@ -235,20 +272,40 @@ public final class RingDetector implements IRingDetector {
         Atom prev = (size > 1) ? path.get(size - 2) : curr;
 
         int i = _atoms.indexOf(curr);
+        int inbrs = _nbrs.size();
         for (Atom next : _nbrs.get(i)) {
-            if (next == prev) { // We don't want to turn around!
-                continue;
-            }
+            inbrs--;
+
             if (next == start) { // We have a candidate.
-                if (validatePath(path)) { // We have a valid ring.
+                if (validatePath(path)) {
                     makeRingFrom(path);
                     continue;
                 }
             }
+            if (next == prev) { // We don't want to traverse backwards!
+                continue;
+            }
 
-            List<Atom> newPath = Lists.newArrayList(path);
-            newPath.add(next);
-            _candidates.add(newPath);
+            // We could encounter a previously encountered atom. In that case,
+            // we have a potential ring.
+            int idx = path.indexOf(next);
+            if (-1 != idx) {
+                List<Atom> tpath = path.subList(idx, path.size());
+                if (validatePath(tpath)) {
+                    makeRingFrom(tpath);
+                    continue;
+                }
+            }
+
+            if (inbrs > 0) {
+                List<Atom> newPath = Lists.newArrayList(path);
+                newPath.add(next);
+                _candidates.add(newPath);
+            }
+            else { // Last neighbour; extend the in-coming path.
+                path.add(next);
+                _candidates.add(path);
+            }
         }
     }
 
@@ -259,6 +316,12 @@ public final class RingDetector implements IRingDetector {
      *         {@code false} otherwise.
      */
     boolean validatePath(List<Atom> path) {
+        // A 3-membered path that comes this far is a valid ring!
+        if (3 == path.size()) {
+            return true;
+        }
+
+        // Otherwise, we run the path through all the registered validators.
         for (IRingValidator v : _validators) {
             if (!v.validate(_mol, _atoms, _nbrs, path)) {
                 return false;
@@ -270,9 +333,14 @@ public final class RingDetector implements IRingDetector {
 
     /**
      * @param path
+     *            A list of atoms validated as forming a ring.
      */
     void makeRingFrom(List<Atom> path) {
-        // TODO Auto-generated method stub
-
+        Ring r = new Ring(_mol);
+        for (Atom a : path) {
+            r.addAtom(a);
+        }
+        r.complete();
+        _mol.addRing(r);
     }
 }
