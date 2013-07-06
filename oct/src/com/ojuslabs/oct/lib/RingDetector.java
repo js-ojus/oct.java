@@ -259,8 +259,13 @@ public final class RingDetector implements IRingDetector {
      *         {@code false} otherwise.
      */
     boolean validatePath(List<Atom> path) {
-        // TODO Auto-generated method stub
-        return false;
+        for (IRingValidator v : _validators) {
+            if (!v.validate(_mol, _atoms, _nbrs, path)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

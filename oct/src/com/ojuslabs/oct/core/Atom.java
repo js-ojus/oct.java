@@ -314,6 +314,82 @@ public final class Atom
     }
 
     /**
+     * <b>N.B. This method lies at the foundations of a substantial part of this
+     * toolkit, either directly or indirectly. Exercise caution when modifying
+     * this for whatever purposes.</b>
+     * 
+     * @throws IllegalStateException
+     *             if valence calculation do not match current bond structure.
+     * 
+     * @see com.ojuslabs.oct.common.BondOrder
+     * @see com.ojuslabs.oct.common.Unsaturation
+     */
+    void determineUnsaturation() {
+        int nb = _bonds.size();
+        int nn = _nbrs.size();
+
+        // Atom has residual non-zero charge.
+        if (0 != _charge) {
+            _unsat = Unsaturation.CHARGED;
+            return;
+        }
+
+        // For an uncharged atom, valence should be sane.
+        if (nn + _numH != _valence) {
+            throw new IllegalStateException(
+                    String.format(
+                            "Molecule: %d, atom: %d.  Either all bonds have not been specified, or the atom probably carries a net charge.",
+                            _mol.id(), _id));
+        }
+
+        // Case of all single bonds.
+        if (nb == nn) {
+            _unsat = Unsaturation.NONE;
+            return;
+        }
+
+        // Double or triple bonds do exist.
+        int ndb = 0;
+        int nhdb = 0;
+        int ntb = 0;
+        int nhtb = 0;
+        for (Bond b : _bonds) {
+            switch (b.order()) {
+            case DOUBLE:
+                ndb++;
+                if (6 != b.otherAtom(_id).element().number) {
+                    nhdb++;
+                }
+                break;
+            case TRIPLE:
+                ntb++;
+                if (6 != b.otherAtom(_id).element().number) {
+                    nhtb++;
+                }
+                break;
+            default:
+                // Intentionally left blank.
+                break;
+            }
+        }
+        if (ntb > 0) {
+            _unsat = (0 == nhtb) ? Unsaturation.TBOND_C : Unsaturation.TBOND_X;
+        }
+        else if (ndb > 0) {
+            switch (ndb) {
+            case 1:
+                _unsat = (0 == nhdb) ? Unsaturation.DBOND_C
+                        : Unsaturation.DBOND_X;
+                break;
+            case 2:
+                _unsat = (0 == nhdb) ? Unsaturation.DBOND_C_C
+                        : ((1 == nhdb) ? Unsaturation.DBOND_C_X
+                                : Unsaturation.DBOND_X_X);
+            }
+        }
+    }
+
+    /**
      * @return Current unsaturation of this atom.
      */
     public Unsaturation unsaturation() {
@@ -355,6 +431,17 @@ public final class Atom
      */
     public int numberOfHydrogens() {
         return _numH;
+    }
+
+    /**
+     * If an atom has at least three bonds, then an in-coming path can branch
+     * here, making that atom a junction.
+     * 
+     * @return {@code true} if the current atom has three or more bonds;
+     *         {@code false} otherwise.
+     */
+    public boolean isJunction() {
+        return (_bonds.size() >= 3);
     }
 
     /**

@@ -26,7 +26,9 @@ public enum Unsaturation
     /** Triple bond with a carbon atom. */
     TBOND_C(7),
     /** Triple bond with a hetero atom. */
-    TBOND_X(8);
+    TBOND_X(8),
+    /** Atom has a non-zero net charge. */
+    CHARGED(9);
 
     private final int _unsaturation;
 
