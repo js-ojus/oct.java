@@ -33,17 +33,19 @@ public final class RingDetector implements IRingDetector {
     private Deque<List<Atom>>    _candidates;
 
     // The validators to employ before approving a candidate path as a ring.
-    private List<IRingValidator> _validators;
+    private List<IRingValidator> _initialValidators;
+    // The validators to employ while pruning detected rings.
+    private List<IRingValidator> _pruningValidators;
 
     /**
      * Registers a set of validators that each has to approve the candidate path
      * as a ring, with this detector.
      */
     public RingDetector() {
-        _validators = Lists.newArrayList();
+        _initialValidators = Lists.newArrayList();
 
         // A junction atom cannot have _all_ of its neighbours in any one ring!
-        _validators.add(new IRingValidator() {
+        _initialValidators.add(new IRingValidator() {
             @Override
             public boolean validate(Molecule mol, List<Atom> atoms,
                     List<List<Atom>> nbrs, List<Atom> path) {
@@ -249,17 +251,23 @@ public final class RingDetector implements IRingDetector {
      * Detects the multitude of rings in the given molecule.
      */
     void detectMultipleRings() {
+        List<Atom> path = Lists
+                .newArrayListWithCapacity(Constants.LIST_SIZE_S);
+
+        boolean found = false;
         for (Atom a : _atoms) {
             if (a.isJunction()) {
                 continue;
             }
+            found = true;
 
-            List<Atom> path = Lists
-                    .newArrayListWithCapacity(Constants.LIST_SIZE_S);
             path.add(a);
-            _candidates.add(path);
             break;
         }
+        if (!found) {
+            path.add(_atoms.get(0));
+        }
+        _candidates.add(path);
 
         while (!_candidates.isEmpty()) {
             tryPath(_candidates.remove());
@@ -321,7 +329,7 @@ public final class RingDetector implements IRingDetector {
         }
 
         // Otherwise, we run the path through all the registered validators.
-        for (IRingValidator v : _validators) {
+        for (IRingValidator v : _initialValidators) {
             if (!v.validate(_mol, _atoms, _nbrs, path)) {
                 return false;
             }
