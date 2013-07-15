@@ -132,4 +132,28 @@ public class RingDetectorTest {
             System.out.println(r);
         }
     }
+
+    @Test
+    public void test005() {
+        SdfFile sdf = new SdfFile(
+                "test/com/ojuslabs/oct/xlate/mdl/norbornane.sdf");
+        SdfIterator it = sdf.iterator();
+        it.hasNext();
+
+        List<String> l = it.next();
+        MolReader reader = new MolReaderV2k();
+        _mol = reader.parse(l, false, false, false);
+        assertNotNull(_mol);
+
+        assertEquals(_mol.numberOfAtoms(), 7);
+        assertEquals(_mol.numberOfBonds(), 8);
+        assertEquals(_mol.frerejacque(), 2);
+
+        IRingDetector rd = RingDetectors.newInstance(RingDetectors.DEFAULT);
+        _mol.normalise(rd);
+
+        for (Ring r : rd.rings()) {
+            System.out.println(r);
+        }
+    }
 }

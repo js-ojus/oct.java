@@ -452,14 +452,63 @@ public final class RingDetector implements IRingDetector {
                 }
             }
 
-            // We remove the larger rings in the ring system now.
+            // We remove all such larger rings, which can not be expressed as a
+            // union of exactly any two of the already included rings, from the
+            // ring system.
             if (found) {
-                for (int j = lastIncludedRingIdx + 1; j < rs.size(); j++) {
-                    _rings.remove(rs.get(j));
+                boolean running = true;
+                while (running) {
+                    running = false;
+
+                    for (int j = lastIncludedRingIdx + 1; j < rs.size(); j++) {
+                        Ring tr = rs.get(j);
+                        if (!isUnionOfSomeTwoRingsUpto(lastIncludedRingIdx, rs,
+                                tr)) {
+                            _rings.remove(tr);
+                            rs.remove(j);
+                            running = true;
+                            break;
+                        }
+                    }
                 }
-                rs.retainAll(rs.subList(0, lastIncludedRingIdx + 1));
             }
         }
+    }
+
+    /**
+     * @param rs
+     *            The ring system being pruned.
+     * @param lastIncludedRingIdx
+     *            Marks the last ring to consider in the ring system.
+     * @param r
+     *            The ring to test if it can be formed as a union of exactly two
+     *            rings.
+     * @return {@code true} if the ring can be formed as a union of exactly two
+     *         included rings; {@code false} otherwise.
+     */
+    boolean isUnionOfSomeTwoRingsUpto(int lastIncludedRingIdx, List<Ring> rs,
+            Ring r) {
+        BitSet tbs = r.bondBitSet();
+
+        for (int i = 0; i < lastIncludedRingIdx; i++) {
+            BitSet bs1 = rs.get(i).bondBitSet();
+            for (int j = i + 1; j <= lastIncludedRingIdx; j++) {
+                BitSet bs2 = rs.get(j).bondBitSet();
+                // BitSet bs3 = (BitSet) bs2.clone();
+                bs2.or(bs1); // Union of ring1 and ring2.
+                bs2.and(tbs); // Intersection of the above union and test ring.
+                // bs3.and(bs1); // Intersection of ring1 and ring2.
+                // bs2.andNot(bs3); // Set minus.
+                bs2.xor(tbs);
+
+                // The remainder matches the test ring.
+                if (0 == bs2.cardinality()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /*
