@@ -47,6 +47,10 @@ public final class Ring
     private boolean                _completed;
     // A bit set for efficiently comparing two rings for equality.
     private final BitSet           _atomBitSet;
+    // A bit set for efficiently comparing two rings for overlap.
+    private final BitSet           _bondBitSet;
+
+    private int                    _ringSystemId;
 
     /**
      * @param mol
@@ -62,6 +66,7 @@ public final class Ring
         _nbrs = Lists.newLinkedList();
 
         _atomBitSet = new BitSet(_mol.numberOfAtoms());
+        _bondBitSet = new BitSet(_mol.numberOfBonds());
     }
 
     /**
@@ -133,6 +138,21 @@ public final class Ring
      */
     public boolean isCompleted() {
         return _completed;
+    }
+
+    /**
+     * @return The ID of the ring system to which this ring belongs.
+     */
+    public int ringSystemId() {
+        return _ringSystemId;
+    }
+
+    /**
+     * @param id
+     *            The ID of the ring system to which this ring is attached.
+     */
+    public void setRingSystemId(int id) {
+        _ringSystemId = id;
     }
 
     /**
@@ -226,8 +246,11 @@ public final class Ring
 
         _bonds.add(b);
 
-        for (Atom a : _atoms) {
-            _atomBitSet.set(a.inputId());
+        for (Atom ta : _atoms) {
+            _atomBitSet.set(ta.inputId());
+        }
+        for (Bond tb : _bonds) {
+            _bondBitSet.set(tb.id());
         }
         _completed = true;
     }
@@ -297,6 +320,32 @@ public final class Ring
     }
 
     /**
+     * @param other
+     *            The ring with whose atoms we should compare those of the
+     *            current ring.
+     * @return A bit set containing those bits set to {@code true} that
+     *         correspond to the common atoms.
+     */
+    public BitSet commonAtoms(Ring other) {
+        BitSet t = (BitSet) _atomBitSet.clone();
+        t.and(other._atomBitSet);
+        return t;
+    }
+
+    /**
+     * @param other
+     *            The ring with whose bonds we should compare those of the
+     *            current ring.
+     * @return A bit set containing those bits set to {@code true} that
+     *         correspond to the common bonds.
+     */
+    public BitSet commonBonds(Ring other) {
+        BitSet t = (BitSet) _bondBitSet.clone();
+        t.and(other._bondBitSet);
+        return t;
+    }
+
+    /**
      * @return A read-only copy of this ring's neighbouring rings.
      */
     public List<Ring> neighbours() {
@@ -315,8 +364,15 @@ public final class Ring
      * @return A clone of the bit set of the input IDs of the atoms in this
      *         ring.
      */
-    BitSet atomBitSet() {
+    public BitSet atomBitSet() {
         return (BitSet) _atomBitSet.clone();
+    }
+
+    /**
+     * @return A clone of the bit set of the IDs of the bonds in this ring.
+     */
+    public BitSet bondBitSet() {
+        return (BitSet) _bondBitSet.clone();
     }
 
     /**
@@ -532,9 +588,6 @@ public final class Ring
         }
         if (_mol.id() != other.molecule().id()) {
             return false;
-        }
-        if (other.id() == _id) { // Same ring.
-            return true;
         }
 
         BitSet t = other.atomBitSet();

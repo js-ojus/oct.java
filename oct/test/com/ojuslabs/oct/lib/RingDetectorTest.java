@@ -60,7 +60,7 @@ public class RingDetectorTest {
         IRingDetector rd = RingDetectors.newInstance(RingDetectors.DEFAULT);
         _mol.normalise(rd);
 
-        for (Ring r : _mol.rings()) {
+        for (Ring r : rd.rings()) {
             System.out.println(r);
         }
     }
@@ -80,7 +80,7 @@ public class RingDetectorTest {
         IRingDetector rd = RingDetectors.newInstance(RingDetectors.DEFAULT);
         _mol.normalise(rd);
 
-        for (Ring r : _mol.rings()) {
+        for (Ring r : rd.rings()) {
             System.out.println(r);
         }
     }
@@ -104,7 +104,7 @@ public class RingDetectorTest {
         IRingDetector rd = RingDetectors.newInstance(RingDetectors.DEFAULT);
         _mol.normalise(rd);
 
-        for (Ring r : _mol.rings()) {
+        for (Ring r : rd.rings()) {
             System.out.println(r);
         }
     }
@@ -128,7 +128,7 @@ public class RingDetectorTest {
         IRingDetector rd = RingDetectors.newInstance(RingDetectors.DEFAULT);
         _mol.normalise(rd);
 
-        for (Ring r : _mol.rings()) {
+        for (Ring r : rd.rings()) {
             System.out.println(r);
         }
     }

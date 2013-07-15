@@ -7,10 +7,14 @@
 
 package com.ojuslabs.oct.lib;
 
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import com.ojuslabs.oct.common.Constants;
@@ -31,6 +35,10 @@ public final class RingDetector implements IRingDetector {
     private List<Atom>           _atoms;
     private List<List<Atom>>     _nbrs;
     private Deque<List<Atom>>    _candidates;
+
+    private List<Ring>           _rings;
+    private List<List<Ring>>     _ringSystems;
+    private List<BitSet>         _ringSystemBonds;
 
     // The validators to employ before approving a candidate path as a ring.
     private List<IRingValidator> _initialValidators;
@@ -122,14 +130,21 @@ public final class RingDetector implements IRingDetector {
         _nbrs = Lists.newArrayListWithCapacity(_mol.numberOfAtoms());
         _candidates = Queues.newArrayDeque();
 
+        _rings = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_M);
+        _ringSystems = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_S);
+        _ringSystemBonds = Lists
+                .newArrayListWithCapacity(Constants.LIST_SIZE_S);
+
         // Initialise the atoms and their neighbours.
         for (Atom a : _mol.atoms()) {
             _atoms.add(a);
+
             List<Atom> nbrs = Lists
                     .newArrayListWithCapacity(Constants.LIST_SIZE_S);
             _nbrs.add(nbrs);
             for (Bond b : a.bonds()) {
-                nbrs.add(b.otherAtom(a.id()));
+                Atom nbr = b.otherAtom(a.id());
+                nbrs.add(nbr);
             }
         }
     }
@@ -152,6 +167,8 @@ public final class RingDetector implements IRingDetector {
         }
 
         detectMultipleRings();
+        detectRingSystems();
+        pruneRings();
     }
 
     /**
@@ -348,6 +365,110 @@ public final class RingDetector implements IRingDetector {
             r.addAtom(a);
         }
         r.complete();
-        _mol.addRing(r);
+        if (!_rings.contains(r)) {
+            _rings.add(r);
+        }
+    }
+
+    /**
+     * Groups the detected rings into ring systems based on fusion.
+     */
+    void detectRingSystems() {
+        int rsid = 0;
+        List<Ring> rs = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_S);
+        _ringSystems.add(rs);
+        _ringSystemBonds.add(_rings.get(0).bondBitSet());
+
+        for (Ring r : _rings) {
+            BitSet rbs = r.bondBitSet();
+
+            boolean found = false;
+            for (int i = 0; i < _ringSystems.size(); i++) {
+                BitSet rsbs = (BitSet) _ringSystemBonds.get(i).clone();
+                rsbs.and(rbs);
+                if (rsbs.cardinality() > 0) {
+                    r.setRingSystemId(rsid);
+                    _ringSystems.get(i).add(r);
+                    _ringSystemBonds.get(i).or(rbs);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                rsid++;
+                List<Ring> nrs = Lists
+                        .newArrayListWithCapacity(Constants.LIST_SIZE_S);
+                r.setRingSystemId(rsid);
+                nrs.add(r);
+                _ringSystems.add(nrs);
+                _ringSystemBonds.add(r.bondBitSet());
+            }
+        }
+    }
+
+    /**
+     * Removes spurious rings from the set of detected ones.
+     */
+    void pruneRings() {
+        // We sort each ring system ascending on ring size.
+        Comparator<Ring> c = new Comparator<Ring>() {
+            @Override
+            public int compare(Ring r1, Ring r2) {
+                int s1 = r1.size();
+                int s2 = r2.size();
+                return (s1 < s2) ? -1 : (s1 == s2) ? 0 : 1;
+            }
+        };
+
+        for (int i = 0; i < _ringSystems.size(); i++) {
+            List<Ring> rs = _ringSystems.get(i);
+            Collections.sort(rs, c);
+            BitSet rsbs = _ringSystemBonds.get(i);
+
+            // We find the smallest collection of classes of rings of the same
+            // size that covers the ring system exactly.
+            int prevSize = rs.get(0).size();
+            int currSize = 0;
+            BitSet bs = new BitSet(_mol.numberOfBonds());
+            int lastIncludedRingIdx = -1;
+            boolean found = false;
+            for (int j = 0; j < rs.size(); j++) {
+                Ring r = rs.get(j);
+                currSize = r.size();
+                if (currSize == prevSize) {
+                    bs.or(r.bondBitSet());
+                    lastIncludedRingIdx = j;
+                }
+                else {
+                    BitSet tbs = (BitSet) bs.clone();
+                    tbs.xor(rsbs);
+                    if (0 == tbs.cardinality()) {
+                        found = true;
+                        break;
+                    }
+
+                    prevSize = currSize;
+                }
+            }
+
+            // We remove the larger rings in the ring system now.
+            if (found) {
+                for (int j = lastIncludedRingIdx + 1; j < rs.size(); j++) {
+                    _rings.remove(rs.get(j));
+                }
+                rs.retainAll(rs.subList(0, lastIncludedRingIdx + 1));
+            }
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.ojuslabs.oct.lib.IRingDetector#rings()
+     */
+    @Override
+    public List<Ring> rings() {
+        return ImmutableList.copyOf(_rings);
     }
 }
