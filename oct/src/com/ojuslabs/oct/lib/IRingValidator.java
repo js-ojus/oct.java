@@ -32,6 +32,6 @@ public interface IRingValidator {
      * @return {@code true} if the path satisfies the criteria in the specific
      *         instance; {@code false} otherwise.
      */
-    boolean validate(Molecule mol, List<Atom> atoms, List<List<Atom>> nbrs,
+    boolean isValid(Molecule mol, List<Atom> atoms, List<List<Atom>> nbrs,
             List<Atom> path);
 }

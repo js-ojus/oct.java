@@ -48,7 +48,7 @@ public class RingDetectorTest {
     @Test
     public void test001() {
         SdfFile sdf = new SdfFile(
-                "test/com/ojuslabs/oct/xlate/mdl/citalopram.sdf");
+                "oct/test/com/ojuslabs/oct/xlate/mdl/citalopram.sdf");
         SdfIterator it = sdf.iterator();
         it.hasNext();
 
@@ -60,15 +60,20 @@ public class RingDetectorTest {
         IRingDetector rd = RingDetectors.newInstance(RingDetectors.DEFAULT);
         _mol.normalise(rd);
 
-        for (Ring r : rd.rings()) {
+        List<Ring> rings = rd.rings();
+        System.out.println(String.format("-- Citalopram : %d rings.",
+                rings.size()));
+        for (Ring r : rings) {
             System.out.println(r);
         }
+        System.out.println();
+        assertEquals(3, rings.size());
     }
 
     @Test
     public void test002() {
         SdfFile sdf = new SdfFile(
-                "test/com/ojuslabs/oct/xlate/mdl/cubane.sdf");
+                "oct/test/com/ojuslabs/oct/xlate/mdl/cubane.sdf");
         SdfIterator it = sdf.iterator();
         it.hasNext();
 
@@ -80,15 +85,20 @@ public class RingDetectorTest {
         IRingDetector rd = RingDetectors.newInstance(RingDetectors.DEFAULT);
         _mol.normalise(rd);
 
-        for (Ring r : rd.rings()) {
+        List<Ring> rings = rd.rings();
+        System.out.println(String.format("-- Cubane : %d rings.",
+                rings.size()));
+        for (Ring r : rings) {
             System.out.println(r);
         }
+        System.out.println();
+        assertEquals(6, rings.size());
     }
 
     @Test
     public void test003() {
         SdfFile sdf = new SdfFile(
-                "test/com/ojuslabs/oct/xlate/mdl/adamantane.sdf");
+                "oct/test/com/ojuslabs/oct/xlate/mdl/adamantane.sdf");
         SdfIterator it = sdf.iterator();
         it.hasNext();
 
@@ -97,22 +107,23 @@ public class RingDetectorTest {
         _mol = reader.parse(l, false, false, false);
         assertNotNull(_mol);
 
-        assertEquals(_mol.numberOfAtoms(), 10);
-        assertEquals(_mol.numberOfBonds(), 12);
-        assertEquals(_mol.frerejacque(), 3);
-
         IRingDetector rd = RingDetectors.newInstance(RingDetectors.DEFAULT);
         _mol.normalise(rd);
 
-        for (Ring r : rd.rings()) {
+        List<Ring> rings = rd.rings();
+        System.out.println(String.format("-- Adamantane : %d rings.",
+                rings.size()));
+        for (Ring r : rings) {
             System.out.println(r);
         }
+        System.out.println();
+        assertEquals(4, rings.size());
     }
 
     @Test
     public void test004() {
         SdfFile sdf = new SdfFile(
-                "test/com/ojuslabs/oct/xlate/mdl/dual-adamantane.sdf");
+                "oct/test/com/ojuslabs/oct/xlate/mdl/dual-adamantane.sdf");
         SdfIterator it = sdf.iterator();
         it.hasNext();
 
@@ -121,22 +132,23 @@ public class RingDetectorTest {
         _mol = reader.parse(l, false, false, false);
         assertNotNull(_mol);
 
-        assertEquals(_mol.numberOfAtoms(), 14);
-        assertEquals(_mol.numberOfBonds(), 18);
-        assertEquals(_mol.frerejacque(), 5);
-
         IRingDetector rd = RingDetectors.newInstance(RingDetectors.DEFAULT);
         _mol.normalise(rd);
 
-        for (Ring r : rd.rings()) {
+        List<Ring> rings = rd.rings();
+        System.out.println(String.format("-- Double adamantane : %d rings.",
+                rings.size()));
+        for (Ring r : rings) {
             System.out.println(r);
         }
+        System.out.println();
+        assertEquals(6, rings.size());
     }
 
     @Test
     public void test005() {
         SdfFile sdf = new SdfFile(
-                "test/com/ojuslabs/oct/xlate/mdl/norbornane.sdf");
+                "oct/test/com/ojuslabs/oct/xlate/mdl/norbornane.sdf");
         SdfIterator it = sdf.iterator();
         it.hasNext();
 
@@ -145,15 +157,16 @@ public class RingDetectorTest {
         _mol = reader.parse(l, false, false, false);
         assertNotNull(_mol);
 
-        assertEquals(_mol.numberOfAtoms(), 7);
-        assertEquals(_mol.numberOfBonds(), 8);
-        assertEquals(_mol.frerejacque(), 2);
-
         IRingDetector rd = RingDetectors.newInstance(RingDetectors.DEFAULT);
         _mol.normalise(rd);
 
-        for (Ring r : rd.rings()) {
+        List<Ring> rings = rd.rings();
+        System.out.println(String.format("-- Norbornane : %d rings.",
+                rings.size()));
+        for (Ring r : rings) {
             System.out.println(r);
         }
+        System.out.println();
+        assertEquals(3, rings.size());
     }
 }

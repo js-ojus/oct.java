@@ -41,21 +41,21 @@ public final class RingDetector implements IRingDetector {
     private List<BitSet>         _ringSystemBonds;
 
     // The validators to employ before approving a candidate path as a ring.
-    private List<IRingValidator> _initialValidators;
+    private List<IRingValidator> _ringValidators;
     // The validators to employ while pruning detected rings.
-    private List<IRingValidator> _pruningValidators;
+    private List<IRingPruner>    _ringPruners;
 
     /**
      * Registers a set of validators that each has to approve the candidate path
      * as a ring, with this detector.
      */
     public RingDetector() {
-        _initialValidators = Lists.newArrayList();
+        _ringValidators = Lists.newArrayList();
 
         // A junction atom cannot have _all_ of its neighbours in any one ring!
-        _initialValidators.add(new IRingValidator() {
+        _ringValidators.add(new IRingValidator() {
             @Override
-            public boolean validate(Molecule mol, List<Atom> atoms,
+            public boolean isValid(Molecule mol, List<Atom> atoms,
                     List<List<Atom>> nbrs, List<Atom> path) {
                 // System.out.println("-- Validating path: "
                 // + Joiner.on(", ").join(path));
@@ -79,6 +79,80 @@ public final class RingDetector implements IRingDetector {
                     // spurious outer shell path, not a genuine ring.
                     if (allFound) {
                         return false;
+                    }
+                }
+
+                return true;
+            }
+        });
+
+        // //////////////////////////////////////
+
+        _ringPruners = Lists.newArrayList();
+
+        // This test consists of two parts: (1) the test ring should be a union
+        // of exactly two rings from the basis set of the ring system, and (2)
+        // none of the atoms of the test ring that is not a bridge head should
+        // be a junction.
+        _ringPruners.add(new IRingPruner() {
+            @Override
+            public boolean shouldPrune(List<Ring> rs, Ring r,
+                    int lastIncludedRingIdx) {
+                BitSet ras = r.atomBitSet();
+                BitSet rbs = r.bondBitSet();
+
+                outer:
+                for (int i = 0; i < lastIncludedRingIdx; i++) {
+                    Ring ri = rs.get(i);
+                    BitSet as1 = ri.atomBitSet();
+                    BitSet bs1 = ri.bondBitSet();
+
+                    inner:
+                    for (int j = i + 1; j <= lastIncludedRingIdx; j++) {
+                        Ring rj = rs.get(j);
+                        BitSet as2 = rj.atomBitSet();
+                        BitSet bs2 = rj.bondBitSet();
+                        bs2.or(bs1); // Union of `ri` and `rj`.
+                        bs2.and(rbs); // Intersection of `ri`, `rj` and `r`.
+                        bs2.xor(rbs);
+
+                        // The remainder should match the test ring for it to be
+                        // in the race!
+                        if (0 == bs2.cardinality()) {
+                            as2.and(as1); // Intersection of `ri` and `rj`.
+                            as2.and(ras); // Intersection of `ri`, `rj` and `r`.
+
+                            // More than two atoms in the intersection means
+                            // that the ring is a convoluted spurious ring.
+                            if (as2.cardinality() > 2) {
+                                continue inner;
+                            }
+
+                            // If we have come this far, then the two atoms in
+                            // `as2` are likely to be bridge head atoms.
+                            // However, for them to be genuine bridge head
+                            // atoms, no other junctions should exist in the
+                            // remainder of `r`.
+                            BitSet t1 = (BitSet) ras.clone();
+                            t1.andNot(as2); // Remove the two potential bridge
+                                            // atoms.
+                            for (int k = t1.nextSetBit(0); k > -1; k = t1
+                                    .nextSetBit(k + 1)) {
+                                for (int m = 0; m < _atoms.size(); m++) {
+                                    if (_atoms.get(m).inputId() == k) {
+                                        // If the atom is a junction, then this
+                                        // ring is spurious.
+                                        if (_nbrs.get(m).size() > 2) {
+                                            return true;
+                                        }
+                                    }
+                                }
+                            }
+
+                            // The two junction atoms are genuine bridge head
+                            // atoms.
+                            return false;
+                        }
                     }
                 }
 
@@ -346,8 +420,8 @@ public final class RingDetector implements IRingDetector {
         }
 
         // Otherwise, we run the path through all the registered validators.
-        for (IRingValidator v : _initialValidators) {
-            if (!v.validate(_mol, _atoms, _nbrs, path)) {
+        for (IRingValidator v : _ringValidators) {
+            if (!v.isValid(_mol, _atoms, _nbrs, path)) {
                 return false;
             }
         }
@@ -427,124 +501,88 @@ public final class RingDetector implements IRingDetector {
             Collections.sort(rs, c);
             BitSet rsbs = _ringSystemBonds.get(i);
 
-            // We find the smallest collection of classes of rings of the same
-            // size that covers the ring system exactly.
-            int prevSize = rs.get(0).size();
-            int currSize = 0;
-            BitSet bs = new BitSet(_mol.numberOfBonds());
-            int lastIncludedRingIdx = -1;
-            boolean found = false;
-            for (int j = 0; j < rs.size(); j++) {
-                Ring r = rs.get(j);
-                currSize = r.size();
-                if (currSize == prevSize) {
-                    bs.or(r.bondBitSet());
-                    lastIncludedRingIdx = j;
-                }
-                else {
-                    BitSet tbs = (BitSet) bs.clone();
-                    tbs.xor(rsbs);
-                    if (0 == tbs.cardinality()) {
-                        found = true;
-                        break;
-                    }
-
-                    prevSize = currSize;
-                }
-            }
+            // We form a basis set of rings for this ring system.
+            int lastIncludedRingIdx = indexOfLastRingInBasis(rs, rsbs);
 
             // We remove all those larger rings, which can not be expressed as a
             // union of exactly any two of the already included rings.
-            if (found) {
-                boolean running = true;
-                while (running) {
-                    running = false;
-
-                    for (int j = lastIncludedRingIdx + 1; j < rs.size(); j++) {
-                        Ring tr = rs.get(j);
-                        if (!isUnionOfSomeTwoRingsUpto(lastIncludedRingIdx, rs,
-                                tr)) {
-                            _rings.remove(tr);
-                            rs.remove(j);
-                            running = true;
-                            break;
-                        }
-                    }
-                }
+            if (lastIncludedRingIdx < rs.size() - 1) {
+                pruneLargerRings(rs, lastIncludedRingIdx);
             }
         }
     }
 
     /**
+     * <b>N.B.</b> This method assumes that the given ring system is sorted
+     * ascending on ring size.
+     * 
      * @param rs
-     *            The ring system being pruned.
-     * @param lastIncludedRingIdx
-     *            Marks the last ring to consider in the ring system.
-     * @param r
-     *            The ring to test if it can be formed as a union of exactly two
-     *            rings.
-     * @return {@code true} if the ring can be formed as a union of exactly two
-     *         included rings; {@code false} otherwise.
+     *            The ring system for which a basis has to be computed.
+     * @param rsbs
+     *            The bond bit set of the ring system to compare the basis
+     *            against.
+     * @return The index of the last ring that was included to form a basis for
+     *         the given ring system.
      */
-    boolean isUnionOfSomeTwoRingsUpto(int lastIncludedRingIdx, List<Ring> rs,
-            Ring r) {
-        BitSet ras = r.atomBitSet();
-        BitSet rbs = r.bondBitSet();
+    int indexOfLastRingInBasis(List<Ring> rs, BitSet rsbs) {
+        // We find the smallest collection of classes of rings of the same
+        // size that covers the ring system exactly.
+        int prevSize = -1;
+        int currSize = 0;
+        BitSet bs = new BitSet(_mol.numberOfBonds());
+        int lastIncludedRingIdx = -1;
 
+        for (int j = 0; j < rs.size(); j++) {
+            Ring r = rs.get(j);
+            currSize = r.size();
+
+            if (currSize == prevSize) {
+                bs.or(r.bondBitSet());
+            }
+            else {
+                BitSet tbs = (BitSet) bs.clone();
+                tbs.xor(rsbs);
+                if (0 == tbs.cardinality()) {
+                    return lastIncludedRingIdx;
+                }
+
+                prevSize = currSize;
+            }
+
+            lastIncludedRingIdx = j;
+        }
+
+        return lastIncludedRingIdx;
+    }
+
+    /**
+     * Checks each larger ring to see if it is a genuine ring or a spurious. It
+     * then removes all the spurious ones.
+     * 
+     * @param rs
+     *            The ring system in which the rings have to be pruned.
+     * @param lastIncludedRingIdx
+     *            The index of the last ring included in the basis.
+     */
+    void pruneLargerRings(List<Ring> rs, int lastIncludedRingIdx) {
+        boolean running = true;
         outer:
-        for (int i = 0; i < lastIncludedRingIdx; i++) {
-            Ring ri = rs.get(i);
-            BitSet as1 = ri.atomBitSet();
-            BitSet bs1 = ri.bondBitSet();
+        while (running) {
+            running = false;
 
-            inner:
-            for (int j = i + 1; j <= lastIncludedRingIdx; j++) {
-                Ring rj = rs.get(j);
-                BitSet as2 = rj.atomBitSet();
-                BitSet bs2 = rj.bondBitSet();
-                bs2.or(bs1); // Union of `ri` and `rj`.
-                bs2.and(rbs); // Intersection of `ri`, `rj` and `r`.
-                bs2.xor(rbs);
+            for (int j = lastIncludedRingIdx + 1; j < rs.size(); j++) {
+                Ring r = rs.get(j);
 
-                // The remainder should match the test ring for it to be in the
-                // race!
-                if (0 == bs2.cardinality()) {
-                    as2.and(as1); // Intersection of `ri` and `rj`.
-                    as2.and(ras); // Intersection of `ri`, `rj` and `r`.
-
-                    // More than two atoms in the intersection means that the
-                    // ring is a convoluted spurious ring.
-                    if (as2.cardinality() > 2) {
-                        continue inner;
+                for (IRingPruner p : _ringPruners) {
+                    if (p.shouldPrune(rs, r, lastIncludedRingIdx)) {
+                        _rings.remove(r);
+                        rs.remove(j);
+                        running = true;
+                        continue outer;
                     }
-
-                    // If we have come this far, then the two atoms in `as2` are
-                    // likely to be bridge atoms. However, for them to be
-                    // genuine bridge atoms, no other junctions should exist in
-                    // the remainder of `r`.
-                    BitSet t1 = (BitSet) ras.clone();
-                    t1.andNot(as2); // Remove the two potential bridge atoms.
-                    for (int k = t1.nextSetBit(0); k > -1; k = t1
-                            .nextSetBit(k + 1)) {
-                        int aidx = -1;
-                        for (int m = 0; m < _atoms.size(); m++) {
-                            if (_atoms.get(m).inputId() == k) {
-                                // If the atom is a junction, then this ring is
-                                // spurious.
-                                if (_nbrs.get(m).size() > 2) {
-                                    return false;
-                                }
-                            }
-                        }
-                        // The two junction atoms are genuine bridge atoms.
-                    }
-
-                    return true;
                 }
             }
         }
-
-        return false;
     }
 
     /*

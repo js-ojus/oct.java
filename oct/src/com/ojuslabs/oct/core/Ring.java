@@ -590,9 +590,9 @@ public final class Ring
             return false;
         }
 
-        BitSet t = other.atomBitSet();
-        t.xor(_atomBitSet);
-        if (0 == t.cardinality()) { // Exactly same atoms!
+        BitSet t = other.bondBitSet();
+        t.xor(_bondBitSet);
+        if (0 == t.cardinality()) { // Exactly same bonds!
             return true;
         }
 
