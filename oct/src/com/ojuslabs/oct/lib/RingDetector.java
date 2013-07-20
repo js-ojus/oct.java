@@ -332,8 +332,8 @@ public final class RingDetector implements IRingDetector {
      * @return {@code true} if the path satisfies the criteria in the specific
      *         instance; {@code false} otherwise.
      */
-    boolean isValid(Molecule mol, List<Atom> atoms,
-            List<List<Atom>> nbrs, List<Atom> path) {
+    boolean isValid(Molecule mol, List<Atom> atoms, List<List<Atom>> nbrs,
+            List<Atom> path) {
         // System.out.println("-- Validating path: "
         // + Joiner.on(", ").join(path));
 
@@ -437,7 +437,6 @@ public final class RingDetector implements IRingDetector {
      * Removes spurious rings from the set of detected ones.
      */
     void pruneSpuriousRings() {
-        // We sort each ring system ascending on ring size.
         for (int i = 0; i < _ringSystems.size(); i++) {
             List<Ring> rs = _ringSystems.get(i);
             BitSet rsbs = _ringSystemBonds.get(i);
@@ -501,13 +500,13 @@ public final class RingDetector implements IRingDetector {
      *            The ring system in which the rings have to be pruned.
      * @param lastIncludedRingIdx
      *            The index of the last ring included in the basis.
+     * @return
      */
-    void pruneLargerRings(List<Ring> rs, int lastIncludedRingIdx) {
+    int pruneLargerRings(List<Ring> rs, int lastIncludedRingIdx) {
         boolean running = true;
         outer:
         while (running) {
             running = false;
-
             for (int j = lastIncludedRingIdx + 1; j < rs.size(); j++) {
                 Ring r = rs.get(j);
 
@@ -517,13 +516,20 @@ public final class RingDetector implements IRingDetector {
                     running = true;
                     continue outer;
                 }
+                else { // The ring is included in the basis.
+                    rs.remove(j);
+                    lastIncludedRingIdx++;
+                    rs.add(lastIncludedRingIdx, r);
+                }
             }
         }
+
+        return lastIncludedRingIdx;
     }
 
     /**
      * Determines if the given ring should be pruned or retained, by subjecting
-     * it to a unique test.
+     * it to a set of tests.
      * 
      * @param rs
      *            The ring system to which the test ring belongs.
@@ -535,8 +541,7 @@ public final class RingDetector implements IRingDetector {
      * @return {@code true} if the ring should be pruned; {@code false}
      *         otherwise.
      */
-    boolean shouldPrune(List<Ring> rs, Ring r,
-            int lastIncludedRingIdx) {
+    boolean shouldPrune(List<Ring> rs, Ring r, int lastIncludedRingIdx) {
         BitSet ras = r.atomBitSet();
         BitSet rbs = r.bondBitSet();
 
@@ -568,30 +573,92 @@ public final class RingDetector implements IRingDetector {
 
                     // If we have come this far, then the two atoms in
                     // `as2` are likely to be bridge head atoms.
-                    // However, for them to be genuine bridge head
-                    // atoms, no other junctions should exist in the
-                    // remainder of `r`.
+                    List<Atom> tal = Lists
+                            .newArrayListWithCapacity(Constants.LIST_SIZE_S);
                     BitSet t1 = (BitSet) ras.clone();
-                    t1.andNot(as2); // Remove the two potential bridge
-                                    // atoms.
+                    // Remove the two potential bridge atoms.
+                    t1.andNot(as2);
+                    // Collect the remaining junction atoms.
                     for (int k = t1.nextSetBit(0); k > -1; k = t1
                             .nextSetBit(k + 1)) {
                         for (int m = 0; m < _atoms.size(); m++) {
-                            if (_atoms.get(m).inputId() == k) {
-                                // If the atom is a junction, then this
-                                // ring is spurious.
+                            Atom ta = _atoms.get(m);
+                            if (ta.inputId() == k) {
                                 if (_nbrs.get(m).size() > 2) {
-                                    return true;
+                                    tal.add(ta);
                                 }
                             }
                         }
                     }
 
-                    // The two junction atoms are genuine bridge head
-                    // atoms.
-                    return false;
+                    int talSize = tal.size();
+                    switch (talSize) {
+                    // Cases of no other junctions or only one junction do not
+                    // contribute an alternative path.
+                    case 0:
+                    case 1:
+                        return false;
+
+                        // Case of exactly two other junctions means that they
+                        // may potentially have a smaller distance between them
+                        // through an alternative path.
+                    case 2: {
+                        int a1id = tal.get(0).inputId();
+                        int a2id = tal.get(1).inputId();
+                        int dr = r.distanceBetween(a1id, a2id);
+                        int dm = _mol.distanceBetween(a1id, a2id);
+                        if (dm < dr) {
+                            return true;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+
+                    // TODO(js): We may need to tune this further.
+                    default: {
+                        for (int l = 0; l < talSize - 1; l++) {
+                            for (int m = l + 1; m < talSize; m++) {
+                                int a1id = tal.get(l).inputId();
+                                int a2id = tal.get(m).inputId();
+                                int dr = r.distanceBetween(a1id, a2id);
+                                int dm = _mol.distanceBetween(a1id, a2id);
+                                if (dm < dr) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    }
                 }
             }
+        }
+
+        // If we have come this far, the test ring cannot be expressed as a
+        // union of two basis rings. We now check to see if it has at least one
+        // bond that is not present in more than one ring.
+        boolean found = false;
+        for (int i = rbs.nextSetBit(0); i > -1; i = rbs.nextSetBit(i + 1)) {
+            // Bond b = _mol.bond(i);
+            // System.out.println(b);
+            int count = 0;
+            for (int j = 0; j <= lastIncludedRingIdx; j++) {
+                Ring rj = rs.get(j);
+                BitSet rjbs = rj.bondBitSet();
+                // System.out.println(rjbs);
+                if (rjbs.get(i)) {
+                    count++;
+                }
+            }
+
+            if (count < 2) {
+                found = true;
+                // System.out.println("-- Found: " + b.id());
+                break;
+            }
+        }
+        if (found) { // Valid ring.
+            return false;
         }
 
         return true;

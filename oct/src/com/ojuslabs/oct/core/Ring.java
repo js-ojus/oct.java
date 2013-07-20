@@ -243,7 +243,6 @@ public final class Ring
                     "No bond between the first and the last atoms: %d, %d",
                     a1.id(), a2.id()));
         }
-
         _bonds.add(b);
 
         for (Atom ta : _atoms) {
@@ -373,6 +372,49 @@ public final class Ring
      */
     public BitSet bondBitSet() {
         return (BitSet) _bondBitSet.clone();
+    }
+
+    /**
+     * Answers the shorter distance in the ring between the two atoms with the
+     * given input IDs.
+     * 
+     * @param inputId1
+     *            Input ID of one of the atoms.
+     * @param inputId2
+     *            Input ID of the other atom.
+     * @return The shorter distance in the ring between the two given atoms.
+     * @throws IllegalArgumentException
+     *             if at least one of the given atoms does not participate in
+     *             this ring.
+     */
+    public int distanceBetween(int inputId1, int inputId2) {
+        int idx1 = -1;
+        int idx2 = -1;
+        int found = 0;
+
+        for (int i = 0; i < _atoms.size(); i++) {
+            Atom a = _atoms.get(i);
+            if ((a.inputId() == inputId1) || (a.inputId() == inputId2)) {
+                if (0 == found) {
+                    idx1 = i;
+                }
+                else {
+                    idx2 = i;
+                }
+                found++;
+                if (2 == found) {
+                    break;
+                }
+            }
+        }
+        if (found < 2) {
+            throw new IllegalArgumentException(
+                    "At least one of the given atoms does not participate in this ring.");
+        }
+
+        int d1 = idx2 - idx1;
+        int d2 = _atoms.size() - d1;
+        return (d1 < d2) ? d1 : d2;
     }
 
     /**
