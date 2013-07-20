@@ -169,4 +169,108 @@ public class RingDetectorTest {
         System.out.println();
         assertEquals(3, rings.size());
     }
+
+    @Test
+    public void test006() {
+        SdfFile sdf = new SdfFile(
+                "oct/test/com/ojuslabs/oct/xlate/mdl/two-cyclohexanes-cylinder.sdf");
+        SdfIterator it = sdf.iterator();
+        it.hasNext();
+
+        List<String> l = it.next();
+        MolReader reader = new MolReaderV2k();
+        _mol = reader.parse(l, false, false, false);
+        assertNotNull(_mol);
+
+        IRingDetector rd = RingDetectors.newInstance(RingDetectors.DEFAULT);
+        _mol.normalise(rd);
+
+        List<Ring> rings = rd.rings();
+        System.out.println(String.format(
+                "-- Cylindrical cyclohexanes : %d rings.",
+                rings.size()));
+        for (Ring r : rings) {
+            System.out.println(r);
+        }
+        System.out.println();
+        assertEquals(8, rings.size());
+    }
+
+    @Test
+    public void test007() {
+        SdfFile sdf = new SdfFile(
+                "oct/test/com/ojuslabs/oct/xlate/mdl/three-fused-norbornanes.sdf");
+        SdfIterator it = sdf.iterator();
+        it.hasNext();
+
+        List<String> l = it.next();
+        MolReader reader = new MolReaderV2k();
+        _mol = reader.parse(l, false, false, false);
+        assertNotNull(_mol);
+
+        IRingDetector rd = RingDetectors.newInstance(RingDetectors.DEFAULT);
+        _mol.normalise(rd);
+
+        List<Ring> rings = rd.rings();
+        System.out.println(String.format(
+                "-- Fused norbornanes : %d rings.",
+                rings.size()));
+        for (Ring r : rings) {
+            System.out.println(r);
+        }
+        System.out.println();
+        assertEquals(9, rings.size());
+    }
+
+    @Test
+    public void test008() {
+        SdfFile sdf = new SdfFile(
+                "oct/test/com/ojuslabs/oct/xlate/mdl/three-fused-norbornanes-2.sdf");
+        SdfIterator it = sdf.iterator();
+        it.hasNext();
+
+        List<String> l = it.next();
+        MolReader reader = new MolReaderV2k();
+        _mol = reader.parse(l, false, false, false);
+        assertNotNull(_mol);
+
+        IRingDetector rd = RingDetectors.newInstance(RingDetectors.DEFAULT);
+        _mol.normalise(rd);
+
+        List<Ring> rings = rd.rings();
+        System.out.println(String.format(
+                "-- Fused norbornanes - 2 : %d rings.",
+                rings.size()));
+        for (Ring r : rings) {
+            System.out.println(r);
+        }
+        System.out.println();
+        assertEquals(9, rings.size());
+    }
+
+    @Test
+    public void test009() {
+        SdfFile sdf = new SdfFile(
+                "oct/test/com/ojuslabs/oct/xlate/mdl/cyclohexane-6-disjoint-quadranes.sdf");
+        SdfIterator it = sdf.iterator();
+        it.hasNext();
+
+        List<String> l = it.next();
+        MolReader reader = new MolReaderV2k();
+        _mol = reader.parse(l, false, false, false);
+        assertNotNull(_mol);
+
+        IRingDetector rd = RingDetectors.newInstance(RingDetectors.DEFAULT);
+        _mol.normalise(rd);
+
+        List<Ring> rings = rd.rings();
+        System.out.println(String.format(
+                "-- Cyclohexane with 6 disjoint quadranes : %d rings.",
+                rings.size()));
+        for (Ring r : rings) {
+            System.out.println(r);
+        }
+        System.out.println();
+        assertEquals(7, rings.size());
+    }
 }

@@ -273,7 +273,7 @@ public final class Ring
         }
 
         // Rotate the list so that the atom with the minimum ID comes first.
-        Collections.rotate(_atoms, idx);
+        Collections.rotate(_atoms, -idx);
 
         // Determine the ring's aromaticity.
         determineAromaticity();
@@ -607,8 +607,8 @@ public final class Ring
     @Override
     public String toString() {
         return String
-                .format("{\"id\": %d, \"atoms\": [%s]}", _id, Joiner.on(", ")
-                        .join(_atoms));
+                .format("{\"id\": %d, \"system\": %d, \"atoms\": [%s]}", _id,
+                        _ringSystemId, Joiner.on(", ").join(_atoms));
     }
 
     /*

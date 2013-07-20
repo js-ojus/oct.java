@@ -38,6 +38,7 @@ public final class RingDetector implements IRingDetector {
 
     private List<Ring>           _rings;
     private List<List<Ring>>     _ringSystems;
+    private List<BitSet>         _ringSystemAtoms;
     private List<BitSet>         _ringSystemBonds;
 
     // The validators to employ before approving a candidate path as a ring.
@@ -52,7 +53,8 @@ public final class RingDetector implements IRingDetector {
     public RingDetector() {
         _ringValidators = Lists.newArrayList();
 
-        // A junction atom cannot have _all_ of its neighbours in any one ring!
+        // A junction atom cannot have more than two of its neighbours in any
+        // one ring!
         _ringValidators.add(new IRingValidator() {
             @Override
             public boolean isValid(Molecule mol, List<Atom> atoms,
@@ -67,17 +69,20 @@ public final class RingDetector implements IRingDetector {
                         continue;
                     }
 
-                    boolean allFound = true;
+                    int found = 0;
+                    inner:
                     for (Atom n : anbrs) {
-                        if (-1 == path.indexOf(n)) {
-                            allFound = false;
-                            break;
+                        if (path.indexOf(n) > -1) {
+                            found++;
+                            if (found > 2) {
+                                break inner;
+                            }
                         }
                     }
 
                     // If all neighbours exist in this path, then it is a
                     // spurious outer shell path, not a genuine ring.
-                    if (allFound) {
+                    if (found > 2) {
                         return false;
                     }
                 }
@@ -90,10 +95,10 @@ public final class RingDetector implements IRingDetector {
 
         _ringPruners = Lists.newArrayList();
 
-        // This test consists of two parts: (1) the test ring should be a union
-        // of exactly two rings from the basis set of the ring system, and (2)
-        // none of the atoms of the test ring that is not a bridge head should
-        // be a junction.
+        // This test consists of the following parts: (1) the test ring should
+        // be a union of exactly two rings from the basis set of the ring
+        // system; (2) none of the atoms of the test ring that is not a bridge
+        // head should be a junction.
         _ringPruners.add(new IRingPruner() {
             @Override
             public boolean shouldPrune(List<Ring> rs, Ring r,
@@ -101,7 +106,6 @@ public final class RingDetector implements IRingDetector {
                 BitSet ras = r.atomBitSet();
                 BitSet rbs = r.bondBitSet();
 
-                outer:
                 for (int i = 0; i < lastIncludedRingIdx; i++) {
                     Ring ri = rs.get(i);
                     BitSet as1 = ri.atomBitSet();
@@ -206,6 +210,8 @@ public final class RingDetector implements IRingDetector {
 
         _rings = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_M);
         _ringSystems = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_S);
+        _ringSystemAtoms = Lists
+                .newArrayListWithCapacity(Constants.LIST_SIZE_S);
         _ringSystemBonds = Lists
                 .newArrayListWithCapacity(Constants.LIST_SIZE_S);
 
@@ -241,8 +247,9 @@ public final class RingDetector implements IRingDetector {
         }
 
         detectMultipleRings();
+        sortRings();
         detectRingSystems();
-        pruneRings();
+        pruneSpuriousRings();
     }
 
     /**
@@ -445,46 +452,9 @@ public final class RingDetector implements IRingDetector {
     }
 
     /**
-     * Groups the detected rings into ring systems based on fusion.
+     * We sort the detected rings ascending on their sizes.
      */
-    void detectRingSystems() {
-        int rsid = 0;
-        List<Ring> rs = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_S);
-        _ringSystems.add(rs);
-        _ringSystemBonds.add(_rings.get(0).bondBitSet());
-
-        for (Ring r : _rings) {
-            BitSet rbs = r.bondBitSet();
-
-            boolean found = false;
-            for (int i = 0; i < _ringSystems.size(); i++) {
-                BitSet rsbs = (BitSet) _ringSystemBonds.get(i).clone();
-                rsbs.and(rbs);
-                if (rsbs.cardinality() > 0) {
-                    r.setRingSystemId(rsid);
-                    _ringSystems.get(i).add(r);
-                    _ringSystemBonds.get(i).or(rbs);
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                rsid++;
-                List<Ring> nrs = Lists
-                        .newArrayListWithCapacity(Constants.LIST_SIZE_S);
-                r.setRingSystemId(rsid);
-                nrs.add(r);
-                _ringSystems.add(nrs);
-                _ringSystemBonds.add(r.bondBitSet());
-            }
-        }
-    }
-
-    /**
-     * Removes spurious rings from the set of detected ones.
-     */
-    void pruneRings() {
+    void sortRings() {
         // A comparator to sort each ring system ascending on ring size.
         Comparator<Ring> c = new Comparator<Ring>() {
             @Override
@@ -495,10 +465,52 @@ public final class RingDetector implements IRingDetector {
             }
         };
 
+        Collections.sort(_rings, c);
+    }
+
+    /**
+     * Groups the detected rings into ring systems based on fusion.
+     */
+    void detectRingSystems() {
+        int rsid = 0;
+        outer:
+        for (Ring r : _rings) {
+            BitSet ras = r.atomBitSet();
+            BitSet rbs = r.bondBitSet();
+
+            for (int i = 0; i < _ringSystems.size(); i++) {
+                BitSet rsas = (BitSet) _ringSystemAtoms.get(i).clone();
+                rsas.and(ras);
+                BitSet rsbs = (BitSet) _ringSystemBonds.get(i).clone();
+                rsbs.and(rbs);
+                if ((rsbs.cardinality() > 0) // Fused bond(s).
+                        || (rsas.cardinality() > 0)) { // Spiro system.
+                    r.setRingSystemId(rsid);
+                    _ringSystems.get(i).add(r);
+                    _ringSystemAtoms.get(i).or(ras);
+                    _ringSystemBonds.get(i).or(rbs);
+                    continue outer;
+                }
+            }
+
+            rsid++;
+            List<Ring> nrs = Lists
+                    .newArrayListWithCapacity(Constants.LIST_SIZE_S);
+            r.setRingSystemId(rsid);
+            nrs.add(r);
+            _ringSystems.add(nrs);
+            _ringSystemAtoms.add(r.atomBitSet());
+            _ringSystemBonds.add(r.bondBitSet());
+        }
+    }
+
+    /**
+     * Removes spurious rings from the set of detected ones.
+     */
+    void pruneSpuriousRings() {
         // We sort each ring system ascending on ring size.
         for (int i = 0; i < _ringSystems.size(); i++) {
             List<Ring> rs = _ringSystems.get(i);
-            Collections.sort(rs, c);
             BitSet rsbs = _ringSystemBonds.get(i);
 
             // We form a basis set of rings for this ring system.
@@ -528,7 +540,7 @@ public final class RingDetector implements IRingDetector {
         // We find the smallest collection of classes of rings of the same
         // size that covers the ring system exactly.
         int prevSize = -1;
-        int currSize = 0;
+        int currSize = -1;
         BitSet bs = new BitSet(_mol.numberOfBonds());
         int lastIncludedRingIdx = -1;
 
@@ -536,20 +548,17 @@ public final class RingDetector implements IRingDetector {
             Ring r = rs.get(j);
             currSize = r.size();
 
-            if (currSize == prevSize) {
-                bs.or(r.bondBitSet());
-            }
-            else {
+            if (currSize != prevSize) {
                 BitSet tbs = (BitSet) bs.clone();
                 tbs.xor(rsbs);
                 if (0 == tbs.cardinality()) {
                     return lastIncludedRingIdx;
                 }
-
-                prevSize = currSize;
             }
 
-            lastIncludedRingIdx = j;
+            bs.or(r.bondBitSet());
+            lastIncludedRingIdx++;
+            prevSize = currSize;
         }
 
         return lastIncludedRingIdx;
