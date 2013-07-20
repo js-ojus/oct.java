@@ -595,40 +595,42 @@ public final class RingDetector implements IRingDetector {
                     switch (talSize) {
                     // Cases of no other junctions or only one junction do not
                     // contribute an alternative path.
-                    case 0:
-                    case 1:
-                        return false;
-
-                        // Case of exactly two other junctions means that they
-                        // may potentially have a smaller distance between them
-                        // through an alternative path.
-                    case 2: {
-                        int a1id = tal.get(0).inputId();
-                        int a2id = tal.get(1).inputId();
-                        int dr = r.distanceBetween(a1id, a2id);
-                        int dm = _mol.distanceBetween(a1id, a2id);
-                        if (dm < dr) {
-                            return true;
-                        }
-                        else {
+                        case 0:
+                        case 1:
                             return false;
-                        }
-                    }
 
-                    // TODO(js): We may need to tune this further.
-                    default: {
-                        for (int l = 0; l < talSize - 1; l++) {
-                            for (int m = l + 1; m < talSize; m++) {
-                                int a1id = tal.get(l).inputId();
-                                int a2id = tal.get(m).inputId();
-                                int dr = r.distanceBetween(a1id, a2id);
-                                int dm = _mol.distanceBetween(a1id, a2id);
-                                if (dm < dr) {
-                                    return true;
+                            // Case of exactly two other junctions means that
+                            // they
+                            // may potentially have a smaller distance between
+                            // them
+                            // through an alternative path.
+                        case 2: {
+                            int a1id = tal.get(0).inputId();
+                            int a2id = tal.get(1).inputId();
+                            int dr = r.distanceBetween(a1id, a2id);
+                            int dm = _mol.distanceBetween(a1id, a2id);
+                            if (dm < dr) {
+                                return true;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+
+                        // TODO(js): We may need to tune this further.
+                        default: {
+                            for (int l = 0; l < talSize - 1; l++) {
+                                for (int m = l + 1; m < talSize; m++) {
+                                    int a1id = tal.get(l).inputId();
+                                    int a2id = tal.get(m).inputId();
+                                    int dr = r.distanceBetween(a1id, a2id);
+                                    int dm = _mol.distanceBetween(a1id, a2id);
+                                    if (dm < dr) {
+                                        return true;
+                                    }
                                 }
                             }
                         }
-                    }
                     }
                 }
             }

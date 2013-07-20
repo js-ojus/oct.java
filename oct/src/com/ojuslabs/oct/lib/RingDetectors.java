@@ -30,8 +30,8 @@ public final class RingDetectors {
      */
     public static IRingDetector newInstance(int type) {
         switch (type) {
-        case DEFAULT:
-            return new RingDetector();
+            case DEFAULT:
+                return new RingDetector();
         }
 
         return null;

@@ -251,29 +251,29 @@ public class MolReaderV2k implements MolReader
 
         int charge = Integer.parseInt(s.substring(36, 39).trim());
         switch (charge) {
-        case 1:
-            a.setCharge(3);
-            break;
-        case 2:
-            a.setCharge(2);
-            break;
-        case 3:
-            a.setCharge(1);
-            break;
-        case 4:
-            a.setRadical(Radical.DOUBLET);
-            break;
-        case 5:
-            a.setCharge(-1);
-            break;
-        case 6:
-            a.setCharge(-2);
-            break;
-        case 7:
-            a.setCharge(-3);
-            break;
-        default:
-            a.setCharge(0);
+            case 1:
+                a.setCharge(3);
+                break;
+            case 2:
+                a.setCharge(2);
+                break;
+            case 3:
+                a.setCharge(1);
+                break;
+            case 4:
+                a.setRadical(Radical.DOUBLET);
+                break;
+            case 5:
+                a.setCharge(-1);
+                break;
+            case 6:
+                a.setCharge(-2);
+                break;
+            case 7:
+                a.setCharge(-3);
+                break;
+            default:
+                a.setCharge(0);
         }
 
         int val = Integer.parseInt(s.substring(48, 51).trim());
@@ -305,25 +305,25 @@ public class MolReaderV2k implements MolReader
         int ibs = Integer.parseInt(s.substring(9, 12).trim());
         if (BondOrder.SINGLE == bo) {
             switch (ibs) {
-            case 1:
-                bs = BondStereo.UP;
-                break;
-            case 4:
-                bs = BondStereo.UP_OR_DOWN;
-                break;
-            case 6:
-                bs = BondStereo.DOWN;
-                break;
+                case 1:
+                    bs = BondStereo.UP;
+                    break;
+                case 4:
+                    bs = BondStereo.UP_OR_DOWN;
+                    break;
+                case 6:
+                    bs = BondStereo.DOWN;
+                    break;
             }
         }
         else if (BondOrder.DOUBLE == bo) {
             switch (ibs) {
-            case 0:
-                bs = BondStereo.UNSPECIFIED;
-                break;
-            case 3:
-                bs = BondStereo.UP_OR_DOWN;
-                break;
+                case 0:
+                    bs = BondStereo.UNSPECIFIED;
+                    break;
+                case 3:
+                    bs = BondStereo.UP_OR_DOWN;
+                    break;
             }
         }
         b.setStereo(bs);
@@ -350,13 +350,13 @@ public class MolReaderV2k implements MolReader
             String prefix = s.substring(0, 6);
 
             switch (prefix) {
-            case _M_END:
-                break loop;
-            case _M_CHG:
-            case _M_ISO:
-            case _M_RAD:
-                _parseProp(s, mol, prefix);
-                break;
+                case _M_END:
+                    break loop;
+                case _M_CHG:
+                case _M_ISO:
+                case _M_RAD:
+                    _parseProp(s, mol, prefix);
+                    break;
             }
         }
 
@@ -387,15 +387,16 @@ public class MolReaderV2k implements MolReader
             int value = Integer.parseInt(s.substring(offset + 4, offset + 7));
 
             switch (prefix) {
-            case _M_CHG:
-                mol.atomByInputId(atomId).setCharge(value);
-                break;
-            case _M_ISO:
-                mol.atomByInputId(atomId).setIsotope(value);
-                break;
-            case _M_RAD:
-                mol.atomByInputId(atomId).setRadical(Radical.ofValue(value));
-                break;
+                case _M_CHG:
+                    mol.atomByInputId(atomId).setCharge(value);
+                    break;
+                case _M_ISO:
+                    mol.atomByInputId(atomId).setIsotope(value);
+                    break;
+                case _M_RAD:
+                    mol.atomByInputId(atomId)
+                            .setRadical(Radical.ofValue(value));
+                    break;
             }
 
             offset += 8;

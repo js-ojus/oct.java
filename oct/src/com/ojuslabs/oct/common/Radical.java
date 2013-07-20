@@ -35,17 +35,17 @@ public enum Radical
      */
     public static Radical ofValue(int n) {
         switch (n) {
-        case 0:
-            return NONE;
-        case 1:
-            return SINGLET;
-        case 2:
-            return DOUBLET;
-        case 3:
-            return TRIPLET;
-        default:
-            throw new NoSuchElementException(String.format(
-                    "Illegal value specified: %d", n));
+            case 0:
+                return NONE;
+            case 1:
+                return SINGLET;
+            case 2:
+                return DOUBLET;
+            case 3:
+                return TRIPLET;
+            default:
+                throw new NoSuchElementException(String.format(
+                        "Illegal value specified: %d", n));
         }
     }
 }

@@ -355,21 +355,21 @@ public final class Atom
         int nhtb = 0;
         for (Bond b : _bonds) {
             switch (b.order()) {
-            case DOUBLE:
-                ndb++;
-                if (6 != b.otherAtom(_id).element().number) {
-                    nhdb++;
-                }
-                break;
-            case TRIPLE:
-                ntb++;
-                if (6 != b.otherAtom(_id).element().number) {
-                    nhtb++;
-                }
-                break;
-            default:
-                // Intentionally left blank.
-                break;
+                case DOUBLE:
+                    ndb++;
+                    if (6 != b.otherAtom(_id).element().number) {
+                        nhdb++;
+                    }
+                    break;
+                case TRIPLE:
+                    ntb++;
+                    if (6 != b.otherAtom(_id).element().number) {
+                        nhtb++;
+                    }
+                    break;
+                default:
+                    // Intentionally left blank.
+                    break;
             }
         }
         if (ntb > 0) {
@@ -377,14 +377,14 @@ public final class Atom
         }
         else if (ndb > 0) {
             switch (ndb) {
-            case 1:
-                _unsat = (0 == nhdb) ? Unsaturation.DBOND_C
-                        : Unsaturation.DBOND_X;
-                break;
-            case 2:
-                _unsat = (0 == nhdb) ? Unsaturation.DBOND_C_C
-                        : ((1 == nhdb) ? Unsaturation.DBOND_C_X
-                                : Unsaturation.DBOND_X_X);
+                case 1:
+                    _unsat = (0 == nhdb) ? Unsaturation.DBOND_C
+                            : Unsaturation.DBOND_X;
+                    break;
+                case 2:
+                    _unsat = (0 == nhdb) ? Unsaturation.DBOND_C_C
+                            : ((1 == nhdb) ? Unsaturation.DBOND_C_X
+                                    : Unsaturation.DBOND_X_X);
             }
         }
     }
@@ -1237,13 +1237,13 @@ public final class Atom
         }
 
         switch (_element.number) {
-        case 7:
-        case 15:
-            return (_bonds.size() <= 3);
+            case 7:
+            case 15:
+                return (_bonds.size() <= 3);
 
-        case 8:
-        case 16:
-            return (_bonds.size() <= 2);
+            case 8:
+            case 16:
+                return (_bonds.size() <= 2);
         }
 
         return false;
@@ -1257,11 +1257,11 @@ public final class Atom
      */
     public boolean isHalogen() {
         switch (_element.number) {
-        case 9:
-        case 17:
-        case 35:
-        case 53:
-            return true;
+            case 9:
+            case 17:
+            case 35:
+            case 53:
+                return true;
         }
 
         return false;
@@ -1278,11 +1278,11 @@ public final class Atom
         }
 
         switch (_element.number) {
-        case 7:
-            return (2 == _numH);
-        case 8:
-        case 16:
-            return true;
+            case 7:
+                return (2 == _numH);
+            case 8:
+            case 16:
+                return true;
         }
 
         return false;
