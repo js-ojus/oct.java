@@ -273,4 +273,30 @@ public class RingDetectorTest {
         System.out.println();
         assertEquals(7, rings.size());
     }
+
+    @Test
+    public void test010() {
+        SdfFile sdf = new SdfFile(
+                "oct/test/com/ojuslabs/oct/xlate/mdl/eight-spiro-hexanes.sdf");
+        SdfIterator it = sdf.iterator();
+        it.hasNext();
+
+        List<String> l = it.next();
+        MolReader reader = new MolReaderV2k();
+        _mol = reader.parse(l, false, false, false);
+        assertNotNull(_mol);
+
+        IRingDetector rd = RingDetectors.newInstance(RingDetectors.DEFAULT);
+        _mol.normalise(rd);
+
+        List<Ring> rings = rd.rings();
+        System.out.println(String.format(
+                "-- Eight spiro hexanes : %d rings.",
+                rings.size()));
+        for (Ring r : rings) {
+            System.out.println(r);
+        }
+        System.out.println();
+        assertEquals(17, rings.size());
+    }
 }
