@@ -12,19 +12,21 @@ package com.ojuslabs.oct.core;
  * methods needed for its participation in reactions.
  */
 public final class AtomInReaction {
-    // The underlying atom that is wrapped. The interface of this atom is NOT
-    // wrapped. Rather, the atom itself is made available as a public member.
+    /*
+     * The underlying atom that is wrapped. The interface of this atom is NOT
+     * wrapped. Rather, the atom itself is made available as a public member.
+     */
     public final Atom atom;
-    // Direct correspondence with an atom in the goal molecule.
+    /* Direct correspondence with an atom in the goal molecule. */
     private int       _goalAtomId;
-    // Correspondence with an atom in the immediate product.
+    /* Correspondence with an atom in the immediate product. */
     private int       _productAtomId;
-    // Correspondence with an atom in a reactant.
+    /* Correspondence with an atom in a reactant. */
     private Molecule  _reactant;
     private int       _reactantAtomId;
-    // Should the chirality of this atom be preserved throughout?
+    /* Should the chirality of this atom be preserved throughout? */
     private boolean   _preserveChirality;
-    // Should this atom be prevented from getting modified anywhere at all?
+    /* Should this atom be prevented from getting modified anywhere at all? */
     private boolean   _dontTouch;
 
     /**

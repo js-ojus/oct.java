@@ -15,7 +15,7 @@ public final class RingDetectors {
     public static final int DEFAULT = 1;
 
     private RingDetectors() {
-        // Intentionally left blank.
+        /* Intentionally left blank. */
     }
 
     /**

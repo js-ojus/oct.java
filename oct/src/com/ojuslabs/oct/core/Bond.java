@@ -21,7 +21,7 @@ import com.ojuslabs.oct.common.Constants;
  */
 public final class Bond
 {
-    // Unique ID of this bond in its molecule.
+    /* Unique ID of this bond in its molecule. */
     private final int        _id;
 
     private final Atom       _a1;
@@ -29,12 +29,12 @@ public final class Bond
     private BondOrder        _order;
     private BondStereo       _stereo;
 
-    // Is this bond aromatic?
+    /* Is this bond aromatic? */
     private boolean          _isAro;
-    // The rings in which this bond participates.
+    /* The rings in which this bond participates. */
     private final List<Ring> _rings;
 
-    // Cached in the object for faster search.
+    /* Cached in the object for faster search. */
     private final int        _hash;
 
     /**

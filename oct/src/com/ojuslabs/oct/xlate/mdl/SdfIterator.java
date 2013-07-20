@@ -56,8 +56,12 @@ public class SdfIterator implements Iterator<List<String>>
         do {
             try {
                 String s = _reader.readLine();
-                if (null == s) { // We are expecting more data, but have reached
-                                 // the end of the stream.
+                /*
+                 * We are expecting more data, but have reached the end of the
+                 * stream.
+                 */
+                if (null == s) {
+
                     throw new IOException();
                 }
 
@@ -115,8 +119,11 @@ public class SdfIterator implements Iterator<List<String>>
         while (i < n) {
             try {
                 String s = _reader.readLine();
-                if (null == s) { // We are expecting more data, but have reached
-                                 // the end of the stream.
+                /*
+                 * We are expecting more data, but have reached the end of the
+                 * stream.
+                 */
+                if (null == s) {
                     throw new IOException();
                 }
 
@@ -171,8 +178,11 @@ public class SdfIterator implements Iterator<List<String>>
         while (i < n) {
             try {
                 String s = _reader.readLine();
-                if (null == s) { // We are expecting more data, but have reached
-                                 // the end of the stream.
+                /*
+                 * We are expecting more data, but have reached the end of the
+                 * stream.
+                 */
+                if (null == s) {
                     throw new IOException();
                 }
 

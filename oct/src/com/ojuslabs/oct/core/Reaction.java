@@ -47,22 +47,22 @@ public class Reaction
      * reaction.
      */
     private final List<Integer>   _pSubstructures;
-    // Criteria that the atoms and the bonds of the product should satisfy.
+    /* Criteria that the atoms and the bonds of the product should satisfy. */
     private final List<Integer>   _prodCriteria;
-    // Criteria that the atoms and the bonds of the reactant(s) should satisfy.
+    /* Criteria that the atoms and the bonds of the reactant(s) should satisfy. */
     private final List<Integer>   _reacCriteria;
-    // Reagents participating in this reaction.
+    /* Reagents participating in this reaction. */
     private final List<Integer>   _reagents;
 
-    // Lower limit of the required temperature range.
+    /* Lower limit of the required temperature range. */
     private int                   _tempLower;
-    // Upper limit of the required temperature range.
+    /* Upper limit of the required temperature range. */
     private int                   _tempUpper;
 
-    // Percentage yield of the product molecule.
+    /* Percentage yield of the product molecule. */
     private double                _yield;
 
-    // Literature references.
+    /* Literature references. */
     private final List<Reference> _references;
 
     public Reaction(int n) {

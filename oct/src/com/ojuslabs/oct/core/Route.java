@@ -22,19 +22,19 @@ public class Route
 {
     private static int      _routeId;
 
-    // A unique ID for this route.
+    /* A unique ID for this route. */
     private final int       _id;
-    // Effective yield of this route.
+    /* Effective yield of this route. */
     private double          _yield;
-    // Maximum depth of this synthesis tree.
+    /* Maximum depth of this synthesis tree. */
     private int             _numSteps;
 
-    // The goal molecule of this route.
+    /* The goal molecule of this route. */
     private final Molecule  _goalMolecule;
-    // The node representing the final step that produces the goal molecule.
+    /* The node representing the final step that produces the goal molecule. */
     private final RouteNode _goalNode;
 
-    // A running serial ID for the nodes in this route.
+    /* A running serial ID for the nodes in this route. */
     private int             _peakNodeId;
 
     /**
@@ -91,6 +91,6 @@ public class Route
     }
 
     public void label() {
-        // TODO(js): Implement a labelling scheme.
+        /* TODO(js): Implement a labelling scheme. */
     }
 }

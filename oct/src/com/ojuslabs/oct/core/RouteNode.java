@@ -25,26 +25,28 @@ import com.ojuslabs.oct.common.Constants;
  */
 public class RouteNode
 {
-    // A unique ID for this node.
+    /* A unique ID for this node. */
     private final int             _id;
-    // The unique dotted-decimal notation ID of this node. This is composed by
-    // walking down the tree from the root node down to this node.
+    /*
+     * The unique dotted-decimal notation ID of this node. This is composed by
+     * walking down the tree from the root node down to this node.
+     */
     private String                _label;
-    // The containing route of this node.
+    /* The containing route of this node. */
     private Route                 _route;
 
-    // The effective yield up to this point.
+    /* The effective yield up to this point. */
     private double                _yield;
-    // Does this branch have any convergent reactions?
+    /* Does this branch have any convergent reactions? */
     private boolean               _hasConvergence;
 
-    // In-coming reactants.
+    /* In-coming reactants. */
     private final List<RouteNode> _children;
-    // This node's product molecule.
+    /* This node's product molecule. */
     private Molecule              _product;
-    // Other products that may be generated.
+    /* Other products that may be generated. */
     private final List<Molecule>  _byproducts;
-    // The reaction resulting in this node's product molecule.
+    /* The reaction resulting in this node's product molecule. */
     private Reaction              _reaction;
 
     /**

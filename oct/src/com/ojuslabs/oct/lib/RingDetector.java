@@ -28,10 +28,10 @@ import com.ojuslabs.oct.core.Ring;
  */
 public final class RingDetector implements IRingDetector {
 
-    // The molecule to analyse.
+    /* The molecule to analyse. */
     private Molecule          _mol;
 
-    // Internal data holders for analysis and detection.
+    /* Internal data holders for analysis and detection. */
     private List<Atom>        _atoms;
     private List<List<Atom>>  _nbrs;
     private Deque<List<Atom>> _candidates;
@@ -98,7 +98,7 @@ public final class RingDetector implements IRingDetector {
         _ringSystemBonds = Lists
                 .newArrayListWithCapacity(Constants.LIST_SIZE_S);
 
-        // Initialise the atoms and their neighbours.
+        /* Initialise the atoms and their neighbours. */
         for (Atom a : _mol.atoms()) {
             _atoms.add(a);
 
@@ -119,11 +119,13 @@ public final class RingDetector implements IRingDetector {
      */
     @Override
     public void detectRings() {
-        // First, remove all terminal chains.
+        /* First, remove all terminal chains. */
         pruneTerminalChains();
 
-        // At this point, if all atoms have exactly two neighbours, there can be
-        // only one ring.
+        /*
+         * At this point, if all atoms have exactly two neighbours, there can be
+         * only one ring.
+         */
         if (noAtomsWithGT2Bonds()) {
             detectTheOnlyRing();
             return;
@@ -163,10 +165,12 @@ public final class RingDetector implements IRingDetector {
      */
     void pruneTerminalAtom(int i) {
         Atom a = _atoms.get(i);
-        // System.out.println("-- Pruning atom: " + a.inputId());
+        /* System.out.println("-- Pruning atom: " + a.inputId()); */
 
-        // Remove references to this atom from the neighbour lists of its own
-        // neighbours.
+        /*
+         * Remove references to this atom from the neighbour lists of its own
+         * neighbours.
+         */
         Atom nbr = _nbrs.get(i).get(0);
         int nbrIdx = _atoms.indexOf(nbr);
         Iterator<Atom> nit = _nbrs.get(nbrIdx).iterator();
@@ -178,7 +182,7 @@ public final class RingDetector implements IRingDetector {
             }
         }
 
-        // Now, we remove this atom itself.
+        /* Now, we remove this atom itself. */
         _atoms.remove(i);
         _nbrs.remove(i);
     }
@@ -261,7 +265,7 @@ public final class RingDetector implements IRingDetector {
      *            ring.
      */
     void tryPath(List<Atom> path) {
-        // System.out.println(Joiner.on(", ").join(path));
+        /* System.out.println(Joiner.on(", ").join(path)); */
 
         int size = path.size();
         Atom start = path.get(0);
@@ -280,8 +284,10 @@ public final class RingDetector implements IRingDetector {
                 continue;
             }
 
-            // We could encounter a previously encountered atom. In that case,
-            // we have a potential ring.
+            /*
+             * We could encounter a previously encountered atom. In that case,
+             * we have a potential ring.
+             */
             int idx = path.indexOf(next);
             if (-1 != idx) {
                 List<Atom> tpath = path.subList(idx, path.size());
@@ -304,12 +310,12 @@ public final class RingDetector implements IRingDetector {
      *         {@code false} otherwise.
      */
     boolean validatePath(List<Atom> path) {
-        // A 3-membered path that comes this far is a valid ring!
+        /* A 3-membered path that comes this far is a valid ring! */
         if (3 == path.size()) {
             return true;
         }
 
-        // Otherwise, we run the path through the validator.
+        /* Otherwise, we run the path through the validator. */
         if (!isValid(_mol, _atoms, _nbrs, path)) {
             return false;
         }
@@ -334,8 +340,8 @@ public final class RingDetector implements IRingDetector {
      */
     boolean isValid(Molecule mol, List<Atom> atoms, List<List<Atom>> nbrs,
             List<Atom> path) {
-        // System.out.println("-- Validating path: "
-        // + Joiner.on(", ").join(path));
+        /* System.out.println("-- Validating path: " */
+        /* + Joiner.on(", ").join(path)); */
 
         for (Atom a : path) {
             int idx = atoms.indexOf(a);
@@ -355,8 +361,10 @@ public final class RingDetector implements IRingDetector {
                 }
             }
 
-            // If all neighbours exist in this path, then it is a
-            // spurious outer shell path, not a genuine ring.
+            /*
+             * If more than two neighbours exist in this path, then it is a
+             * spurious outer shell path, not a genuine ring.
+             */
             if (found > 2) {
                 return false;
             }
@@ -384,7 +392,7 @@ public final class RingDetector implements IRingDetector {
      * We sort the detected rings ascending on their sizes.
      */
     void sortRings() {
-        // A comparator to sort each ring system ascending on ring size.
+        /* A comparator to sort each ring system ascending on ring size. */
         Comparator<Ring> c = new Comparator<Ring>() {
             @Override
             public int compare(Ring r1, Ring r2) {
@@ -441,11 +449,13 @@ public final class RingDetector implements IRingDetector {
             List<Ring> rs = _ringSystems.get(i);
             BitSet rsbs = _ringSystemBonds.get(i);
 
-            // We form a basis set of rings for this ring system.
+            /* We form a basis set of rings for this ring system. */
             int lastIncludedRingIdx = indexOfLastRingInBasis(rs, rsbs);
 
-            // We remove all those larger rings, which can not be expressed as a
-            // union of exactly any two of the already included rings.
+            /*
+             * We remove all those larger rings, which can not be expressed as a
+             * union of exactly any two of the already included rings.
+             */
             if (lastIncludedRingIdx < rs.size() - 1) {
                 pruneLargerRings(rs, lastIncludedRingIdx);
             }
@@ -465,8 +475,10 @@ public final class RingDetector implements IRingDetector {
      *         the given ring system.
      */
     int indexOfLastRingInBasis(List<Ring> rs, BitSet rsbs) {
-        // We find the smallest collection of classes of rings of the same
-        // size that covers the ring system exactly.
+        /*
+         * We find the smallest collection of classes of rings of the same size
+         * that covers the ring system exactly.
+         */
         int prevSize = -1;
         int currSize = -1;
         BitSet bs = new BitSet(_mol.numberOfBonds());
@@ -559,26 +571,32 @@ public final class RingDetector implements IRingDetector {
                 bs2.and(rbs); // Intersection of `ri`, `rj` and `r`.
                 bs2.xor(rbs);
 
-                // The remainder should match the test ring for it to be
-                // in the race!
+                /*
+                 * The remainder should match the test ring for it to be in the
+                 * race!
+                 */
                 if (0 == bs2.cardinality()) {
                     as2.and(as1); // Intersection of `ri` and `rj`.
                     as2.and(ras); // Intersection of `ri`, `rj` and `r`.
 
-                    // More than two atoms in the intersection means
-                    // that the ring is a convoluted spurious ring.
+                    /*
+                     * More than two atoms in the intersection means that the
+                     * ring is a convoluted spurious ring.
+                     */
                     if (as2.cardinality() > 2) {
                         continue inner;
                     }
 
-                    // If we have come this far, then the two atoms in
-                    // `as2` are likely to be bridge head atoms.
+                    /*
+                     * If we have come this far, then the two atoms in `as2` are
+                     * likely to be bridge head atoms.
+                     */
                     List<Atom> tal = Lists
                             .newArrayListWithCapacity(Constants.LIST_SIZE_S);
                     BitSet t1 = (BitSet) ras.clone();
-                    // Remove the two potential bridge atoms.
+                    /* Remove the two potential bridge atoms. */
                     t1.andNot(as2);
-                    // Collect the remaining junction atoms.
+                    /* Collect the remaining junction atoms. */
                     for (int k = t1.nextSetBit(0); k > -1; k = t1
                             .nextSetBit(k + 1)) {
                         for (int m = 0; m < _atoms.size(); m++) {
@@ -593,17 +611,19 @@ public final class RingDetector implements IRingDetector {
 
                     int talSize = tal.size();
                     switch (talSize) {
-                    // Cases of no other junctions or only one junction do not
-                    // contribute an alternative path.
+                    /*
+                     * Cases of no other junctions or only one junction do not
+                     * contribute an alternative path.
+                     */
                         case 0:
                         case 1:
                             return false;
 
-                            // Case of exactly two other junctions means that
-                            // they
-                            // may potentially have a smaller distance between
-                            // them
-                            // through an alternative path.
+                            /*
+                             * Case of exactly two other junctions means that
+                             * they may potentially have a smaller distance
+                             * between them through an alternative path.
+                             */
                         case 2: {
                             int a1id = tal.get(0).inputId();
                             int a2id = tal.get(1).inputId();
@@ -617,7 +637,7 @@ public final class RingDetector implements IRingDetector {
                             }
                         }
 
-                        // TODO(js): We may need to tune this further.
+                        /* TODO(js): We may need to tune this further. */
                         default: {
                             for (int l = 0; l < talSize - 1; l++) {
                                 for (int m = l + 1; m < talSize; m++) {
@@ -636,18 +656,20 @@ public final class RingDetector implements IRingDetector {
             }
         }
 
-        // If we have come this far, the test ring cannot be expressed as a
-        // union of two basis rings. We now check to see if it has at least one
-        // bond that is not present in more than one ring.
+        /*
+         * If we have come this far, the test ring cannot be expressed as a
+         * union of two basis rings. We now check to see if it has at least one
+         * bond that is not present in more than one ring.
+         */
         boolean found = false;
         for (int i = rbs.nextSetBit(0); i > -1; i = rbs.nextSetBit(i + 1)) {
-            // Bond b = _mol.bond(i);
-            // System.out.println(b);
+            /* Bond b = _mol.bond(i); */
+            /* System.out.println(b); */
             int count = 0;
             for (int j = 0; j <= lastIncludedRingIdx; j++) {
                 Ring rj = rs.get(j);
                 BitSet rjbs = rj.bondBitSet();
-                // System.out.println(rjbs);
+                /* System.out.println(rjbs); */
                 if (rjbs.get(i)) {
                     count++;
                 }
@@ -655,7 +677,7 @@ public final class RingDetector implements IRingDetector {
 
             if (count < 2) {
                 found = true;
-                // System.out.println("-- Found: " + b.id());
+                /* System.out.println("-- Found: " + b.id()); */
                 break;
             }
         }

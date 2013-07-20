@@ -34,58 +34,62 @@ import com.ojuslabs.oct.util.Point3D;
  */
 public final class Atom
 {
-    // This atom's element type.
+    /* This atom's element type. */
     private Element          _element;
-    // Containing molecule, if the atom is bound to one.
+    /* Containing molecule, if the atom is bound to one. */
     private Molecule         _mol;
-    // A unique normalised ID within its molecule; 1-based.
+    /* A unique normalised ID within its molecule; 1-based. */
     private int              _id;
-    // The input order serial number of this atom; 1-based.
+    /* The input order serial number of this atom; 1-based. */
     private int              _inputId;
 
-    // These may be given or computed.
+    /* These may be given or computed. */
     public Point3D           coordinates;
 
-    // Total number of attached H atoms. These may be explicit or implicit.
+    /* Total number of attached H atoms. These may be explicit or implicit. */
     private byte             _numH;
-    // Net charge of the atom.
+    /* Net charge of the atom. */
     private byte             _charge;
-    // Current valence configuration of this atom.
+    /* Current valence configuration of this atom. */
     private byte             _valence;
-    // Current `unsaturation' value of this atom.
+    /* Current `unsaturation' value of this atom. */
     private Unsaturation     _unsat;
 
-    // A partial reflection of this atom for quick comparisons.
+    /* A partial reflection of this atom for quick comparisons. */
     private int              _hash;
 
-    // Bonds this atom is a member of.
+    /* Bonds this atom is a member of. */
     private final List<Bond> _bonds;
-    // This list in-line expands `_bonds` with repetitions for double/triple
-    // bonds.
+    /*
+     * This list in-line expands `_bonds` with repetitions for double/triple
+     * bonds.
+     */
     private final List<Atom> _nbrs;
 
     private Chirality        _chirality;
     private Radical          _radical;
 
-    // Rings this atom is a member of.
+    /* Rings this atom is a member of. */
     private final List<Ring> _rings;
     private boolean          _inAroRing;
     private boolean          _inHetAroRing;
     private boolean          _isBenzylic;
-    // Is this atom a bridgehead of a bicyclic system of rings?
+    /* Is this atom a bridgehead of a bicyclic system of rings? */
     private boolean          _isBridgeHead;
-    // Is this atom the sole common atom of all of its rings?
+    /* Is this atom the sole common atom of all of its rings? */
     private boolean          _isSpiro;
 
-    // The functional groups of this atom. These are in the descending order of
-    // importance, i.e., the first feature is the primary functional group.
+    /*
+     * The functional groups of this atom. These are in the descending order of
+     * importance, i.e., the first feature is the primary functional group.
+     */
     private List<Integer>    _features;
 
-    // The number of electron-donating neighbours.
+    /* The number of electron-donating neighbours. */
     int                      _numEDNbrs;
-    // The number of unsaturated electron-withdrawing neighbours.
+    /* The number of unsaturated electron-withdrawing neighbours. */
     int                      _numUnsatEWNbrs;
-    // The number of saturated electron-withdrawing neighbours.
+    /* The number of saturated electron-withdrawing neighbours. */
     int                      _numSatEWNbrs;
 
     /**
@@ -328,13 +332,13 @@ public final class Atom
         int nb = _bonds.size();
         int nn = _nbrs.size();
 
-        // Atom has residual non-zero charge.
+        /* Atom has residual non-zero charge. */
         if (0 != _charge) {
             _unsat = Unsaturation.CHARGED;
             return;
         }
 
-        // For an uncharged atom, valence should be sane.
+        /* For an uncharged atom, valence should be sane. */
         if (nn + _numH != _valence) {
             throw new IllegalStateException(
                     String.format(
@@ -342,13 +346,13 @@ public final class Atom
                             _mol.id(), _id));
         }
 
-        // Case of all single bonds.
+        /* Case of all single bonds. */
         if (nb == nn) {
             _unsat = Unsaturation.NONE;
             return;
         }
 
-        // Double or triple bonds do exist.
+        /* Double or triple bonds do exist. */
         int ndb = 0;
         int nhdb = 0;
         int ntb = 0;
@@ -368,7 +372,7 @@ public final class Atom
                     }
                     break;
                 default:
-                    // Intentionally left blank.
+                    /* Intentionally left blank. */
                     break;
             }
         }
@@ -499,7 +503,7 @@ public final class Atom
             }
         }
 
-        // Should be dead code!
+        /* Should be dead code! */
         return null;
     }
 
@@ -521,7 +525,7 @@ public final class Atom
             }
         }
 
-        // Should be dead code!
+        /* Should be dead code! */
         return null;
     }
 
@@ -1064,7 +1068,7 @@ public final class Atom
      *         above criteria; {@code 0} otherwise.
      */
     public int numberOfEnolicHydrogens() {
-        // TODO(js): replace `-1` with the actual functional group number.
+        /* TODO(js): replace `-1` with the actual functional group number. */
         if ((Unsaturation.NONE == _unsat) && _features.contains(-1)) {
             return _numH;
         }
@@ -1302,10 +1306,10 @@ public final class Atom
         }
 
         switch (_features.get(0)) {
-        // TODO(js): fill appropriate case statements.
+        /* TODO(js): fill appropriate case statements. */
         }
 
-        // Unknown group.
+        /* Unknown group. */
         return 27.0;
     }
 
@@ -1343,8 +1347,10 @@ public final class Atom
     @Override
     public String toString() {
         return String.format("%d", _inputId);
-        // return String.format("{ id: %d, inputId: %d, element: %s }", _id,
-        // _inputId, _element.symbol);
+        /*
+         * return String.format("{ id: %d, inputId: %d, element: %s }", _id,
+         * _inputId, _element.symbol);
+         */
     }
 
     /**

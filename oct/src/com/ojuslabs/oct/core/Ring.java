@@ -26,28 +26,28 @@ import com.ojuslabs.oct.common.Unsaturation;
  */
 public final class Ring
 {
-    // Containing molecule of this ring.
+    /* Containing molecule of this ring. */
     private final Molecule         _mol;
-    // Index of this ring in its molecule.
+    /* Index of this ring in its molecule. */
     private int                    _id;
 
-    // The atoms in this ring. Atoms occur in order.
+    /* The atoms in this ring. Atoms occur in order. */
     private final LinkedList<Atom> _atoms;
-    // The bonds forming this ring. Bonds occur in order.
+    /* The bonds forming this ring. Bonds occur in order. */
     private final LinkedList<Bond> _bonds;
-    // Other rings that share at least one bond with this ring.
+    /* Other rings that share at least one bond with this ring. */
     private final LinkedList<Ring> _nbrs;
 
-    // Is this ring aromatic in its current configuration?
+    /* Is this ring aromatic in its current configuration? */
     private boolean                _isAro;
-    // Is this ring aromatic, involving at least one hetero atom?
+    /* Is this ring aromatic, involving at least one hetero atom? */
     private boolean                _isHetAro;
 
-    // Is this ring completed and finalised?
+    /* Is this ring completed and finalised? */
     private boolean                _completed;
-    // A bit set for efficiently comparing two rings for equality.
+    /* A bit set for efficiently comparing two rings for equality. */
     private final BitSet           _atomBitSet;
-    // A bit set for efficiently comparing two rings for overlap.
+    /* A bit set for efficiently comparing two rings for overlap. */
     private final BitSet           _bondBitSet;
 
     private int                    _ringSystemId;
@@ -261,7 +261,7 @@ public final class Ring
     void normalise() {
         int min = Integer.MAX_VALUE;
 
-        // Find the index at which the atom with the lowest ID occurs.
+        /* Find the index at which the atom with the lowest ID occurs. */
         int idx = 0;
         for (int i = 0; i < _atoms.size(); i++) {
             int id = _atoms.get(i).id();
@@ -271,10 +271,10 @@ public final class Ring
             }
         }
 
-        // Rotate the list so that the atom with the minimum ID comes first.
+        /* Rotate the list so that the atom with the minimum ID comes first. */
         Collections.rotate(_atoms, -idx);
 
-        // Determine the ring's aromaticity.
+        /* Determine the ring's aromaticity. */
         determineAromaticity();
     }
 
@@ -282,10 +282,12 @@ public final class Ring
      * 
      */
     void determineAromaticity() {
-        // TODO(js): Implement aromaticity determination.
-        // This should set both `_isAro` and `_isHetAro`, as applicable. It
-        // should also set the applicable aromaticity flags for all of its
-        // atoms.
+        /* TODO(js): Implement aromaticity determination. */
+        /*
+         * This should set both `_isAro` and `_isHetAro`, as applicable. It
+         * should also set the applicable aromaticity flags for all of its
+         * atoms.
+         */
     }
 
     /**
@@ -441,8 +443,10 @@ public final class Ring
      *         otherwise.
      */
     public boolean isSemiAromaticOfSize6() {
-        // If the ring does not have six members, or is known to be aromatic, it
-        // can not be semi-aromatic.
+        /*
+         * If the ring does not have six members, or is known to be aromatic, it
+         * can not be semi-aromatic.
+         */
         if ((6 != _atoms.size()) || _isAro) {
             return false;
         }
@@ -461,8 +465,10 @@ public final class Ring
                     Atom t = a.firstDoublyBondedNeighbour();
                     if (null != t) {
                         if (6 != t.element().number) {
-                            // The doubly-bonded hetero atom should not
-                            // participate in this ring.
+                            /*
+                             * The doubly-bonded hetero atom should not
+                             * participate in this ring.
+                             */
                             if (null == atom(t.id())) {
                                 nDblExoCHetero++;
                             }
@@ -527,8 +533,10 @@ public final class Ring
             }
         }
 
-        // If the last atom is a carbonyl C, we check to see if the first is as
-        // well (wrap-around).
+        /*
+         * If the last atom is a carbonyl C, we check to see if the first is as
+         * well (wrap-around).
+         */
         if (found) {
             if (_atoms.get(0).isCarbonylC()) {
                 return true;
@@ -560,8 +568,10 @@ public final class Ring
             }
         }
 
-        // If the last atom is a CH, we check to see if the first is as well
-        // (wrap-around).
+        /*
+         * If the last atom is a CH, we check to see if the first is as well
+         * (wrap-around).
+         */
         if (found) {
             Atom t = _atoms.get(0);
             if (t.isSaturatedC()
@@ -593,8 +603,10 @@ public final class Ring
             }
         }
 
-        // If the last atom is a saturated C, we check to see if the first is as
-        // well (wrap-around).
+        /*
+         * If the last atom is a saturated C, we check to see if the first is as
+         * well (wrap-around).
+         */
         if (found) {
             Atom t = _atoms.get(0);
             if (t.isSaturatedC()) {

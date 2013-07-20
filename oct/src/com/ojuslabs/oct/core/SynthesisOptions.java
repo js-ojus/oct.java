@@ -94,6 +94,6 @@ public class SynthesisOptions
      * does not do anything specific.
      */
     public SynthesisOptions() {
-        // Intentionally left blank.
+        /* Intentionally left blank. */
     }
 }

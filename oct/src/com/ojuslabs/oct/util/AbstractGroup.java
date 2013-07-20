@@ -12,9 +12,9 @@ package com.ojuslabs.oct.util;
  * and leaving groups.
  */
 public abstract class AbstractGroup {
-    // A unique ID for this group.
+    /* A unique ID for this group. */
     protected final int    _id;
-    // A textual description of this group.
+    /* A textual description of this group. */
     protected final String _desc;
 
     /**

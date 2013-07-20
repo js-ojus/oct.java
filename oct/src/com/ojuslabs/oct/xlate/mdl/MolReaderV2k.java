@@ -31,9 +31,9 @@ public class MolReaderV2k implements MolReader
     private boolean       _skipProps;
     private boolean       _skipTags;
 
-    // Line number where the current section began.
+    /* Line number where the current section began. */
     private int           _sectionStart;
-    // Line number of the current line.
+    /* Line number of the current line. */
     private int           _currentLine;
 
     private MolReaderHook _ctabHook;
@@ -41,7 +41,7 @@ public class MolReaderV2k implements MolReader
     private MolReaderHook _tagsHook;
 
     public MolReaderV2k() {
-        // Intentionally left blank.
+        /* Intentionally left blank. */
     }
 
     /**
@@ -135,7 +135,9 @@ public class MolReaderV2k implements MolReader
         _skipProps = skipProps;
         _skipTags = skipTags;
 
-        // If we have to parse properties, we must first parse the CTAB section.
+        /*
+         * If we have to parse properties, we must first parse the CTAB section.
+         */
         if (!_skipProps) {
             _skipCtab = false;
         }
@@ -233,7 +235,7 @@ public class MolReaderV2k implements MolReader
      *            The current molecule.
      */
     private void parseAtom(String s, Molecule mol) {
-        // We need the element type to be able to create an atom.
+        /* We need the element type to be able to create an atom. */
         String sym = s.substring(31, 34).trim();
         String iso = s.substring(34, 36).trim();
         Element el = PeriodicTable.instance().element(sym);
@@ -244,7 +246,7 @@ public class MolReaderV2k implements MolReader
 
         Atom a = new Atom(el);
 
-        // Set some of the other properties.
+        /* Set some of the other properties. */
         a.coordinates = new Point3D(Double.parseDouble(s.substring(0, 10)),
                 Double.parseDouble(s.substring(10, 20)),
                 Double.parseDouble(s.substring(20, 30)));
@@ -468,7 +470,7 @@ public class MolReaderV2k implements MolReader
             }
         }
 
-        // We shouldn't usually reach here.
+        /* We shouldn't usually reach here. */
         return null;
     }
 }

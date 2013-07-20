@@ -38,7 +38,7 @@ public class MolReaderV2kTest
         _reader.registerCtabHook(new MolReaderHook() {
             @Override
             public void apply(List<String> l, Molecule m) {
-                // Intentionally left blank.
+                /* Intentionally left blank. */
             }
         });
         assertNotNull(_reader.ctabHook());
@@ -52,7 +52,7 @@ public class MolReaderV2kTest
         _reader.registerPropertiesHook(new MolReaderHook() {
             @Override
             public void apply(List<String> l, Molecule m) {
-                // Intentionally left blank.
+                /* Intentionally left blank. */
             }
         });
         assertNotNull(_reader.propertiesHook());
@@ -66,7 +66,7 @@ public class MolReaderV2kTest
         _reader.registerTagsHook(new MolReaderHook() {
             @Override
             public void apply(List<String> l, Molecule m) {
-                // Intentionally left blank.
+                /* Intentionally left blank. */
             }
         });
         assertNotNull(_reader.tagsHook());

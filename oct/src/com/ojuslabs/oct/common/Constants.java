@@ -30,6 +30,6 @@ public final class Constants
     public static final int MAX_RINGS          = 15;
 
     private Constants() {
-        // Intentionally left blank.
+        /* Intentionally left blank. */
     }
 }

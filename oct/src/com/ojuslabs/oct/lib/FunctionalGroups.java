@@ -15,10 +15,10 @@ import com.ojuslabs.oct.core.FunctionalGroup;
  * understood by OCT.
  */
 public final class FunctionalGroups {
-    // Singleton instance.
+    /* Singleton instance. */
     private static FunctionalGroups                _instance;
 
-    // The map from functional group numbers to corresponding instances.
+    /* The map from functional group numbers to corresponding instances. */
     private ImmutableMap<Integer, FunctionalGroup> _groups;
 
     /**
@@ -39,7 +39,7 @@ public final class FunctionalGroups {
     }
 
     FunctionalGroups() {
-        // Intentionally left blank.
+        /* Intentionally left blank. */
     }
 
     /**
@@ -49,7 +49,7 @@ public final class FunctionalGroups {
         ImmutableMap.Builder<Integer, FunctionalGroup> builder = ImmutableMap
                 .builder();
 
-        // TODO(js): fill functional group values.
+        /* TODO(js): fill functional group values. */
 
         _groups = builder.build();
     }

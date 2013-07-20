@@ -18,7 +18,7 @@ import com.google.common.collect.Lists;
  * An abstract base class for literature references.
  */
 public abstract class Reference {
-    // Unique reference ID in the references database.
+    /* Unique reference ID in the references database. */
     int                _id;
     String             _title;
     int                _year;

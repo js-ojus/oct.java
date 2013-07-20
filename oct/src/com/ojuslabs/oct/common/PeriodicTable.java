@@ -18,14 +18,16 @@ import com.google.common.collect.ImmutableMap;
  */
 public final class PeriodicTable
 {
-    // Number of elements. This should be adjusted when adding or removing
-    // elements from the list and the map.
+    /*
+     * Number of elements. This should be adjusted when adding or removing
+     * elements from the list and the map.
+     */
     private static final int              _NUM_ELEMENTS = 328;
 
-    // Singleton instance.
+    /* Singleton instance. */
     private static PeriodicTable          _instance;
 
-    // Collections for ready reference.
+    /* Collections for ready reference. */
     private ImmutableList<Element>        _elements;
     private ImmutableMap<String, Element> _symbolMap;
 
@@ -47,7 +49,7 @@ public final class PeriodicTable
     }
 
     PeriodicTable() {
-        // Intentionally left blank.
+        /* Intentionally left blank. */
     }
 
     /**
@@ -56,7 +58,7 @@ public final class PeriodicTable
      * significance. Do not change that.
      */
     void init() {
-        // First the list of elements.
+        /* First the list of elements. */
         ImmutableList.Builder<Element> lbuilder = ImmutableList.builder();
         lbuilder.add(new Element(0, "NONE", 0.0, -1));
         lbuilder.add(new Element(1, "H", 1.008, 1));
@@ -388,7 +390,7 @@ public final class PeriodicTable
         lbuilder.add(new Element(0, "R", 0, -1));
         _elements = lbuilder.build();
 
-        // Now, we initialise the map.
+        /* Now, we initialise the map. */
         ImmutableMap.Builder<String, Element> hbuilder = ImmutableMap.builder();
         for (Element elem : _elements) {
             hbuilder.put(elem.symbol, elem);

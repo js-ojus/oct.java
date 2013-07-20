@@ -28,29 +28,29 @@ import com.ojuslabs.oct.lib.IRingDetector;
  */
 public class Molecule
 {
-    // A running serial unique identifier for molecules.
+    /* A running serial unique identifier for molecules. */
     private static long        _nextId = 0;
 
-    // A unique ID. This does not change during the lifetime of the molecule.
+    /* A unique ID. This does not change during the lifetime of the molecule. */
     private final long         _id;
 
-    // Atoms currently belonging to this molecule.
+    /* Atoms currently belonging to this molecule. */
     private final List<Atom>   _atoms;
-    // Bonds binding the atoms in this molecule.
+    /* Bonds binding the atoms in this molecule. */
     private final List<Bond>   _bonds;
-    // Rings in all the ring systems in this molecule.
+    /* Rings in all the ring systems in this molecule. */
     private final List<Ring>   _rings;
 
-    // Keeps track of running IDs of atoms.
+    /* Keeps track of running IDs of atoms. */
     private int                _peakAId;
-    // Keeps track of running IDs of bonds.
+    /* Keeps track of running IDs of bonds. */
     private int                _peakBId;
-    // Keeps track of running IDs of rings.
+    /* Keeps track of running IDs of rings. */
     private int                _peakRId;
 
-    // Vendor-assigned unique ID of this molecule.
+    /* Vendor-assigned unique ID of this molecule. */
     public String              vendorMoleculeId;
-    // Name of the vendor.
+    /* Name of the vendor. */
     public String              vendorName;
 
     /*
@@ -58,17 +58,21 @@ public class Molecule
      * order of the attributes is lost otherwise.
      */
 
-    // Attribute names from either input or run-time.
+    /* Attribute names from either input or run-time. */
     private final List<String> _attrNames;
-    // Corresponding attribute values.
+    /* Corresponding attribute values. */
     private final List<String> _attrValues;
 
-    // A matrix with inter-atomic distances (in hops). This matrix uses input
-    // IDs, since only those are available when this computation takes place.
+    /*
+     * A matrix with inter-atomic distances (in hops). This matrix uses input
+     * IDs, since only those are available when this computation takes place.
+     */
     private int[][]            _dists;
 
-    // A matrix used in (re)constructing shortest paths between any two atoms.
-    // Like the above, this too employs input IDs.
+    /*
+     * A matrix used in (re)constructing shortest paths between any two atoms.
+     * Like the above, this too employs input IDs.
+     */
     private int[][]            _paths;
 
     /**
@@ -356,13 +360,13 @@ public class Molecule
                             order.name()));
         }
 
-        // Is this bond already present?
+        /* Is this bond already present? */
         Bond tb = bondBetween(a1, a2);
         if (null != tb) {
             return tb;
         }
 
-        // Is it legal to form this bond between the given atoms?
+        /* Is it legal to form this bond between the given atoms? */
         boolean ok1 = a1.tryChangeNumberOfNeighbours(order.value());
         boolean ok2 = a2.tryChangeNumberOfNeighbours(order.value());
         if (!ok1 || !ok2) {
@@ -374,7 +378,7 @@ public class Molecule
 
         Bond b = new Bond(++_peakBId, a1, a2, order);
 
-        // Set neighbours appropriately.
+        /* Set neighbours appropriately. */
         a1.unsafeAddBond(b);
         a2.unsafeAddBond(b);
         _bonds.add(b);
@@ -407,7 +411,7 @@ public class Molecule
      * Bypasses the membership check.
      */
     void unsafeBreakBond(Bond b, int idx) {
-        // Update both atoms.
+        /* Update both atoms. */
         b.atom1().removeBond(b);
         b.atom2().removeBond(b);
         for (Ring r : b.rings()) {
@@ -648,24 +652,26 @@ public class Molecule
     void computeAtomicDistances() {
         int size = _atoms.size() + 1; // IDs start with 1, not 0!
 
-        // Allocate and initialise the distance matrix.
+        /* Allocate and initialise the distance matrix. */
         _dists = new int[size][size];
         for (int i = 1; i < size; i++) {
             Arrays.fill(_dists[i], Integer.MAX_VALUE);
             _dists[i][i] = 0;
         }
-        // Allocate the paths matrix. Defaults of 0 are intended and fine.
+        /* Allocate the paths matrix. Defaults of 0 are intended and fine. */
         _paths = new int[size][size];
 
-        // Distances between immediate neighbours are always 1.
+        /* Distances between immediate neighbours are always 1. */
         for (Bond b : _bonds) {
             int id1 = b.atom1().id();
             int id2 = b.atom2().id();
             _dists[id1][id2] = _dists[id2][id1] = 1;
         }
 
-        // For distinct x, y and z, given x and z are NOT neighbours, d(x, z) =
-        // min({d(x, y) + d(y, z) for all y}).
+        /*
+         * For distinct x, y and z, given x and z are NOT neighbours, d(x, z) =
+         * min({d(x, y) + d(y, z) for all y}).
+         */
         for (int k = 1; k < size; k++) {
             for (int i = 1; i < size; i++) {
                 for (int j = 1; j < size; j++) {
@@ -777,16 +783,16 @@ public class Molecule
         resetRingInformation();
 
         int f = frerejacque();
-        // Check to see if the molecule is acyclic (or disconnected).
+        /* Check to see if the molecule is acyclic (or disconnected). */
         if (f <= 0) {
             return;
         }
-        // We don't deal with molecules having too many rings.
+        /* We don't deal with molecules having too many rings. */
         if (f > Constants.MAX_RINGS) {
             return;
         }
 
-        // Delegate detection to an appropriate detector.
+        /* Delegate detection to an appropriate detector. */
         rd.initialise(this);
         rd.detectRings();
     }
