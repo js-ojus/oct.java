@@ -690,4 +690,14 @@ public final class RingDetector implements IRingDetector {
     public List<Ring> rings() {
         return ImmutableList.copyOf(_rings);
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.ojuslabs.oct.lib.IRingDetector#ringSystems()
+     */
+    @Override
+    public List<RingSystem> ringSystems() {
+        return ImmutableList.copyOf(_ringSystems);
+    }
 }

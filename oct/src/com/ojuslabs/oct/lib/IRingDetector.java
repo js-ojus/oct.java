@@ -11,6 +11,7 @@ import java.util.List;
 
 import com.ojuslabs.oct.core.Molecule;
 import com.ojuslabs.oct.core.Ring;
+import com.ojuslabs.oct.core.RingSystem;
 
 /**
  * An interface satisfied by all ring detectors. <b>N.B.</b> The detector does
@@ -33,7 +34,14 @@ public interface IRingDetector {
     void detectRings();
 
     /**
-     * @return Returns a copy of the rings detected (possibly after pruning).
+     * @return A copy of the rings detected (possibly after pruning of spurious
+     *         rings).
      */
     List<Ring> rings();
+
+    /**
+     * @return A copy of the ring systems formed by the detected rings, after
+     *         appropriate pruning of spurious rings.
+     */
+    List<RingSystem> ringSystems();
 }

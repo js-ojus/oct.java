@@ -29,29 +29,31 @@ import com.ojuslabs.oct.lib.IRingDetector;
 public class Molecule
 {
     /* A running serial unique identifier for molecules. */
-    private static long        _nextId = 0;
+    private static long            _nextId = 0;
 
     /* A unique ID. This does not change during the lifetime of the molecule. */
-    private final long         _id;
+    private final long             _id;
 
     /* Atoms currently belonging to this molecule. */
-    private final List<Atom>   _atoms;
+    private final List<Atom>       _atoms;
     /* Bonds binding the atoms in this molecule. */
-    private final List<Bond>   _bonds;
+    private final List<Bond>       _bonds;
     /* Rings in all the ring systems in this molecule. */
-    private final List<Ring>   _rings;
+    private final List<Ring>       _rings;
+    /* The ring systems formed by the rings in this molecule. */
+    private final List<RingSystem> _ringSystems;
 
     /* Keeps track of running IDs of atoms. */
-    private int                _peakAId;
+    private int                    _peakAId;
     /* Keeps track of running IDs of bonds. */
-    private int                _peakBId;
+    private int                    _peakBId;
     /* Keeps track of running IDs of rings. */
-    private int                _peakRId;
+    private int                    _peakRId;
 
     /* Vendor-assigned unique ID of this molecule. */
-    public String              vendorMoleculeId;
+    public String                  vendorMoleculeId;
     /* Name of the vendor. */
-    public String              vendorName;
+    public String                  vendorName;
 
     /*
      * The following pair of lists for attributes is needed because the input
@@ -59,21 +61,21 @@ public class Molecule
      */
 
     /* Attribute names from either input or run-time. */
-    private final List<String> _attrNames;
+    private final List<String>     _attrNames;
     /* Corresponding attribute values. */
-    private final List<String> _attrValues;
+    private final List<String>     _attrValues;
 
     /*
      * A matrix with inter-atomic distances (in hops). This matrix uses input
      * IDs, since only those are available when this computation takes place.
      */
-    private int[][]            _dists;
+    private int[][]                _dists;
 
     /*
      * A matrix used in (re)constructing shortest paths between any two atoms.
      * Like the above, this too employs input IDs.
      */
-    private int[][]            _paths;
+    private int[][]                _paths;
 
     /**
      * Factory method for creating molecules with unique IDs.
@@ -93,6 +95,7 @@ public class Molecule
         _atoms = Lists.newArrayListWithCapacity(LIST_SIZE_L);
         _bonds = Lists.newArrayListWithCapacity(LIST_SIZE_L);
         _rings = Lists.newArrayListWithCapacity(LIST_SIZE_L);
+        _ringSystems = Lists.newArrayListWithCapacity(LIST_SIZE_L);
 
         _attrNames = Lists.newArrayListWithCapacity(LIST_SIZE_S);
         _attrValues = Lists.newArrayListWithCapacity(LIST_SIZE_S);
@@ -288,6 +291,13 @@ public class Molecule
      */
     public List<Ring> rings() {
         return ImmutableList.copyOf(_rings);
+    }
+
+    /**
+     * @return A read-only copy of this molecule's ring systems.
+     */
+    public List<RingSystem> ringSystems() {
+        return ImmutableList.copyOf(_ringSystems);
     }
 
     /**
@@ -489,7 +499,7 @@ public class Molecule
      *             if the given ring has a different containing molecule, or if
      *             the ring has not been completed.
      */
-    public void addRing(Ring r) {
+    void addRing(Ring r) {
         if (this != r.molecule()) {
             throw new IllegalArgumentException(
                     String.format(
@@ -795,6 +805,14 @@ public class Molecule
         /* Delegate detection to an appropriate detector. */
         rd.initialise(this);
         rd.detectRings();
+
+        /* Store information regarding rings and ring systems. */
+        for (Ring r : rd.rings()) {
+            addRing(r);
+        }
+        for (RingSystem rs : rd.ringSystems()) {
+            _ringSystems.add(rs);
+        }
     }
 
     /**
