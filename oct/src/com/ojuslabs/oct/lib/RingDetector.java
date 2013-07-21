@@ -46,6 +46,7 @@ public final class RingDetector implements IRingDetector {
      * as a ring, with this detector.
      */
     public RingDetector() {
+        /* Intentionally left blank. */
     }
 
     /**

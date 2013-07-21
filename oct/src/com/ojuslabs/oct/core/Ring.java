@@ -22,7 +22,8 @@ import com.ojuslabs.oct.common.Unsaturation;
  * Ring represents a simple cycle in a molecule. It keeps track of its atoms and
  * bonds, as well as its neighbouring rings.
  * 
- * A ring is created bound to a molecule, and cannot be re-bound.
+ * A ring is created bound to a molecule, and cannot be re-bound. Also, once
+ * completed, it is immutable in terms of its composition.
  */
 public final class Ring
 {
@@ -50,13 +51,12 @@ public final class Ring
     /* A bit set for efficiently comparing two rings for overlap. */
     private final BitSet           _bondBitSet;
 
+    /* The ID of the ring system to which this ring belongs. */
     private int                    _ringSystemId;
 
     /**
      * @param mol
      *            The containing molecule of this ring.
-     * @param id
-     *            The unique ID of this ring in its molecule.
      */
     public Ring(Molecule mol) {
         _mol = mol;
@@ -67,20 +67,6 @@ public final class Ring
 
         _atomBitSet = new BitSet(_mol.numberOfAtoms());
         _bondBitSet = new BitSet(_mol.numberOfBonds());
-    }
-
-    /**
-     * Resets the entire state of this ring. This method is useful when a ring
-     * is used as a candidate path, where frequent backtracking may be needed.
-     */
-    void reset() {
-        _atoms.clear();
-        _bonds.clear();
-        _nbrs.clear();
-
-        _isAro = false;
-        _isHetAro = false;
-        _completed = false;
     }
 
     /**
