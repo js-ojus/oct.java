@@ -69,12 +69,12 @@ public final class RingSystem {
     }
 
     /**
-     * This is used by the containing molecule when parenting the ring system.
+     * This is used by the ring detector when forming the ring system.
      * 
      * @param id
      *            The unique ID of this ring system in its molecule.
      */
-    void setId(int id) {
+    public void setId(int id) {
         _id = id;
     }
 
@@ -118,6 +118,16 @@ public final class RingSystem {
     }
 
     /**
+     * @param idx
+     *            The index the ring at which is desired.
+     * @return The ring corresponding to the given index, if valid.
+     * @see IndexOutOfBoundsException
+     */
+    public Ring ringAt(int idx) {
+        return _rings.get(idx);
+    }
+
+    /**
      * @return A read-only copy of the rings in this system.
      */
     public List<Ring> rings() {
@@ -138,6 +148,25 @@ public final class RingSystem {
      *             system.
      */
     public void addRing(Ring r) {
+        addRingAt(_rings.size(), r);
+    }
+
+    /**
+     * Adds the given ring to this ring system. It also updates the internal bit
+     * sets appropriately.
+     * 
+     * @param r
+     *            The ring to be added to this system.
+     * @param idx
+     *            The index at which the ring has to be inserted.
+     * @throws IllegalArgumentException
+     *             if the given ring is either {@code null} or does not belong
+     *             to this molecule.
+     * @throws IllegalStateException
+     *             if the given ring has no bonds or atoms in common with this
+     *             system.
+     */
+    public void addRingAt(int idx, Ring r) {
         if (null == r) {
             throw new IllegalArgumentException("Null ring given.");
         }
@@ -160,7 +189,7 @@ public final class RingSystem {
             }
         }
 
-        _rings.add(r);
+        _rings.add(idx, r);
         _atomBitSet.or(r.atomBitSet());
         _bondBitSet.or(r.bondBitSet());
     }
@@ -180,6 +209,18 @@ public final class RingSystem {
                     r.id()));
         }
 
+        _rings.remove(idx);
+        rebuildBitSets();
+    }
+
+    /**
+     * Removes the given ring from this system. Note that this invalidates the
+     * atom and bond bit sets, so they are rebuilt for consistency.
+     * 
+     * @param idx
+     *            The index of the ring to remove.
+     */
+    public void removeRingAt(int idx) {
         _rings.remove(idx);
         rebuildBitSets();
     }

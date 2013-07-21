@@ -22,6 +22,7 @@ import com.ojuslabs.oct.core.Atom;
 import com.ojuslabs.oct.core.Bond;
 import com.ojuslabs.oct.core.Molecule;
 import com.ojuslabs.oct.core.Ring;
+import com.ojuslabs.oct.core.RingSystem;
 
 /**
  * The default ring detector.
@@ -37,9 +38,7 @@ public final class RingDetector implements IRingDetector {
     private Deque<List<Atom>> _candidates;
 
     private List<Ring>        _rings;
-    private List<List<Ring>>  _ringSystems;
-    private List<BitSet>      _ringSystemAtoms;
-    private List<BitSet>      _ringSystemBonds;
+    private List<RingSystem>  _ringSystems;
 
     /**
      * Registers a set of validators that each has to approve the candidate path
@@ -94,10 +93,6 @@ public final class RingDetector implements IRingDetector {
 
         _rings = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_M);
         _ringSystems = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_S);
-        _ringSystemAtoms = Lists
-                .newArrayListWithCapacity(Constants.LIST_SIZE_S);
-        _ringSystemBonds = Lists
-                .newArrayListWithCapacity(Constants.LIST_SIZE_S);
 
         /* Initialise the atoms and their neighbours. */
         for (Atom a : _mol.atoms()) {
@@ -416,29 +411,25 @@ public final class RingDetector implements IRingDetector {
             BitSet ras = r.atomBitSet();
             BitSet rbs = r.bondBitSet();
 
-            for (int i = 0; i < _ringSystems.size(); i++) {
-                BitSet rsas = (BitSet) _ringSystemAtoms.get(i).clone();
+            for (RingSystem rs : _ringSystems) {
+                BitSet rsas = rs.atomBitSet();
                 rsas.and(ras);
-                BitSet rsbs = (BitSet) _ringSystemBonds.get(i).clone();
+                BitSet rsbs = rs.bondBitSet();
                 rsbs.and(rbs);
                 if ((rsbs.cardinality() > 0) // Fused bond(s).
                         || (rsas.cardinality() > 0)) { // Spiro system.
                     r.setRingSystemId(rsid);
-                    _ringSystems.get(i).add(r);
-                    _ringSystemAtoms.get(i).or(ras);
-                    _ringSystemBonds.get(i).or(rbs);
+                    rs.addRing(r);
                     continue outer;
                 }
             }
 
             rsid++;
-            List<Ring> nrs = Lists
-                    .newArrayListWithCapacity(Constants.LIST_SIZE_S);
+            RingSystem nrs = new RingSystem(_mol);
+            nrs.setId(rsid);
             r.setRingSystemId(rsid);
-            nrs.add(r);
+            nrs.addRing(r);
             _ringSystems.add(nrs);
-            _ringSystemAtoms.add(r.atomBitSet());
-            _ringSystemBonds.add(r.bondBitSet());
         }
     }
 
@@ -447,11 +438,10 @@ public final class RingDetector implements IRingDetector {
      */
     void pruneSpuriousRings() {
         for (int i = 0; i < _ringSystems.size(); i++) {
-            List<Ring> rs = _ringSystems.get(i);
-            BitSet rsbs = _ringSystemBonds.get(i);
+            RingSystem rs = _ringSystems.get(i);
 
             /* We form a basis set of rings for this ring system. */
-            int lastIncludedRingIdx = indexOfLastRingInBasis(rs, rsbs);
+            int lastIncludedRingIdx = indexOfLastRingInBasis(rs);
 
             /*
              * We remove all those larger rings, which can not be expressed as a
@@ -475,7 +465,7 @@ public final class RingDetector implements IRingDetector {
      * @return The index of the last ring that was included to form a basis for
      *         the given ring system.
      */
-    int indexOfLastRingInBasis(List<Ring> rs, BitSet rsbs) {
+    int indexOfLastRingInBasis(RingSystem rs) {
         /*
          * We find the smallest collection of classes of rings of the same size
          * that covers the ring system exactly.
@@ -484,9 +474,11 @@ public final class RingDetector implements IRingDetector {
         int currSize = -1;
         BitSet bs = new BitSet(_mol.numberOfBonds());
         int lastIncludedRingIdx = -1;
+        List<Ring> rrs = rs.rings();
+        BitSet rsbs = rs.bondBitSet();
 
-        for (int j = 0; j < rs.size(); j++) {
-            Ring r = rs.get(j);
+        for (int j = 0; j < rrs.size(); j++) {
+            Ring r = rrs.get(j);
             currSize = r.size();
 
             if (currSize != prevSize) {
@@ -515,24 +507,24 @@ public final class RingDetector implements IRingDetector {
      *            The index of the last ring included in the basis.
      * @return
      */
-    int pruneLargerRings(List<Ring> rs, int lastIncludedRingIdx) {
+    int pruneLargerRings(RingSystem rs, int lastIncludedRingIdx) {
         boolean running = true;
         outer:
         while (running) {
             running = false;
             for (int j = lastIncludedRingIdx + 1; j < rs.size(); j++) {
-                Ring r = rs.get(j);
+                Ring r = rs.ringAt(j);
 
                 if (shouldPrune(rs, r, lastIncludedRingIdx)) {
                     _rings.remove(r);
-                    rs.remove(j);
+                    rs.removeRingAt(j);
                     running = true;
                     continue outer;
                 }
                 else { // The ring is included in the basis.
-                    rs.remove(j);
+                    rs.removeRingAt(j);
                     lastIncludedRingIdx++;
-                    rs.add(lastIncludedRingIdx, r);
+                    rs.addRingAt(lastIncludedRingIdx, r);
                 }
             }
         }
@@ -554,18 +546,18 @@ public final class RingDetector implements IRingDetector {
      * @return {@code true} if the ring should be pruned; {@code false}
      *         otherwise.
      */
-    boolean shouldPrune(List<Ring> rs, Ring r, int lastIncludedRingIdx) {
+    boolean shouldPrune(RingSystem rs, Ring r, int lastIncludedRingIdx) {
         BitSet ras = r.atomBitSet();
         BitSet rbs = r.bondBitSet();
 
         for (int i = 0; i < lastIncludedRingIdx; i++) {
-            Ring ri = rs.get(i);
+            Ring ri = rs.ringAt(i);
             BitSet as1 = ri.atomBitSet();
             BitSet bs1 = ri.bondBitSet();
 
             inner:
             for (int j = i + 1; j <= lastIncludedRingIdx; j++) {
-                Ring rj = rs.get(j);
+                Ring rj = rs.ringAt(j);
                 BitSet as2 = rj.atomBitSet();
                 BitSet bs2 = rj.bondBitSet();
                 bs2.or(bs1); // Union of `ri` and `rj`.
@@ -668,7 +660,7 @@ public final class RingDetector implements IRingDetector {
             /* System.out.println(b); */
             int count = 0;
             for (int j = 0; j <= lastIncludedRingIdx; j++) {
-                Ring rj = rs.get(j);
+                Ring rj = rs.ringAt(j);
                 BitSet rjbs = rj.bondBitSet();
                 /* System.out.println(rjbs); */
                 if (rjbs.get(i)) {
