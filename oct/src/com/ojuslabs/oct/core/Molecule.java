@@ -764,6 +764,8 @@ public class Molecule
         computeAtomicDistances();
 
         detectRings(rd);
+
+        /* TODO(js): atoms, bonds (??) and rings should be normalised. */
     }
 
     /**
@@ -783,7 +785,8 @@ public class Molecule
 
     /**
      * Detects the rings in this molecule, and stores information regarding the
-     * same appropriately.
+     * same appropriately. <b>N.B.</b> The actual detection is performed by the
+     * provided ring detector.
      * 
      * @param rd
      *            The specific ring detector to employ for detecting the rings
@@ -812,6 +815,11 @@ public class Molecule
         }
         for (RingSystem rs : rd.ringSystems()) {
             _ringSystems.add(rs);
+        }
+
+        /* Mark bridge head atoms. */
+        for (Atom a : rd.bridgeHeads()) {
+            a.markAsBridgeHead(true);
         }
     }
 

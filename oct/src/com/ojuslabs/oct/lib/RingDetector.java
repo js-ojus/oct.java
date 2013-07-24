@@ -40,6 +40,8 @@ public final class RingDetector implements IRingDetector {
     private List<Ring>        _rings;
     private List<RingSystem>  _ringSystems;
 
+    private List<Atom>        _bridgeHeads;
+
     /**
      * Registers a set of validators that each has to approve the candidate path
      * as a ring, with this detector.
@@ -93,6 +95,8 @@ public final class RingDetector implements IRingDetector {
 
         _rings = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_M);
         _ringSystems = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_S);
+
+        _bridgeHeads = Lists.newArrayListWithCapacity(Constants.LIST_SIZE_S);
 
         /* Initialise the atoms and their neighbours. */
         for (Atom a : _mol.atoms()) {
@@ -609,14 +613,16 @@ public final class RingDetector implements IRingDetector {
                      * contribute an alternative path.
                      */
                         case 0:
-                        case 1:
+                        case 1: {
+                            markBridgeHeads(as2);
                             return false;
+                        }
 
-                            /*
-                             * Case of exactly two other junctions means that
-                             * they may potentially have a smaller distance
-                             * between them through an alternative path.
-                             */
+                        /*
+                         * Case of exactly two other junctions means that they
+                         * may potentially have a smaller distance between them
+                         * through an alternative path.
+                         */
                         case 2: {
                             int a1id = tal.get(0).inputId();
                             int a2id = tal.get(1).inputId();
@@ -626,6 +632,7 @@ public final class RingDetector implements IRingDetector {
                                 return true;
                             }
                             else {
+                                markBridgeHeads(as2);
                                 return false;
                             }
                         }
@@ -679,6 +686,33 @@ public final class RingDetector implements IRingDetector {
         }
 
         return true;
+    }
+
+    /**
+     * @param as2
+     *            The bit set of atoms that are bridge heads of bridges in
+     *            bicyclic or polycyclic bridge ring systems.
+     */
+    void markBridgeHeads(BitSet as2) {
+        for (int i = as2.nextSetBit(0); i > -1; i = as2.nextSetBit(i + 1)) {
+            inner:
+            for (Atom a : _atoms) {
+                if (a.inputId() == i) {
+                    _bridgeHeads.add(a);
+                    break inner;
+                }
+            }
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.ojuslabs.oct.lib.IRingDetector#bridgeHeads()
+     */
+    @Override
+    public List<Atom> bridgeHeads() {
+        return ImmutableList.copyOf(_bridgeHeads);
     }
 
     /*

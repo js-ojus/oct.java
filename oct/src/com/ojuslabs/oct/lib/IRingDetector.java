@@ -9,6 +9,7 @@ package com.ojuslabs.oct.lib;
 
 import java.util.List;
 
+import com.ojuslabs.oct.core.Atom;
 import com.ojuslabs.oct.core.Molecule;
 import com.ojuslabs.oct.core.Ring;
 import com.ojuslabs.oct.core.RingSystem;
@@ -44,4 +45,10 @@ public interface IRingDetector {
      *         appropriate pruning of spurious rings.
      */
     List<RingSystem> ringSystems();
+
+    /**
+     * @return A copy of the bridge head atoms, if any, in the ring systems
+     *         detected.
+     */
+    List<Atom> bridgeHeads();
 }

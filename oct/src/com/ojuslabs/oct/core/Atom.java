@@ -9,6 +9,7 @@ package com.ojuslabs.oct.core;
 
 import static com.ojuslabs.oct.common.Constants.LIST_SIZE_S;
 
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -891,6 +892,7 @@ public final class Atom
      * atoms!
      */
     void normalise() {
+        /* Sort bonds and neighbours on normalised IDs. */
         Comparator<Bond> c1 = new Comparator<Bond>() {
             @Override
             public int compare(Bond b1, Bond b2) {
@@ -908,6 +910,18 @@ public final class Atom
             }
         };
         Collections.sort(_nbrs, c2);
+
+        /* Is this a spiro atom? */
+        if (_rings.size() > 1) {
+            BitSet as = _rings.get(0).atomBitSet();
+            for (Ring r : _rings) {
+                as.and(r.atomBitSet());
+            }
+
+            if (1 == as.cardinality()) {
+                _isSpiro = true;
+            }
+        }
     }
 
     /**
