@@ -211,6 +211,7 @@ public class MolReaderV2k implements MolReader
             return;
         }
 
+        /* We first parse and create atoms and bonds. */
         for (int i = 0; i < numAtoms; i++) {
             _currentLine++;
             parseAtom(l.get(_currentLine), mol);
@@ -218,6 +219,13 @@ public class MolReaderV2k implements MolReader
         for (int i = 0; i < numBonds; i++) {
             _currentLine++;
             parseBond(l.get(_currentLine), mol);
+        }
+
+        /* We now remove all explicit hyderogens. */
+        for (Atom a : mol.atoms()) {
+            if (1 == a.element().number) {
+                mol.removeAtom(a);
+            }
         }
 
         if (null != _ctabHook) {
@@ -298,6 +306,17 @@ public class MolReaderV2k implements MolReader
     void parseBond(String s, Molecule mol) {
         Atom a1 = mol.atomByInputId(Integer.parseInt(s.substring(0, 3).trim()));
         Atom a2 = mol.atomByInputId(Integer.parseInt(s.substring(3, 6).trim()));
+
+        /* We do not add bonds involving H atoms. */
+        if (1 == a1.element().number) {
+            a2.addHydrogen();
+            return;
+        }
+        if (1 == a2.element().number) {
+            a1.addHydrogen();
+            return;
+        }
+
         BondOrder bo = BondOrder.ofValue(Integer.parseInt(s.substring(6, 9)
                 .trim()));
 

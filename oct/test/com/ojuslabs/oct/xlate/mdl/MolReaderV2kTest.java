@@ -78,7 +78,7 @@ public class MolReaderV2kTest
     @Test
     public void testParse() {
         SdfFile sdf = new SdfFile(
-                "test/com/ojuslabs/oct/xlate/mdl/citalopram.sdf");
+                "oct/test/com/ojuslabs/oct/xlate/mdl/citalopram.sdf");
         SdfIterator it = sdf.iterator();
         it.hasNext();
 

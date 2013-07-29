@@ -268,12 +268,23 @@ public final class Ring
      * Determine whether this ring is aromatic or not.
      */
     void determineAromaticity() {
-        /* TODO(js): Implement aromaticity determination. */
-        /*
-         * This should set both `_isAro` and `_isHetAro`, as applicable. It
-         * should also set the applicable aromaticity flags for all of its
-         * atoms.
-         */
+        /* We first apply Huckel's rule. */
+        int n = numberOfPiElectrons() - 2;
+        if (0 == n % 4) {
+            _isAro = true;
+
+            for (Atom a : _atoms) {
+                a.setAromatic(true);
+                if (6 != a.element().number) {
+                    _isHetAro = true;
+                }
+            }
+            for (Bond b : _bonds) {
+                b.setAromatic(true);
+            }
+        }
+
+        /* TODO(js): Code major exceptions. */
     }
 
     /**

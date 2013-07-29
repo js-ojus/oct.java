@@ -73,7 +73,6 @@ public final class Atom
     /* Rings this atom is a member of. */
     private final List<Ring> _rings;
     private boolean          _inAroRing;
-    private boolean          _inHetAroRing;
     private boolean          _isBenzylic;
     /* Is this atom a bridgehead of a bicyclic system of rings? */
     private boolean          _isBridgeHead;
@@ -149,7 +148,6 @@ public final class Atom
         _rings.clear();
 
         _inAroRing = false;
-        _inHetAroRing = false;
         _isBenzylic = false;
         _isBridgeHead = false;
         _isSpiro = false;
@@ -479,6 +477,12 @@ public final class Atom
         return _nbrs.size();
     }
 
+    /**
+     * Answers the number of pi electrons in this atom. This is useful when
+     * performing aromaticity detection.
+     * 
+     * @return The number of pi electrons contributed by this atom.
+     */
     public int numberOfPiElectrons() {
         int wtSum = 100 * numberOfDoubleBonds() +
                 10 * numberOfSingleBonds() +
@@ -556,6 +560,16 @@ public final class Atom
      */
     public int numberOfHydrogens() {
         return _numH;
+    }
+
+    /**
+     * Increments the number of hydrogen atoms attached to this atom, should it
+     * be valid as per its valence configuration.
+     */
+    public void addHydrogen() {
+        if (_nbrs.size() + _numH + 1 <= _valence) {
+            _numH++;
+        }
     }
 
     /**
@@ -764,7 +778,7 @@ public final class Atom
      *         or without a hetero atom; {@code false} otherwise.
      */
     public boolean isAromatic() {
-        if (_inAroRing || _inHetAroRing) {
+        if (_inAroRing) {
             return true;
         }
 
@@ -793,22 +807,17 @@ public final class Atom
      *         {@code false} otherwise.
      */
     public boolean inHeteroAromaticRing() {
-        return _inHetAroRing;
-    }
-
-    /**
-     * @param aro
-     *            The new aromaticity of this atom, explicitly involing a ring
-     *            with at least one hetero atom. This computation is usually
-     *            performed by such a ring in which this atom participates.
-     */
-    void setHeteroAromatic(boolean aro) {
-        _inHetAroRing = aro;
-
-        if (aro) {
-            _inAroRing = true;
-            _unsat = Unsaturation.AROMATIC;
+        if (_inAroRing && (6 != _element.number)) {
+            return true;
         }
+
+        for (Ring r : _rings) {
+            if (r.isHeteroAromatic()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
