@@ -410,13 +410,61 @@ public final class Atom
     }
 
     /**
-     * This method answers the number of distinct neighbours of this atom. It is
-     * the same as the number of bonds in which this atom participates.
+     * Answers the number of distinct neighbours of this atom. It is the same as
+     * the number of bonds in which this atom participates.
      * 
      * @return The number of bonds of which this atom is a member.
      */
     public int numberOfBonds() {
         return _bonds.size();
+    }
+
+    /**
+     * Answers the number of single bonds this atom forms.
+     * 
+     * @return The number of single bonds in which this atom participates.
+     */
+    public int numberOfSingleBonds() {
+        int c = 0;
+        for (Bond b : _bonds) {
+            if (BondOrder.SINGLE == b.order()) {
+                c++;
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * Answers the number of double bonds this atom forms.
+     * 
+     * @return The number of double bonds in which this atom participates.
+     */
+    public int numberOfDoubleBonds() {
+        int c = 0;
+        for (Bond b : _bonds) {
+            if (BondOrder.DOUBLE == b.order()) {
+                c++;
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * Answers the number of triple bonds this atom forms.
+     * 
+     * @return The number of triple bonds in which this atom participates.
+     */
+    public int numberOfTripleBonds() {
+        int c = 0;
+        for (Bond b : _bonds) {
+            if (BondOrder.TRIPLE == b.order()) {
+                c++;
+            }
+        }
+
+        return c;
     }
 
     /**
@@ -429,6 +477,78 @@ public final class Atom
      */
     public int numberOfNeighbours() {
         return _nbrs.size();
+    }
+
+    public int numberOfPiElectrons() {
+        int wtSum = 100 * numberOfDoubleBonds() +
+                10 * numberOfSingleBonds() +
+                _charge;
+
+        switch (_element.number) {
+            case 6: {
+                switch (wtSum) {
+                    case 19:
+                        return 2;
+                    case 110:
+                        return 1;
+                    case 120: {
+                        Bond b = null;
+                        for (Bond t : _bonds) {
+                            if (BondOrder.DOUBLE == t.order()) {
+                                b = t;
+                                break;
+                            }
+                        }
+                        return (b.isCyclic()) ? 1 : 0;
+                    }
+                    default:
+                        return 0;
+                }
+            }
+            case 7: {
+                switch (wtSum) {
+                    case 20:
+                        return 2;
+                    case 30:
+                        return 2;
+                    case 110:
+                        return 1;
+                    case 121:
+                        return 1;
+                    default:
+                        return 0;
+                }
+            }
+            case 8: {
+                switch (wtSum) {
+                    case 20:
+                        return 2;
+                    default:
+                        return 0;
+                }
+            }
+            case 16: {
+                switch (wtSum) {
+                    case 20:
+                        return 2;
+                    case 111:
+                        return 1;
+                    case 120: {
+                        Atom a = firstDoublyBondedNeighbour();
+                        if ((8 == a.element().number) && !a.isCyclic()) {
+                            return 2;
+                        }
+                        else {
+                            return 0;
+                        }
+                    }
+                    default:
+                        return 0;
+                }
+            }
+            default:
+                return 0;
+        }
     }
 
     /**
@@ -1330,11 +1450,11 @@ public final class Atom
     /**
      * This method computes an internal compound hash value that is computed
      * using the formula
-     * {@code 100 * atomic_number + 10 * unsaturation + number_of_hydrogens}.
+     * {@code 1000 * atomic_number + 10 * unsaturation + number_of_hydrogens}.
      * This method is invoked by the containing molecule during normalisation.
      */
     void computeHashValue() {
-        _hash = 100 * _element.number +
+        _hash = 1000 * _element.number +
                 10 * _unsat.value() +
                 _numH;
     }
@@ -1346,7 +1466,7 @@ public final class Atom
      * this.
      * 
      * @return A compound value that is computed using the formula
-     *         {@code 100 * atomic_number + 10 * unsaturation + number_of_hydrogens}
+     *         {@code 1000 * atomic_number + 10 * unsaturation + number_of_hydrogens}
      *         .
      */
     public int hashValue() {

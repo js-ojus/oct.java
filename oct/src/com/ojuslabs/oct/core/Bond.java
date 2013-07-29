@@ -231,10 +231,22 @@ public final class Bond
     }
 
     /**
+     * Answers the aromaticity status of this bond.
+     * 
      * @return True if this bond has at least one aromatic atom participating.
      */
     public boolean isAromatic() {
         return _isAro;
+    }
+
+    /**
+     * Sets the new aromaticity status of this bond.
+     * 
+     * @param aro
+     *            The new status of whether this bond is aromatic or not.
+     */
+    void setAromatic(boolean aro) {
+        _isAro = aro;
     }
 
     /**
@@ -331,6 +343,14 @@ public final class Bond
      */
     public int numberOfRings() {
         return _rings.size();
+    }
+
+    /**
+     * @return {@code true} if this bond participates in at least one ring;
+     *         {@code false} otherwise.
+     */
+    public boolean isCyclic() {
+        return (_rings.size() > 0);
     }
 
     /**

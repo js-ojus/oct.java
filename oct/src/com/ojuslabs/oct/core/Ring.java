@@ -265,7 +265,7 @@ public final class Ring
     }
 
     /**
-     * 
+     * Determine whether this ring is aromatic or not.
      */
     void determineAromaticity() {
         /* TODO(js): Implement aromaticity determination. */
@@ -274,6 +274,22 @@ public final class Ring
          * should also set the applicable aromaticity flags for all of its
          * atoms.
          */
+    }
+
+    /**
+     * Answers the total number of pi electrons in this ring. This is useful in
+     * determining the aromaticity of the ring, among others.
+     * 
+     * @return The total number of pi electrons contributed to this ring by all
+     *         of its atoms.
+     */
+    public int numberOfPiElectrons() {
+        int piElectrons = 0;
+        for (Atom a : _atoms) {
+            piElectrons += a.numberOfPiElectrons();
+        }
+
+        return piElectrons;
     }
 
     /**
