@@ -12,6 +12,8 @@ import static com.ojuslabs.oct.common.Constants.LIST_SIZE_S;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -660,7 +662,7 @@ public class Molecule
      * the shortest pair-wise distances in the molecule (graph).
      */
     void computeAtomicDistances() {
-        int size = _atoms.size() + 1; // IDs start with 1, not 0!
+        int size = _peakAId + 1; // IDs start with 1, not 0!
 
         /* Allocate and initialise the distance matrix. */
         _dists = new int[size][size];
@@ -673,8 +675,8 @@ public class Molecule
 
         /* Distances between immediate neighbours are always 1. */
         for (Bond b : _bonds) {
-            int id1 = b.atom1().id();
-            int id2 = b.atom2().id();
+            int id1 = b.atom1().inputId();
+            int id2 = b.atom2().inputId();
             _dists[id1][id2] = _dists[id2][id1] = 1;
         }
 
@@ -769,18 +771,145 @@ public class Molecule
      * mechanism for reasoning about the state of the molecule at any given
      * instant.
      * <p>
-     * This method is idempotent.
+     * This method is idempotent if the molecule has not been altered since the
+     * last call.
+     * <p>
+     * <b>N.B. This method lies at the foundations of a substantial part of this
+     * toolkit, either directly or indirectly. Exercise caution when modifying
+     * this for whatever purposes.</b>
      * 
      * @param rd
      *            The specific ring detector to employ for detecting the rings
      *            in this molecule.
      */
     public void normalise(IRingDetector rd) {
+        /* Compute inter-atomic distance matrix. */
         computeAtomicDistances();
 
+        /* Determine the unsaturation value of atoms. */
+        for (Atom a : _atoms) {
+            a.determineUnsaturation();
+        }
+
+        /*
+         * Detect the presence of rings and ring systems in the molecule. This
+         * also updates the unsaturation of aromatic ring members.
+         */
         detectRings(rd);
 
-        /* TODO(js): atoms, bonds (??) and rings should be normalised. */
+        for (Atom a : _atoms) {
+            a.computeHashValue();
+            a.computeSHashValue();
+        }
+
+        /*
+         * We now sort atoms based on their atomic number, unsaturation and
+         * number of attached hydrogens.
+         */
+        reorderAtoms1();
+        assignNormalisedIds();
+
+        /* Normalise atoms. */
+        for (Atom a : _atoms) {
+            a.normalise();
+        }
+
+        /*
+         * We now sort atoms based on their atomic number, unsaturation, number
+         * of attached hydrogens and the tuple of sorted neighbours.
+         */
+        reorderAtoms2();
+        assignNormalisedIds();
+
+        /* Normalise atoms again. */
+        for (Atom a : _atoms) {
+            a.normalise();
+        }
+
+        /* Normalise rings. */
+        for (Ring r : _rings) {
+            r.normalise();
+        }
+    }
+
+    /**
+     * We sort atoms as follows:
+     * <ul>
+     * <li>descending on atomic number,</li>
+     * <li>descending on unsaturation and</li>
+     * <li>ascending on number of attached hydrogens.</li>
+     * </ul>
+     */
+    void reorderAtoms1() {
+        Comparator<Atom> c = new Comparator<Atom>() {
+            @Override
+            public int compare(Atom a1, Atom a2) {
+                return compare1(a1, a2);
+            }
+        };
+        Collections.sort(_atoms, c);
+    }
+
+    /**
+     * We sort atoms as follows:
+     * <ul>
+     * <li>descending on atomic number,</li>
+     * <li>descending on unsaturation,</li>
+     * <li>ascending on number of attached hydrogens,</li>
+     * <li>ascending on the tuple of sorted neighbours.</li>
+     * </ul>
+     */
+    void reorderAtoms2() {
+        Comparator<Atom> c = new Comparator<Atom>() {
+            @Override
+            public int compare(Atom a1, Atom a2) {
+                return compare2(a1, a2);
+            }
+        };
+        Collections.sort(_atoms, c);
+    }
+
+    private int compare1(Atom a1, Atom a2) {
+        int sh1 = a1.sHashValue();
+        int sh2 = a2.sHashValue();
+        return (sh1 < sh2) ? -1 : (sh1 == sh2) ? 0 : 1;
+    }
+
+    private int compare2(Atom a1, Atom a2) {
+        int c1 = compare1(a1, a2);
+        if (0 != c1) {
+            return c1;
+        }
+
+        /*
+         * If we have reached here, both atoms should also have the same number
+         * of neighbours.
+         */
+        List<Atom> nbrs1 = a1.neighbours();
+        List<Atom> nbrs2 = a2.neighbours();
+        for (int i = 0; i < nbrs1.size(); i++) {
+            Atom t1 = nbrs1.get(i);
+            Atom t2 = nbrs2.get(i);
+            if (t1.id() < t2.id()) {
+                return -1; // Bonds to a higher atom.
+            }
+            else if (t1.id() > t2.id()) {
+                return 1; // Bonds to a lower atom.
+            }
+        }
+
+        return 0; // Identical atoms; do not sort.
+    }
+
+    /**
+     * This walks through the sorted atoms list, assigning a serial normalised
+     * ID to each atom.
+     */
+    private void assignNormalisedIds() {
+        int id = 0;
+        for (Atom a : _atoms) {
+            a.setId(++id);
+        }
     }
 
     /**

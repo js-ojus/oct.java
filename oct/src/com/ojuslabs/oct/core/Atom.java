@@ -57,7 +57,9 @@ public final class Atom
     private Unsaturation     _unsat;
 
     /* A partial reflection of this atom for quick comparisons. */
-    private int              _hash;
+    private int              _pHash;
+    /* A partial reflection of this atom for quick comparisons. */
+    private int              _sHash;
 
     /* Bonds this atom is a member of. */
     private final List<Bond> _bonds;
@@ -121,7 +123,7 @@ public final class Atom
         _id = 0;
         _inputId = 0;
 
-        _hash = 0;
+        _pHash = 0;
         _chirality = Chirality.NONE;
         _radical = Radical.NONE;
 
@@ -338,11 +340,16 @@ public final class Atom
         }
 
         /* For an uncharged atom, valence should be sane. */
-        if (nn + _numH != _valence) {
-            throw new IllegalStateException(
-                    String.format(
-                            "Molecule: %d, atom: %d.  Either all bonds have not been specified, or the atom probably carries a net charge.",
-                            _mol.id(), _id));
+        if (_numH > 0) {
+            if (nn + _numH != _valence) {
+                throw new IllegalStateException(
+                        String.format(
+                                "Probably all bonds have not been specified: molecule: %d, atom: %d, num. of nbrs.: %d, num. of H.: %d, valence: %d.",
+                                _mol.id(), _id, nn, _numH, _valence));
+            }
+        }
+        else {
+            _numH = (byte) (_valence - nn);
         }
 
         /* Case of all single bonds. */
@@ -662,6 +669,13 @@ public final class Atom
 
         /* Should be dead code! */
         return null;
+    }
+
+    /**
+     * @return A read-only copy of the expanded neighbours of this atom.
+     */
+    public List<Atom> neighbours() {
+        return ImmutableList.copyOf(_nbrs);
     }
 
     /**
@@ -1300,7 +1314,7 @@ public final class Atom
      *         bonds; {@code false} otherwise.
      */
     public boolean isSaturatedC() {
-        return (60 == _hash / 10);
+        return (60 == _pHash / 10);
     }
 
     /**
@@ -1309,7 +1323,7 @@ public final class Atom
      *         otherwise.
      */
     public boolean isSaturatedCH2() {
-        return (602 == _hash);
+        return (602 == _pHash);
     }
 
     /**
@@ -1318,7 +1332,7 @@ public final class Atom
      *         otherwise.
      */
     public boolean isSaturatedCHavingH() {
-        return (60 == _hash / 10) && (_numH > 0);
+        return (60 == _pHash / 10) && (_numH > 0);
     }
 
     /**
@@ -1463,9 +1477,21 @@ public final class Atom
      * This method is invoked by the containing molecule during normalisation.
      */
     void computeHashValue() {
-        _hash = 1000 * _element.number +
+        _pHash = 1000 * _element.number +
                 10 * _unsat.value() +
                 _numH;
+    }
+
+    /**
+     * This method computes an internal compound hash value that is computed
+     * using the formula
+     * {@code 1000 * atomic_number + 10 * unsaturation + (valence - number_of_hydrogens)}
+     * . This method is invoked by the containing molecule during normalisation.
+     */
+    void computeSHashValue() {
+        _sHash = 1000 * _element.number +
+                10 * _unsat.value() +
+                (_element.valence - _numH);
     }
 
     /**
@@ -1479,7 +1505,21 @@ public final class Atom
      *         .
      */
     public int hashValue() {
-        return _hash;
+        return _pHash;
+    }
+
+    /**
+     * A partial reflection of this atom for quick comparisons. <b>N.B.</b> This
+     * value is computed during the process of normalisation of the containing
+     * molecule. Subsequent changes to the molecule could potentially invalidate
+     * this.
+     * 
+     * @return A compound value that is computed using the formula
+     *         {@code 1000 * atomic_number + 10 * unsaturation + (valence - number_of_hydrogens)}
+     *         .
+     */
+    public int sHashValue() {
+        return _sHash;
     }
 
     /*
