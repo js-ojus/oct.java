@@ -809,21 +809,18 @@ public class Molecule
         reorderAtoms1();
         assignNormalisedIds();
 
-        /* Normalise atoms. */
-        for (Atom a : _atoms) {
-            a.normalise();
-        }
+        for (int i = 0; i < 2; i++) {
+            /* Normalise atoms. */
+            for (Atom a : _atoms) {
+                a.normalise();
+            }
 
-        /*
-         * We now sort atoms based on their atomic number, unsaturation, number
-         * of attached hydrogens and the tuple of sorted neighbours.
-         */
-        reorderAtoms2();
-        assignNormalisedIds();
-
-        /* Normalise atoms again. */
-        for (Atom a : _atoms) {
-            a.normalise();
+            /*
+             * We now sort atoms based on their atomic number, unsaturation,
+             * number of attached hydrogens and the tuple of sorted neighbours.
+             */
+            reorderAtoms2();
+            assignNormalisedIds();
         }
 
         /* Normalise rings. */
@@ -872,7 +869,7 @@ public class Molecule
     private int compare1(Atom a1, Atom a2) {
         int sh1 = a1.sHashValue();
         int sh2 = a2.sHashValue();
-        return (sh1 < sh2) ? -1 : (sh1 == sh2) ? 0 : 1;
+        return (sh1 < sh2) ? 1 : (sh1 == sh2) ? 0 : -1;
     }
 
     private int compare2(Atom a1, Atom a2) {
