@@ -718,6 +718,21 @@ public class Molecule
     }
 
     /**
+     * Prints the atomic distances matrix to standard out.
+     */
+    public void dumpAtomicDistances() {
+        int na = _atoms.size() + 1;
+        for (int i = 1; i < na; i++) {
+            System.out.println(String.format("Atom input ID: %d", i));
+            for (int j = 1; j < na; j++) {
+                System.out.println(String.format("\t(%d, %d): %d", i, j,
+                        _dists[i][j]));
+            }
+            System.out.println();
+        }
+    }
+
+    /**
      * <b>N.B.</b> This method answers a path of only intermediate nodes
      * (atoms). It does <b><i>not</i></b> include the end atoms.
      * 
@@ -769,21 +784,6 @@ public class Molecule
     }
 
     /**
-     * Prints the atomic distances matrix to standard out.
-     */
-    public void dumpAtomicDistances() {
-        int na = _atoms.size() + 1;
-        for (int i = 1; i < na; i++) {
-            System.out.println(String.format("Atom input ID: %d", i));
-            for (int j = 1; j < na; j++) {
-                System.out.println(String.format("\t(%d, %d): %d", i, j,
-                        _dists[i][j]));
-            }
-            System.out.println();
-        }
-    }
-
-    /**
      * Detects the rings in this molecule, and stores information regarding the
      * same appropriately. <b>N.B.</b> The actual detection is performed by the
      * provided ring detector.
@@ -812,6 +812,7 @@ public class Molecule
         /* Store information regarding rings and ring systems. */
         for (Ring r : rd.rings()) {
             addRing(r);
+            r.determineAromaticity();
         }
         for (RingSystem rs : rd.ringSystems()) {
             _ringSystems.add(rs);

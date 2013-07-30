@@ -259,9 +259,6 @@ public final class Ring
 
         /* Rotate the list so that the atom with the minimum ID comes first. */
         Collections.rotate(_atoms, -idx);
-
-        /* Determine the ring's aromaticity. */
-        determineAromaticity();
     }
 
     /**

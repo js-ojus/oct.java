@@ -65,6 +65,9 @@ public class RingDetectorTest {
                 rings.size()));
         for (Ring r : rings) {
             System.out.println(r);
+            if (r.isAromatic()) {
+                System.out.println("-- Ring is aromatic.");
+            }
         }
         System.out.println();
         assertEquals(3, rings.size());
@@ -90,6 +93,9 @@ public class RingDetectorTest {
                 rings.size()));
         for (Ring r : rings) {
             System.out.println(r);
+            if (r.isAromatic()) {
+                System.out.println("-- Ring is aromatic.");
+            }
         }
         System.out.println();
         assertEquals(6, rings.size());
@@ -115,6 +121,9 @@ public class RingDetectorTest {
                 rings.size()));
         for (Ring r : rings) {
             System.out.println(r);
+            if (r.isAromatic()) {
+                System.out.println("-- Ring is aromatic.");
+            }
         }
         System.out.println();
         assertEquals(4, rings.size());
@@ -140,6 +149,9 @@ public class RingDetectorTest {
                 rings.size()));
         for (Ring r : rings) {
             System.out.println(r);
+            if (r.isAromatic()) {
+                System.out.println("-- Ring is aromatic.");
+            }
         }
         System.out.println();
         assertEquals(6, rings.size());
@@ -165,6 +177,9 @@ public class RingDetectorTest {
                 rings.size()));
         for (Ring r : rings) {
             System.out.println(r);
+            if (r.isAromatic()) {
+                System.out.println("-- Ring is aromatic.");
+            }
         }
         System.out.println();
         assertEquals(3, rings.size());
@@ -191,6 +206,9 @@ public class RingDetectorTest {
                 rings.size()));
         for (Ring r : rings) {
             System.out.println(r);
+            if (r.isAromatic()) {
+                System.out.println("-- Ring is aromatic.");
+            }
         }
         System.out.println();
         assertEquals(8, rings.size());
@@ -217,6 +235,9 @@ public class RingDetectorTest {
                 rings.size()));
         for (Ring r : rings) {
             System.out.println(r);
+            if (r.isAromatic()) {
+                System.out.println("-- Ring is aromatic.");
+            }
         }
         System.out.println();
         assertEquals(9, rings.size());
@@ -243,6 +264,9 @@ public class RingDetectorTest {
                 rings.size()));
         for (Ring r : rings) {
             System.out.println(r);
+            if (r.isAromatic()) {
+                System.out.println("-- Ring is aromatic.");
+            }
         }
         System.out.println();
         assertEquals(9, rings.size());
@@ -269,6 +293,9 @@ public class RingDetectorTest {
                 rings.size()));
         for (Ring r : rings) {
             System.out.println(r);
+            if (r.isAromatic()) {
+                System.out.println("-- Ring is aromatic.");
+            }
         }
         System.out.println();
         assertEquals(7, rings.size());
@@ -295,6 +322,9 @@ public class RingDetectorTest {
                 rings.size()));
         for (Ring r : rings) {
             System.out.println(r);
+            if (r.isAromatic()) {
+                System.out.println("-- Ring is aromatic.");
+            }
         }
         System.out.println();
         assertEquals(17, rings.size());
