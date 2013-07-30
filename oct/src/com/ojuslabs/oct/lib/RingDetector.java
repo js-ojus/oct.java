@@ -135,6 +135,12 @@ public final class RingDetector implements IRingDetector {
         sortRings();
         detectRingSystems();
         pruneSpuriousRings();
+
+        /*
+         * Bonds that are not cyclic, but in consideration so far, must be parts
+         * of linking chains.
+         */
+        markLinkingBonds();
     }
 
     /**
@@ -700,6 +706,22 @@ public final class RingDetector implements IRingDetector {
                 if (a.inputId() == i) {
                     _bridgeHeads.add(a);
                     break inner;
+                }
+            }
+        }
+    }
+
+    /**
+     * Identifies bonds forming linking chains between ring systems, and marks
+     * them appropriately.
+     */
+    void markLinkingBonds() {
+        for (int i = 0; i < _atoms.size(); i++) {
+            Atom ai = _atoms.get(i);
+            for (Atom aj : _nbrs.get(i)) {
+                Bond b = ai.bondTo(aj);
+                if (!b.isCyclic()) {
+                    b.setLinkStatus(true);
                 }
             }
         }

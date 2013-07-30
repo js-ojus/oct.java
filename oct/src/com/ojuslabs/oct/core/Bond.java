@@ -33,6 +33,8 @@ public final class Bond
     private boolean          _isAro;
     /* The rings in which this bond participates. */
     private final List<Ring> _rings;
+    /* Is this bond part of a chain linking two ring systems? */
+    private boolean          _isLink;
 
     /* Cached in the object for faster search. */
     private final int        _hash;
@@ -367,6 +369,26 @@ public final class Bond
         _rings.clear();
 
         _isAro = false;
+    }
+
+    /**
+     * @param b
+     *            The new status indicating whether this bond is a linking bond
+     *            or not.
+     */
+    public void setLinkStatus(boolean b) {
+        _isLink = b;
+    }
+
+    /**
+     * Answers if the current bond is a part of a linking chain of bonds between
+     * two ring systems.
+     * 
+     * @return {@code true} if this bond is a linking bond; {@code false}
+     *         otherwise.
+     */
+    public boolean isLink() {
+        return _isLink;
     }
 
     /*
