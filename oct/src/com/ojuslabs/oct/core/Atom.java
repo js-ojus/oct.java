@@ -488,7 +488,8 @@ public final class Atom
      * Answers the number of pi electrons in this atom. This is useful when
      * performing aromaticity detection.
      * 
-     * @return The number of pi electrons contributed by this atom.
+     * @return The number of pi electrons contributed by this atom; a negative
+     *         number under exceptional conditions.
      */
     public int numberOfPiElectrons() {
         int wtSum = 100 * numberOfDoubleBonds() +
@@ -551,6 +552,20 @@ public final class Atom
                         }
                         else {
                             return 0;
+                        }
+                    }
+                    case 220: {
+                        int c = 0;
+                        for (Bond b : _bonds) {
+                            Atom a = b.otherAtom(_id);
+                            if ((BondOrder.DOUBLE == b.order())
+                                    && !a.isCyclic()) {
+                                c++;
+                            }
+                        }
+
+                        if (c > 1) {
+                            return -1;
                         }
                     }
                     default:

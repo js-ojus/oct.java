@@ -265,8 +265,13 @@ public final class Ring
      * Determine whether this ring is aromatic or not.
      */
     void determineAromaticity() {
+        int n = numberOfPiElectrons();
+        if (n < 0) { // Some exceptional condition.
+            return; // Don't proceed.
+        }
+
         /* We first apply Huckel's rule. */
-        int n = numberOfPiElectrons() - 2;
+        n -= 2;
         if (0 == n % 4) {
             _isAro = true;
 
@@ -289,12 +294,16 @@ public final class Ring
      * determining the aromaticity of the ring, among others.
      * 
      * @return The total number of pi electrons contributed to this ring by all
-     *         of its atoms.
+     *         of its atoms; a negative number under exceptional conditions.
      */
     public int numberOfPiElectrons() {
         int piElectrons = 0;
         for (Atom a : _atoms) {
-            piElectrons += a.numberOfPiElectrons();
+            int n = a.numberOfPiElectrons();
+            if (n < 0) {
+                return n;
+            }
+            piElectrons += n;
         }
 
         return piElectrons;
