@@ -511,7 +511,12 @@ public final class Atom
                                 break;
                             }
                         }
-                        return (b.isCyclic()) ? 1 : 0;
+                        if (b.isCyclic()) {
+                            return 1;
+                        }
+                        else {
+                            return 0;
+                        }
                     }
                     default:
                         return 0;
@@ -929,7 +934,7 @@ public final class Atom
      *         limits; {@code false} otherwise.
      */
     boolean tryChangeNumberOfNeighbours(int delta) {
-        if (_nbrs.size() + delta > _valence) {
+        if (_nbrs.size() + delta > _valence + Math.abs(_charge)) {
             return false;
         }
 

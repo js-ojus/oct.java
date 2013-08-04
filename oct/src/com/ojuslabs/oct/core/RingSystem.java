@@ -40,6 +40,8 @@ public final class RingSystem {
     private BitSet         _atomBitSet;
     /* A bit set tracking all the bonds in all the rings in this system. */
     private BitSet         _bondBitSet;
+    /* Is this ring system aromatic as a whole? */
+    private boolean        _isAro;
 
     /**
      * @param mol
@@ -237,6 +239,67 @@ public final class RingSystem {
             _atomBitSet.or(r.atomBitSet());
             _bondBitSet.or(r.bondBitSet());
         }
+    }
+
+    /**
+     * Answers whether this ring system, when considered as a whole, behaves
+     * like an aromatic ring. <b>N.B.</b> Currently, if a ring system is indeed
+     * aromatic, its individual rings are not tested for aromaticity. This could
+     * change in the future.
+     * 
+     * @return {@code true} if this ring system is aromatic as a whole;
+     *         {@code false} otherwise.
+     */
+    public boolean isAromatic() {
+        return _isAro;
+    }
+
+    /**
+     * Determine whether this ring is aromatic or not.
+     */
+    void determineAromaticity() {
+        boolean error = false;
+        int n = numberOfPiElectrons();
+        if (n < 0) { // Some exceptional condition.
+            error = true;
+        }
+
+        /* We first apply Huckel's rule. */
+        n -= 2;
+        if (0 == n % 4) {
+            _isAro = true;
+        }
+
+        /* Should we dive into individual rings or not? */
+        if (error || (1 == _rings.size()) || !_isAro) {
+            for (Ring r : _rings) {
+                r.determineAromaticity();
+            }
+        }
+    }
+
+    /**
+     * Answers the total number of pi electrons in this ring system. This is
+     * useful in determining the aromaticity of the entire ring system, among
+     * others.
+     * 
+     * @return The total number of pi electrons contributed to this ring system
+     *         by all of its atoms; a negative number under exceptional
+     *         conditions.
+     */
+    public int numberOfPiElectrons() {
+        int piElectrons = 0;
+        for (int i = _atomBitSet.nextSetBit(0); i > -1; i = _atomBitSet
+                .nextSetBit(i + 1)) {
+            Atom a = _mol.atomByInputId(i);
+            int n = a.numberOfPiElectrons();
+            if (n < 0) {
+                return n;
+            }
+            piElectrons += n;
+        }
+
+        return piElectrons;
     }
 
     /*

@@ -128,6 +128,7 @@ public final class RingDetector implements IRingDetector {
          */
         if (noAtomsWithGT2Bonds()) {
             detectTheOnlyRing();
+            detectRingSystems();
             return;
         }
 
@@ -687,11 +688,22 @@ public final class RingDetector implements IRingDetector {
                 break;
             }
         }
-        if (found) { // Valid ring.
-            return false;
+        if (!found) { // Invalid ring.
+            return true;
         }
 
-        return true;
+        /* TODO(js): If the ring is planar, it is an outer shell. */
+        int c = 0;
+        for (Atom a : r.atoms()) {
+            if (a.numberOfBonds() + a.numberOfHydrogens() == a.valence()) {
+                c++;
+            }
+        }
+        if (c < 2) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

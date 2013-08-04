@@ -400,12 +400,14 @@ public class MolReaderV2k implements MolReader
      *            <code>M  RAD</code> and <code>M  END</code>.
      */
     void _parseProp(String s, Molecule mol, String prefix) {
-        int n = Integer.parseInt(s.substring(6, 9));
+        int n = Integer.parseInt(s.substring(6, 9).trim());
 
         int offset = 10;
         for (int i = 0; i < n; i++) {
-            int atomId = Integer.parseInt(s.substring(offset, offset + 3));
-            int value = Integer.parseInt(s.substring(offset + 4, offset + 7));
+            int atomId = Integer.parseInt(s.substring(offset, offset + 3)
+                    .trim());
+            int value = Integer.parseInt(s.substring(offset + 4, offset + 7)
+                    .trim());
 
             switch (prefix) {
                 case _M_CHG:

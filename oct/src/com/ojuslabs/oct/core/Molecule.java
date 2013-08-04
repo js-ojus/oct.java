@@ -384,8 +384,9 @@ public class Molecule
         if (!ok1 || !ok2) {
             throw new IllegalStateException(
                     String.format(
-                            "Valence violation: molecule %d, atom1 %d, atom2 %d, new bond order %d.",
-                            _id, a1.valence(), a2.valence(), order.value()));
+                            "Valence violation: molecule %d, atom1 %d:%d, atom2 %d:%d, new bond order %d.",
+                            _id, a1.id(), a1.valence(), a2.id(), a2.valence(),
+                            order.value()));
         }
 
         Bond b = new Bond(++_peakBId, a1, a2, order);
@@ -938,10 +939,10 @@ public class Molecule
         /* Store information regarding rings and ring systems. */
         for (Ring r : rd.rings()) {
             addRing(r);
-            r.determineAromaticity();
         }
         for (RingSystem rs : rd.ringSystems()) {
             _ringSystems.add(rs);
+            rs.determineAromaticity();
         }
 
         /* Mark bridge head atoms. */

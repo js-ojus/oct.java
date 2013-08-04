@@ -76,7 +76,7 @@ public final class PeriodicTable
         lbuilder.add(new Element(13, "Al", 26.982, 6));
         lbuilder.add(new Element(14, "Si", 28.086, 4));
         lbuilder.add(new Element(15, "P", 30.974, 3));
-        lbuilder.add(new Element(16, "S", 32.067, 2));
+        lbuilder.add(new Element(16, "S", 32.067, 6));
         lbuilder.add(new Element(17, "Cl", 35.453, 1));
         lbuilder.add(new Element(18, "Ar", 39.948, 0));
         lbuilder.add(new Element(19, "K", 39.098, 1));
