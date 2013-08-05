@@ -772,6 +772,18 @@ public class Molecule
      * mechanism for reasoning about the state of the molecule at any given
      * instant.
      * <p>
+     * Ring detection and chirality determination are two of the important parts
+     * of this process. For flexibility and extensibility, ring detection logic
+     * is external to Molecule itself. The following snippet shows a simple way
+     * to normalise a molecule.
+     * 
+     * <pre>
+     * Molecule mol = Molecule.newInstance();
+     * // ...
+     * IRingDetector rd = RingDetectors.newInstance(RingDetectors.DEFAULT);
+     * mol.normalise(rd);
+     * </pre>
+     * 
      * This method is idempotent if the molecule has not been altered since the
      * last call.
      * <p>
@@ -798,6 +810,26 @@ public class Molecule
          */
         detectRings(rd);
 
+        /* Reorder atoms based on our normalisation rules. */
+        reorderAtoms();
+
+        /* Normalise rings. */
+        for (Ring r : _rings) {
+            r.normalise();
+        }
+
+        /* Mark benzylic positions. */
+        markBenzylicPositions();
+    }
+
+    /**
+     * Reorders the atoms according to our standard rules, and assigns the new
+     * IDs accordingly.
+     * 
+     * @see Molecule#reorderAtoms1()
+     * @see Molecule#reorderAtoms2()
+     */
+    void reorderAtoms() {
         for (Atom a : _atoms) {
             a.computeHashValue();
             a.computeSHashValue();
@@ -822,11 +854,6 @@ public class Molecule
              */
             reorderAtoms2();
             assignNormalisedIds();
-        }
-
-        /* Normalise rings. */
-        for (Ring r : _rings) {
-            r.normalise();
         }
     }
 
@@ -978,6 +1005,37 @@ public class Molecule
      */
     public int frerejacque() {
         return _bonds.size() - _atoms.size() + 1;
+    }
+
+    /**
+     * Marks atoms in benzylic positions appropriately.
+     */
+    void markBenzylicPositions() {
+        level1:
+        for (Ring r : _rings) {
+            /* Only six-membered aromatic rings have benzylic positions. */
+            if ((6 != r.size()) || (!r.isAromatic())) {
+                continue level1;
+            }
+
+            level2:
+            for (Atom a : r.atoms()) {
+                /* Atoms in ring fusion do not have benzylic positions. */
+                if (a.numberOfRings() > 1) {
+                    continue level2;
+                }
+
+                level3:
+                for (Bond b : a.bonds()) {
+                    Atom nbr = b.otherAtom(a.id());
+                    if (nbr.isCyclic()) {
+                        continue level3;
+                    }
+
+                    nbr.setBenzylic(true);
+                }
+            }
+        }
     }
 
     /*
