@@ -27,7 +27,7 @@ import com.ojuslabs.oct.core.RingSystem;
 /**
  * The default ring detector.
  */
-public final class RingDetector implements IRingDetector {
+public final class DefaultRingDetector implements IRingDetector {
 
     /* The molecule to analyse. */
     private Molecule          _mol;
@@ -46,7 +46,7 @@ public final class RingDetector implements IRingDetector {
      * Registers a set of validators that each has to approve the candidate path
      * as a ring, with this detector.
      */
-    public RingDetector() {
+    public DefaultRingDetector() {
         /* Intentionally left blank. */
     }
 
