@@ -540,6 +540,8 @@ public final class Atom
                 switch (wtSum) {
                     case 20:
                         return 2;
+                    case 111:
+                        return 1;
                     default:
                         return 0;
                 }

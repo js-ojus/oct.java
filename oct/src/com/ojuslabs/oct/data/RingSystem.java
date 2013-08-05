@@ -267,6 +267,31 @@ public final class RingSystem {
         /* We first apply Huckel's rule. */
         n -= 2;
         if (0 == n % 4) {
+            /* TODO(js): Code major exceptions. */
+
+            loop:
+            for (int i = _atomBitSet.nextSetBit(0); i > -1; i = _atomBitSet
+                    .nextSetBit(i + 1)) {
+                Atom a = _mol.atomByInputId(i);
+                lswitch:
+                switch (a.element().number) {
+                    case 6: {
+                        if (4 == a.numberOfBonds() + a.numberOfHydrogens()) {
+                            error = true;
+                            break loop;
+                        }
+                        break lswitch;
+                    }
+                }
+            }
+        }
+        else {
+            /* TODO(js): Code major exceptions. */
+
+            error = true;
+        }
+
+        if (!error) {
             _isAro = true;
         }
 

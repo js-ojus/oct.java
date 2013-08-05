@@ -273,20 +273,42 @@ public final class Ring
         /* We first apply Huckel's rule. */
         n -= 2;
         if (0 == n % 4) {
-            _isAro = true;
+            /* TODO(js): Code major exceptions. */
 
+            /* There should not be any sp3 C atoms. */
             for (Atom a : _atoms) {
-                a.setAromatic(true);
-                if (6 != a.element().number) {
-                    _isHetAro = true;
+                lswitch:
+                switch (a.element().number) {
+                    case 6: {
+                        if (4 == a.numberOfBonds() + a.numberOfHydrogens()) {
+                            return;
+                        }
+                        break lswitch;
+                    }
                 }
             }
-            for (Bond b : _bonds) {
-                b.setAromatic(true);
-            }
+        }
+        else {
+            /* TODO(js): Code major exceptions. */
+
+            return;
         }
 
-        /* TODO(js): Code major exceptions. */
+        /*
+         * If we have come this far, we mark all appropriate entities as
+         * aromatic.
+         */
+        _isAro = true;
+
+        for (Atom a : _atoms) {
+            a.setAromatic(true);
+            if (6 != a.element().number) {
+                _isHetAro = true;
+            }
+        }
+        for (Bond b : _bonds) {
+            b.setAromatic(true);
+        }
     }
 
     /**

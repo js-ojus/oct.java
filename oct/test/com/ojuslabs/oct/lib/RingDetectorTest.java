@@ -121,7 +121,7 @@ public class RingDetectorTest {
                 "oct/test/com/ojuslabs/oct/lib/thiazole_true.sdf"));
         _data.add(new Data(1, 1, 1, 1,
                 "oct/test/com/ojuslabs/oct/lib/thiophene_true.sdf"));
-        _data.add(new Data(1, 1, 6, 0,
+        _data.add(new Data(1, 0, 6, 3,
                 "oct/test/com/ojuslabs/oct/lib/triptycene_true.sdf"));
     }
 
@@ -145,7 +145,7 @@ public class RingDetectorTest {
         int c = 0;
         for (Data d : _data) {
             // if (!d.fileName
-            // .equals("oct/test/com/ojuslabs/oct/lib/pyrylium_true.sdf")) {
+            // .equals("oct/test/com/ojuslabs/oct/lib/pyran_false.sdf")) {
             // continue;
             // }
 
