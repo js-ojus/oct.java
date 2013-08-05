@@ -18,9 +18,9 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 import com.ojuslabs.oct.common.Constants;
-import com.ojuslabs.oct.core.Molecule;
-import com.ojuslabs.oct.core.Ring;
-import com.ojuslabs.oct.core.RingSystem;
+import com.ojuslabs.oct.data.Molecule;
+import com.ojuslabs.oct.data.Ring;
+import com.ojuslabs.oct.data.RingSystem;
 import com.ojuslabs.oct.xlate.mdl.MolReader;
 import com.ojuslabs.oct.xlate.mdl.MolReaderV2k;
 import com.ojuslabs.oct.xlate.mdl.SdfFile;

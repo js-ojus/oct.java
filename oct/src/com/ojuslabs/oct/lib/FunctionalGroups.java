@@ -8,7 +8,7 @@
 package com.ojuslabs.oct.lib;
 
 import com.google.common.collect.ImmutableMap;
-import com.ojuslabs.oct.core.FunctionalGroup;
+import com.ojuslabs.oct.data.FunctionalGroup;
 
 /**
  * This collection class holds the reference list of functional groups

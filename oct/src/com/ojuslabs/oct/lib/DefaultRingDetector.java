@@ -18,11 +18,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import com.ojuslabs.oct.common.Constants;
-import com.ojuslabs.oct.core.Atom;
-import com.ojuslabs.oct.core.Bond;
-import com.ojuslabs.oct.core.Molecule;
-import com.ojuslabs.oct.core.Ring;
-import com.ojuslabs.oct.core.RingSystem;
+import com.ojuslabs.oct.data.Atom;
+import com.ojuslabs.oct.data.Bond;
+import com.ojuslabs.oct.data.Molecule;
+import com.ojuslabs.oct.data.Ring;
+import com.ojuslabs.oct.data.RingSystem;
 
 /**
  * The default ring detector.
@@ -79,7 +79,7 @@ public final class DefaultRingDetector implements IRingDetector {
      * (non-Javadoc)
      * 
      * @see
-     * com.ojuslabs.oct.lib.IRingDetector#initialise(com.ojuslabs.oct.core.Molecule
+     * com.ojuslabs.oct.lib.IRingDetector#initialise(com.ojuslabs.oct.data.Molecule
      * )
      */
     @Override

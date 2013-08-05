@@ -9,10 +9,10 @@ package com.ojuslabs.oct.lib;
 
 import java.util.List;
 
-import com.ojuslabs.oct.core.Atom;
-import com.ojuslabs.oct.core.Molecule;
-import com.ojuslabs.oct.core.Ring;
-import com.ojuslabs.oct.core.RingSystem;
+import com.ojuslabs.oct.data.Atom;
+import com.ojuslabs.oct.data.Molecule;
+import com.ojuslabs.oct.data.Ring;
+import com.ojuslabs.oct.data.RingSystem;
 
 /**
  * An interface satisfied by all ring detectors. <b>N.B.</b> The detector does

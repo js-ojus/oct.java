@@ -5,7 +5,7 @@
  * for details.
  */
 
-package com.ojuslabs.oct.core;
+package com.ojuslabs.oct.data;
 
 /**
  * Route represents a chemical synthesis route. A route is a tree, with its

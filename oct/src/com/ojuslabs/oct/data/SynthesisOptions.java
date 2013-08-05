@@ -5,7 +5,7 @@
  * for details.
  */
 
-package com.ojuslabs.oct.core;
+package com.ojuslabs.oct.data;
 
 /**
  * SynthesisOptions holds the user's preferences for a run of retrosynthetic

@@ -5,7 +5,7 @@
  * for details.
  */
 
-package com.ojuslabs.oct.core;
+package com.ojuslabs.oct.data;
 
 import com.ojuslabs.oct.util.AbstractGroup;
 

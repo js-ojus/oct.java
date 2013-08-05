@@ -5,7 +5,7 @@
  * for details.
  */
 
-package com.ojuslabs.oct.core;
+package com.ojuslabs.oct.data;
 
 import static com.ojuslabs.oct.common.Constants.LIST_SIZE_S;
 
