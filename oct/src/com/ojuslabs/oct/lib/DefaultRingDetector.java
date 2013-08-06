@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import com.ojuslabs.oct.common.Constants;
+import com.ojuslabs.oct.common.Unsaturation;
 import com.ojuslabs.oct.data.Atom;
 import com.ojuslabs.oct.data.Bond;
 import com.ojuslabs.oct.data.Molecule;
@@ -695,7 +696,7 @@ public final class DefaultRingDetector implements IRingDetector {
         /* TODO(js): If the ring is planar, it is an outer shell. */
         int c = 0;
         for (Atom a : r.atoms()) {
-            if (a.numberOfBonds() + a.numberOfHydrogens() == a.valence()) {
+            if (Unsaturation.NONE == a.unsaturation()) {
                 c++;
             }
         }

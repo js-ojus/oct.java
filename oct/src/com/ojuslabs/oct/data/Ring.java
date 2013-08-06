@@ -280,7 +280,7 @@ public final class Ring
                 lswitch:
                 switch (a.element().number) {
                     case 6: {
-                        if (4 == a.numberOfBonds() + a.numberOfHydrogens()) {
+                        if (Unsaturation.NONE == a.unsaturation()) {
                             return;
                         }
                         break lswitch;

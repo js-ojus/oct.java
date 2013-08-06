@@ -13,6 +13,7 @@ import java.util.List;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.ojuslabs.oct.common.Constants;
+import com.ojuslabs.oct.common.Unsaturation;
 
 /**
  * RingSystem represents a set of physically fused rings. Fusion is usually of
@@ -276,7 +277,7 @@ public final class RingSystem {
                 lswitch:
                 switch (a.element().number) {
                     case 6: {
-                        if (4 == a.numberOfBonds() + a.numberOfHydrogens()) {
+                        if (Unsaturation.NONE == a.unsaturation()) {
                             error = true;
                             break loop;
                         }
