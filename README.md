@@ -2,11 +2,7 @@ OCT
 ===
 __Ojus Chemistry Toolkit (OCT)__ is a toolkit intended to aid in solving a variety of cheminformatics problems.  Its primary focus shall be on problems pertaining to organic synthesis.
 
-__OCT__ is created and maintained by __Ojus Software Labs Private Limited__.  It is available under two licenses.
-
-* As free software made available under the GNU Affero General Public License version 3 (GNU AGPL), to encourage both participation and re-use.  A copy of GNU AGPL should be available together with this _README_, in a file named _LICENSE_.
-
-* A commercial license that allows its inclusion or use in closed-source software.  Contact [Ojus Labs](mailto:sales@ojuslabs.com) for inquiries.
+__OCT__ is created and maintained by __Ojus Software Labs Private Limited__.  It is available under Apache License 2.0 to both encourage its use and participation of a wider community.  See the file `LICENSE` for more details.
 
 PROPOSED STRUCTURE
 ------------------
@@ -44,8 +40,8 @@ The toolkit is currently in its initial stages, and is _not_ yet usable.
 
 TECHNOLOGY
 ----------
-The main programming language is __Java__.  It may well become the _only_ language used, as well!  The toolkit makes extensive use of the elegant __Guava__ library.  The molecule catalogue and the various kinds of reaction rules are proposed to be stored in a no-SQL database instance.
+The main programming language is __Java__.  It may well become the _only_ language used, as well!  Currently, version 1.7 is required to use __OCT__.  In future, we look forward to using 1.8.  The toolkit makes extensive use of the elegant __Guava__ library.  The molecule catalogue and the various kinds of reaction rules are proposed to be stored in a no-SQL database instance.
 
 CONTRIBUTING
 ------------
-Participation by way of comments, (constructive) criticism or feature requests is most welcome, and shall be gratefully acknowledged.  If you are interested in submitting a patch, on the other hand, please also read the file _COPYRIGHT_ present together with this _README_.
+Participation by way of comments, (constructive) criticism or feature requests is most welcome, and shall be gratefully acknowledged.  Please read the file `LICENSE` for the terms of Apache License which govern your contributions.
